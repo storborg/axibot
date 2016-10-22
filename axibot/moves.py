@@ -185,7 +185,8 @@ def convert_to_path(node, matrix):
                          node.tag)
 
 
-def recurse_tree(moves, tree, matrix_current=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
+def recurse_tree(moves, tree,
+                 matrix_current=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
                  parent_visibility='visible', plot_current_layer=True):
     for node in tree:
         log.debug("Handling element: %r: %r", node, node.items())
@@ -213,7 +214,7 @@ def recurse_tree(moves, tree, matrix_current=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
                               svgns('polygon'), svgns('ellipse'),
                               svgns('circle')):
                 newpath = convert_to_path(node, matrix_new)
-                moves.extend(path_to_moves(node, matrix_new))
+                moves.extend(path_to_moves(newpath, matrix_new))
             elif node.tag == svgns('text'):
                 log.warn("Cannot directly draw text. Convert text to path.")
             elif node.tag == svgns('image'):
