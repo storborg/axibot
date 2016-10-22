@@ -3,7 +3,7 @@ import logging
 import sys
 import argparse
 
-from .moves import generate_moves
+from .svg import generate_moves
 from .ebb import EiBotBoard
 
 
