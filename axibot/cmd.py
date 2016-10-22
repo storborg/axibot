@@ -18,47 +18,23 @@ def debug(opts):
         print(move)
 
 
+def manual_command(bot, cmd):
+    method, *arg = cmd.split()
+    arg = tuple(map(int, arg))
+    try:
+        getattr(bot, method)(*arg)
+    except AttributeError as e:
+        print("Command not found: %s" % method)
+    except (TypeError, ValueError) as e:
+        print("Error: %s" % e)
+
+
 def manual(opts):
     bot = EiBotBoard.find()
     try:
         while True:
             cmd = input('(axibot) ')
-            method, *arg = cmd.split()
-            arg = tuple(map(int, arg))
-            try:
-                getattr(bot, method)(*arg)
-            except AttributeError as e:
-                print("Command not found: %s" % method)
-            except (TypeError, ValueError) as e:
-                print("Error: %s" % e)
-    finally:
-        bot.close()
-
-
-def manual_up(opts):
-    # manually move pen up
-    bot = EiBotBoard.find()
-    try:
-        bot.pen_up(1000)
-    finally:
-        bot.close()
-
-
-def manual_down(opts):
-    # manually move pen down
-    bot = EiBotBoard.find()
-    try:
-        bot.pen_down(1000)
-    finally:
-        bot.close()
-
-
-def manual_off(opts):
-    # lift pen and turn motors off
-    bot = EiBotBoard.find()
-    try:
-        bot.pen_up(1000)
-        bot.disable_motors()
+            manual_command(bot, cmd)
     finally:
         bot.close()
 
@@ -140,6 +116,7 @@ def main(args=sys.argv):
 
     p_manual = subparsers.add_parser(
         'manual', help='Manual control shell.')
+    p_manual.add_argument('cmd', nargs='*')
     p_manual.set_defaults(function=manual)
 
     opts, args = p.parse_known_args(args[1:])
