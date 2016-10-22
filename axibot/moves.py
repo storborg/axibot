@@ -13,7 +13,7 @@ class PenUpMove(Move):
         self.delay = delay
 
     def __str__(self):
-        return "PENUP"
+        return "PENUP %s" % self.delay
 
 
 class PenDownMove(Move):
@@ -21,7 +21,7 @@ class PenDownMove(Move):
         self.delay = delay
 
     def __str__(self):
-        return "PENDOWN"
+        return "PENDOWN %s" % self.delay
 
 
 class XYMove(Move):
@@ -74,10 +74,22 @@ def calculate_pen_delays(up_position, down_position):
     'pen up' or 'pen down' command. This requires calculating the speed that
     the servo can move to or from the two respective states. This function
     performs that calculation and returns a tuple of (pen_up_delay,
-    pen_down_delay).
+    pen_down_delay). All delays are in milliseconds.
     """
-    # FIXME actually do it
-    return (100, 100)
+    assert up_position > down_position
+
+    servo_speed = 50
+    extra_pen_up_delay = 400
+    extra_pen_down_delay = 400
+
+    # Math initially taken from axidraw inkscape driver, but I think this can
+    # be sped up a bit. We might also want to use different speeds for up/down,
+    # due to the added weight of the pen slowing down the servo in the 'up'
+    # direction.
+    dist = up_position - down_position
+    time = int((1000. * dist) / servo_speed)
+
+    return (time + extra_pen_up_delay), (time + extra_pen_down_delay)
 
 
 def generate_moves(filename,
@@ -111,3 +123,5 @@ def generate_moves(filename,
 
     moves.append(PenUpMove(pen_up_delay))
     moves.append(PenDownMove(pen_down_delay))
+
+    return moves
