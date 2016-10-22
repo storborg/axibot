@@ -35,11 +35,10 @@ class EiBotBoard:
 
     @classmethod
     def find(cls):
-        ports = cls.list_ports()
-        if ports:
-            return cls.open(ports[0])
-        else:
-            raise EiBotException("Could not find a connected EiBotBoard.")
+        for port in cls.list_ports():
+            if port:
+                return cls.open(ports[0])
+        raise EiBotException("Could not find a connected EiBotBoard.")
 
     def close(self):
         self.serial.close()

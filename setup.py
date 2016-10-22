@@ -27,6 +27,5 @@ setup(name='axibot',
       zip_safe=False,
       entry_points="""\
       [console_scripts]
-      axibot-print = axibot.cmd:main
-      axibot-server = axibot.cmd:server
+      axibot = axibot.cmd:main
       """)
