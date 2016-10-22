@@ -2,7 +2,6 @@ import logging
 
 import sys
 import argparse
-import cmd
 
 from .svg import generate_actions
 from .ebb import EiBotBoard
@@ -19,29 +18,19 @@ def debug(opts):
         print(move)
 
 
-class ManualShell(cmd.Cmd):
-    intro = ('Welcome to the manual control shell. '
-             'Type help or ? to list commands.\n')
-    prompt = '(axibot) '
-
-    def __init__(self, bot):
-        cmd.Cmd.__init__(self)
-        self.bot = bot
-
-    def do_pen_up(self, arg):
-        self.bot.pen_up(1000)
-
-    def do_pen_down(self, arg):
-        self.bot.pen_down(1000)
-
-    def do_exit(self, arg):
-        return True
-
-
 def manual(opts):
     bot = EiBotBoard.find()
     try:
-        ManualShell(bot).cmdloop()
+        while True:
+            cmd = input('(axibot) ')
+            method, *arg = cmd.split()
+            arg = tuple(map(int, arg))
+            try:
+                getattr(bot, method)(*arg)
+            except AttributeError as e:
+                print("Command not found: %s" % method)
+            except (TypeError, ValueError) as e:
+                print("Error: %s" % e)
     finally:
         bot.close()
 
