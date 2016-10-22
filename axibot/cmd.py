@@ -2,6 +2,7 @@ import logging
 
 import sys
 import argparse
+import cmd
 
 from .svg import generate_actions
 from .ebb import EiBotBoard
@@ -16,6 +17,33 @@ def debug(opts):
     )
     for move in moves:
         print(move)
+
+
+class ManualShell(cmd.Cmd):
+    intro = ('Welcome to the manual control shell. '
+             'Type help or ? to list commands.\n')
+    prompt = '(axibot) '
+
+    def __init__(self, bot):
+        cmd.Cmd.__init__(self)
+        self.bot = bot
+
+    def do_pen_up(self, arg):
+        self.bot.pen_up(1000)
+
+    def do_pen_down(self, arg):
+        self.bot.pen_down(1000)
+
+    def do_exit(self, arg):
+        return True
+
+
+def manual(opts):
+    bot = EiBotBoard.find()
+    try:
+        ManualShell(bot).cmdloop()
+    finally:
+        bot.close()
 
 
 def manual_up(opts):
@@ -120,6 +148,10 @@ def main(args=sys.argv):
     p_manual_off = subparsers.add_parser(
         'off', help='Turn motors off and lift pen.')
     p_manual_off.set_defaults(function=manual_off)
+
+    p_manual = subparsers.add_parser(
+        'manual', help='Manual control shell.')
+    p_manual.set_defaults(function=manual)
 
     opts, args = p.parse_known_args(args[1:])
 
