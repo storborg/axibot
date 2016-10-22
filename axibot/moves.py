@@ -17,53 +17,51 @@ class Move:
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, pformat(self.__dict__))
 
+    def __str__(self):
+        attrs = ['%s:%s' % (k, v) for k, v in self.__dict__.items()]
+        return '%s %s' % (self.name, attrs.join(' '))
+
 
 class PenUpMove(Move):
+    name = 'pen_up'
+
     def __init__(self, delay):
         self.delay = delay
-
-    def __str__(self):
-        return "PENUP %s" % self.delay
 
 
 class PenDownMove(Move):
+    name = 'pen_down'
+
     def __init__(self, delay):
         self.delay = delay
 
-    def __str__(self):
-        return "PENDOWN %s" % self.delay
-
 
 class XYMove(Move):
+    name = 'xy_move'
+
     def __init__(self, dx, dy, duration):
         self.dx = dx
         self.dy = dy
         self.duration = duration
 
-    def __str__(self):
-        return "XY\t%s\t%s\t%s" % (self.dx, self.dy, self.duration)
-
 
 class XYAccelMove(Move):
+    name = 'xy_accel_move'
+
     def __init__(self, dx, dy, v_initial, v_final):
         self.dx = dx
         self.dy = dy
         self.v_initial = v_initial
         self.v_final = v_final
 
-    def __str__(self):
-        return "XYACCEL\t%s\t%s\t%s\t%s" % (self.dx, self.dy,
-                                            self.v_initial, self.v_final)
-
 
 class ABMove(Move):
+    name = 'ab_move'
+
     def __init__(self, da, db, duration):
         self.da = da
         self.db = db
         self.duration = duration
-
-    def __str__(self):
-        return "AB\t%s\t%s\t%s" % (self.da, self.db, self.duration)
 
 
 # Precise V5 pens. Totally guessing here on values.

@@ -1,8 +1,6 @@
 import serial
 from serial.tools.list_ports import comports
 
-from . import moves
-
 MAX_RETRIES = 100
 
 # These are unitless timing values used by the EBB.
@@ -174,16 +172,13 @@ class EiBotBoard:
         self.command('MX,%s,%s,%s\r' % (duration, da, db))
 
     def do(self, move):
-        if isinstance(move, moves.PenUpMove):
-            self.pen_up()
-        elif isinstance(move, moves.PenDownMove):
-            self.pen_down()
-        elif isinstance(move, moves.XYMove):
-            self.xy_move(move.dx, move.dy, move.duration)
-        elif isinstance(move, moves.XYAccelMove):
-            self.xy_accel_move(move.dx, move.dy, move.v_initial, move.v_final)
-        elif isinstance(move, moves.ABMove):
-            self.ab_move(move.da, move.db, move.duration)
+        kw = move.__dict__.copy()
+        name = kw.pop('name')
+        if name in ('pen_up', 'pen_down',
+                    'xy_accel_move', 'xy_move',
+                    'ab_move'):
+            method = getattr(self, name)
+            return method(**kw)
         else:
             raise EiBotException("Don't know how to do move %r / %s" %
                                  (move, move))
