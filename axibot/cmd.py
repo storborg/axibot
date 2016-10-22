@@ -3,13 +3,13 @@ import logging
 import sys
 import argparse
 
-from .svg import generate_moves
+from .svg import generate_actions
 from .ebb import EiBotBoard
 
 
 def debug(opts):
     print("Rendering %s..." % opts.filename)
-    moves = generate_moves(
+    moves = generate_actions(
         opts.filename,
         pen_up_position=85,
         pen_down_position=35,
@@ -22,7 +22,7 @@ def manual_up(opts):
     # manually move pen up
     bot = EiBotBoard.find()
     try:
-        bot.pen_up()
+        bot.pen_up(1000)
     finally:
         bot.close()
 
@@ -31,7 +31,7 @@ def manual_down(opts):
     # manually move pen down
     bot = EiBotBoard.find()
     try:
-        bot.pen_down()
+        bot.pen_down(1000)
     finally:
         bot.close()
 
@@ -40,7 +40,7 @@ def manual_off(opts):
     # lift pen and turn motors off
     bot = EiBotBoard.find()
     try:
-        bot.pen_up()
+        bot.pen_up(1000)
         bot.disable_motors()
     finally:
         bot.close()
@@ -55,7 +55,7 @@ def plot(opts):
     pen_down_position = 50
 
     try:
-        moves = generate_moves(
+        moves = generate_actions(
             opts.filename,
             pen_up_position=pen_up_position,
             pen_down_position=pen_down_position,

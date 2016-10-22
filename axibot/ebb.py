@@ -28,9 +28,9 @@ class EiBotBoard:
         # This behavior is taken from the ebb_serial usage, not sure if it's
         # necessary.
         for attempt in range(3):
-            ser.write('v\r')
+            ser.write(b'v\r')
             version = ser.readline()
-            if version and version.startswith('EBB'):
+            if version and version.startswith(b'EBB'):
                 return cls(ser)
 
     @classmethod
@@ -51,7 +51,7 @@ class EiBotBoard:
                 return resp
 
     def query(self, cmd):
-        self.serial.write(cmd)
+        self.serial.write(cmd.encode('ascii'))
         resp = self.robust_readline()
         if cmd.strip().lower() not in ('v', 'i', 'a', 'mr', 'pi', 'qm'):
             # Discard response.
@@ -59,9 +59,9 @@ class EiBotBoard:
         return resp
 
     def command(self, cmd):
-        self.serial.write(cmd)
+        self.serial.write(cmd.encode('ascii'))
         resp = self.robust_readline()
-        if not resp.strip().startswith('OK'):
+        if not resp.strip().startswith(b'OK'):
             if resp:
                 raise EiBotException(
                     "Unexpected response from EBB:\n"
@@ -135,10 +135,10 @@ class EiBotBoard:
         self.command('SC,12,%s\r' % down_speed)
 
     def pen_up(self, delay):
-        self.command('SP,1,%s\r' % delay)
+        self.command('SP,0,%s\r' % delay)
 
     def pen_down(self, delay):
-        self.command('SP,0,%s\r' % delay)
+        self.command('SP,1,%s\r' % delay)
 
     def xy_accel_move(self, dx, dy, v_initial, v_final):
         """
