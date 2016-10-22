@@ -104,18 +104,6 @@ def main(args=sys.argv):
     p_server.add_argument('--port', type=int, default=8888)
     p_server.set_defaults(function=server)
 
-    p_manual_up = subparsers.add_parser(
-        'up', help='Lift pen up.')
-    p_manual_up.set_defaults(function=manual_up)
-
-    p_manual_down = subparsers.add_parser(
-        'down', help='Drop pen down.')
-    p_manual_down.set_defaults(function=manual_down)
-
-    p_manual_off = subparsers.add_parser(
-        'off', help='Turn motors off and lift pen.')
-    p_manual_off.set_defaults(function=manual_off)
-
     p_manual = subparsers.add_parser(
         'manual', help='Manual control shell.')
     p_manual.add_argument('cmd', nargs='*')
