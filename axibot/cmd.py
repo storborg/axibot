@@ -32,9 +32,13 @@ def manual_command(bot, cmd):
 def manual(opts):
     bot = EiBotBoard.find()
     try:
-        while True:
-            cmd = input('(axibot) ')
+        if opts.cmd:
+            cmd = ' '.join(opts.cmd)
             manual_command(bot, cmd)
+        else:
+            while True:
+                cmd = input('(axibot) ')
+                manual_command(bot, cmd)
     finally:
         bot.close()
 
