@@ -3,35 +3,88 @@ import logging
 import sys
 import argparse
 
-from .moves import render
+from .moves import generate_moves
 from .ebb import EiBotBoard
 
 
 def debug(opts):
     print("Rendering %s..." % opts.filename)
-    render(opts.filename)
+    moves = generate_moves(
+        opts.filename,
+        pen_up_position=85,
+        pen_down_position=35,
+    )
+    for move in moves:
+        print(move)
 
 
 def manual_up(opts):
     # manually move pen up
     bot = EiBotBoard.find()
-    bot.pen_up()
+    try:
+        bot.pen_up()
+    finally:
+        bot.close()
 
 
 def manual_down(opts):
     # manually move pen down
     bot = EiBotBoard.find()
-    bot.pen_down()
+    try:
+        bot.pen_down()
+    finally:
+        bot.close()
+
+
+def manual_off(opts):
+    # lift pen and turn motors off
+    bot = EiBotBoard.find()
+    try:
+        bot.pen_up()
+        bot.disable_motors()
+    finally:
+        bot.close()
 
 
 def plot(opts):
     print("Loading %s..." % opts.filename)
     bot = EiBotBoard.find()
 
+    # XXX find pen positions with user interaction?
+    pen_up_position = 85
+    pen_down_position = 50
+
+    try:
+        moves = generate_moves(
+            opts.filename,
+            pen_up_position=pen_up_position,
+            pen_down_position=pen_down_position,
+        )
+        count = len(moves)
+        print("Calculated %d moves." % count)
+
+        bot.pen_up()
+        bot.disable_motors()
+        print("Pen up and motors off. Move carriage to top left corner.")
+        input("Press enter to begin.")
+
+        for ii, move in enumerate(moves):
+            print("Move %d/%d" % (ii, count))
+            bot.do(move)
+
+        bot.pen_up()
+        print("Finished!")
+    finally:
+        bot.close()
+
 
 def server(opts):
     print("Serving on port %d..." % opts.port)
     bot = EiBotBoard.find()
+    try:
+        raise NotImplementedError
+    finally:
+        bot.close()
 
 
 def main(args=sys.argv):
@@ -63,6 +116,10 @@ def main(args=sys.argv):
     p_manual_down = subparsers.add_parser(
         'down', help='Drop pen down.')
     p_manual_down.set_defaults(function=manual_down)
+
+    p_manual_off = subparsers.add_parser(
+        'off', help='Turn motors off and lift pen.')
+    p_manual_off.set_defaults(function=manual_off)
 
     opts, args = p.parse_known_args(args[1:])
 

@@ -1,6 +1,8 @@
 import serial
 from serial.tools.list_ports import comports
 
+from . import moves
+
 MAX_RETRIES = 100
 
 
@@ -37,10 +39,11 @@ class EiBotBoard:
     def find(cls):
         for port in cls.list_ports():
             if port:
-                return cls.open(ports[0])
+                return cls.open(port)
         raise EiBotException("Could not find a connected EiBotBoard.")
 
     def close(self):
+        # XXX Maybe switch to a context manger for this?
         self.serial.close()
 
     def robust_readline(self):
@@ -136,3 +139,18 @@ class EiBotBoard:
         and <Axis2> as <AxisA> - <AxisB>
         """
         self.command('MX,%s,%s,%s\r' % (duration, da, db))
+
+    def do(self, move):
+        if isinstance(move, moves.PenUpMove):
+            self.pen_up()
+        elif isinstance(move, moves.PenDownMove):
+            self.pen_down()
+        elif isinstance(move, moves.XYMove):
+            self.xy_move(move.dx, move.dy, move.duration)
+        elif isinstance(move, moves.XYAccelMove):
+            self.xy_accel_move(move.dx, move.dy, move.v_initial, move.v_final)
+        elif isinstance(move, moves.ABMove):
+            self.ab_move(move.da, move.db, move.duration)
+        else:
+            raise EiBotException("Don't know how to do move %r / %s" %
+                                 (move, move))
