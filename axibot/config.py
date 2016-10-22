@@ -1,0 +1,10 @@
+MAX_RETRIES = 100
+
+# These are unitless timing values used by the EBB.
+SERVO_MIN = 7500
+SERVO_MAX = 28000
+
+SERVO_SPEED = 50
+EXTRA_PEN_UP_DELAY = 400
+EXTRA_PEN_DOWN_DELAY = 400
+SMOOTHNESS = 2.0

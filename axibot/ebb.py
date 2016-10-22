@@ -1,11 +1,7 @@
 import serial
 from serial.tools.list_ports import comports
 
-MAX_RETRIES = 100
-
-# These are unitless timing values used by the EBB.
-SERVO_MIN = 7500
-SERVO_MAX = 28000
+from . import config
 
 
 class EiBotException(Exception):
@@ -49,7 +45,7 @@ class EiBotBoard:
         self.serial.close()
 
     def robust_readline(self):
-        for attempt in range(MAX_RETRIES):
+        for attempt in range(config.MAX_RETRIES):
             resp = self.serial.readline()
             if resp:
                 return resp
@@ -127,9 +123,10 @@ class EiBotBoard:
             change in 1 s That gives 0.205 steps/ms, or 4.92 steps / 24 ms
             Rounding this to 5 steps/24 ms is sufficient."
         """
-        slope = float(SERVO_MAX - SERVO_MIN) / 100.
-        up_setting = int(round(SERVO_MIN + (slope * pen_up_position)))
-        down_setting = int(round(SERVO_MIN + (slope * pen_down_position)))
+        slope = float(config.SERVO_MAX - config.SERVO_MIN) / 100.
+        up_setting = int(round(config.SERVO_MIN + (slope * pen_up_position)))
+        down_setting = int(round(config.SERVO_MIN +
+                                 (slope * pen_down_position)))
         up_speed = 5 * servo_up_speed
         down_speed = 5 * servo_down_speed
         self.command('SC,4,%s\r' % up_setting)

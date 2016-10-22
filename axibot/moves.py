@@ -4,13 +4,9 @@ from pprint import pformat
 
 from xml.etree import ElementTree
 
+from . import config
+
 log = logging.getLogger(__name__)
-
-
-SERVO_SPEED = 50
-EXTRA_PEN_UP_DELAY = 400
-EXTRA_PEN_DOWN_DELAY = 400
-SMOOTHNESS = 2.0
 
 
 class Move:
@@ -91,9 +87,10 @@ def calculate_pen_delays(up_position, down_position):
     # due to the added weight of the pen slowing down the servo in the 'up'
     # direction.
     dist = up_position - down_position
-    time = int((1000. * dist) / SERVO_SPEED)
+    time = int((1000. * dist) / config.SERVO_SPEED)
 
-    return (time + EXTRA_PEN_UP_DELAY), (time + EXTRA_PEN_DOWN_DELAY)
+    return ((time + config.EXTRA_PEN_UP_DELAY),
+            (time + config.EXTRA_PEN_DOWN_DELAY))
 
 
 def get_length_inches(tree, name):
