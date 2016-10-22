@@ -61,6 +61,8 @@ def plot(opts):
         print("Pen up and motors off. Move carriage to top left corner.")
         input("Press enter to begin.")
 
+        bot.enable_motors(1)
+
         for ii, move in enumerate(moves):
             print("Move %d/%d" % (ii, count))
             bot.do(move)
