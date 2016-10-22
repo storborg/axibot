@@ -3,6 +3,11 @@ from pprint import pformat
 from xml.etree import ElementTree
 
 
+SERVO_SPEED = 50
+EXTRA_PEN_UP_DELAY = 400
+EXTRA_PEN_DOWN_DELAY = 400
+
+
 class Move:
     def __repr__(self):
         return '<%s %s>' % (self.__class__.__name__, pformat(self.__dict__))
@@ -78,18 +83,14 @@ def calculate_pen_delays(up_position, down_position):
     """
     assert up_position > down_position
 
-    servo_speed = 50
-    extra_pen_up_delay = 400
-    extra_pen_down_delay = 400
-
     # Math initially taken from axidraw inkscape driver, but I think this can
     # be sped up a bit. We might also want to use different speeds for up/down,
     # due to the added weight of the pen slowing down the servo in the 'up'
     # direction.
     dist = up_position - down_position
-    time = int((1000. * dist) / servo_speed)
+    time = int((1000. * dist) / SERVO_SPEED)
 
-    return (time + extra_pen_up_delay), (time + extra_pen_down_delay)
+    return (time + EXTRA_PEN_UP_DELAY), (time + EXTRA_PEN_DOWN_DELAY)
 
 
 def generate_moves(filename,

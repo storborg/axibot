@@ -5,6 +5,10 @@ from . import moves
 
 MAX_RETRIES = 100
 
+# These are unitless timing values used by the EBB.
+SERVO_MIN = 7500
+SERVO_MAX = 28000
+
 
 class EiBotException(Exception):
     pass
@@ -105,6 +109,35 @@ class EiBotBoard:
 
     def toggle_pen(self):
         self.command('TP\r')
+
+    def servo_setup(self,
+                    pen_down_position, pen_up_position,
+                    servo_up_speed, servo_down_speed):
+        """
+        Configure EBB servo control offsets and speeds.
+
+        From the axidraw.py comments:
+
+            "Pen position units range from 0% to 100%, which correspond to a
+            typical timing range of 7500 - 25000 in units of 1/(12 MHz). 1%
+            corresponds to ~14.6 us, or 175 units of 1/(12 MHz)."
+
+            "Servo speed units are in units of %/second, referring to the
+            percentages above.  The EBB takes speeds in units of 1/(12 MHz)
+            steps per 24 ms.  Scaling as above, 1% of range in 1 second with
+            SERVO_MAX = 28000  and  SERVO_MIN = 7500 corresponds to 205 steps
+            change in 1 s That gives 0.205 steps/ms, or 4.92 steps / 24 ms
+            Rounding this to 5 steps/24 ms is sufficient."
+        """
+        slope = float(SERVO_MAX - SERVO_MIN) / 100.
+        up_setting = int(round(SERVO_MIN + (slope * pen_up_position)))
+        down_setting = int(round(SERVO_MIN + (slope * pen_down_position)))
+        up_speed = 5 * servo_up_speed
+        down_speed = 5 * servo_down_speed
+        self.command('SC,4,%s\r' % up_setting)
+        self.command('SC,5,%s\r' % down_setting)
+        self.command('SC,11,%s\r' % up_speed)
+        self.command('SC,12,%s\r' % down_speed)
 
     def pen_up(self, delay):
         self.command('SP,1,%s\r' % delay)
