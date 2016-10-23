@@ -141,10 +141,10 @@ class EiBotBoard:
         self.command('SC,12,%s\r' % down_speed)
 
     def pen_up(self, delay):
-        self.command('SP,0,%s\r' % delay)
+        self.command('SP,1,%s\r' % delay)
 
     def pen_down(self, delay):
-        self.command('SP,1,%s\r' % delay)
+        self.command('SP,0,%s\r' % delay)
 
     def xy_accel_move(self, dx, dy, v_initial, v_final):
         """
