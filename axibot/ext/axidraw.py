@@ -26,7 +26,6 @@
 from math import sqrt
 from array import *
 import gettext
-import serial
 import string
 import time
 
@@ -35,6 +34,8 @@ from . import simplepath
 
 from . import plot_utils
 from . import axidraw_conf
+
+inkex = None
 
 F_DEFAULT_SPEED = 1
 # delay (ms) for the pen to go down before the next move
@@ -177,8 +178,6 @@ class WCB(inkex.Effect):
         self.virtualPenIsUp = False
         self.ignoreLimits = False
 
-        fX = None
-        fY = None
         self.fCurrX = axidraw_conf.StartPos_X
         self.fCurrY = axidraw_conf.StartPos_Y
         self.ptFirst = (axidraw_conf.StartPos_X, axidraw_conf.StartPos_Y)
@@ -261,7 +260,7 @@ class WCB(inkex.Effect):
             skipSerial = True
 
         if skipSerial is False:
-            self.serialPort = ebb_serial.openPort()
+            # self.serialPort = ebb_serial.openPort()
             if self.serialPort is None:
                 inkex.errormsg(gettext.gettext(
                     "Failed to connect to AxiDraw. :("))
@@ -274,8 +273,8 @@ class WCB(inkex.Effect):
                 if self.serialPort is not None:
                     self.svgNodeCount = 0
                     self.svgLastPath = 0
-                    unused_button = ebb_motion.QueryPRGButton(
-                        self.serialPort)  # Query if button pressed
+                    # unused_button = ebb_motion.QueryPRGButton(
+                    #     self.serialPort)  # Query if button pressed
                     # indicate (to resume routine) that we are plotting all
                     # layers.
                     self.svgLayer = 12345
@@ -286,8 +285,8 @@ class WCB(inkex.Effect):
                     useOldResumeData = True
                 else:
                     useOldResumeData = False
-                    unused_button = ebb_motion.QueryPRGButton(
-                        self.serialPort)  # Query if button pressed
+                    # unused_button = ebb_motion.QueryPRGButton(
+                    #     self.serialPort)  # Query if button pressed
                     self.resumePlotSetup()
                     if self.resumeMode:
                         fX = self.svgPausedPosX_Old + axidraw_conf.StartPos_X
@@ -326,8 +325,8 @@ class WCB(inkex.Effect):
                 self.LayersFoundToPlot = False
                 self.svgLastPath = 0
                 if self.serialPort is not None:
-                    unused_button = ebb_motion.QueryPRGButton(
-                        self.serialPort)  # Query if button pressed
+                    # unused_button = ebb_motion.QueryPRGButton(
+                    #     self.serialPort)  # Query if button pressed
                     self.svgNodeCount = 0
                     self.svgLayer = self.options.layernumber
                     self.plotDocument()
@@ -338,12 +337,14 @@ class WCB(inkex.Effect):
             elif self.options.tab == '"manual"':
                 if self.options.manualType == "strip-data":
                     for node in self.svg.xpath('//svg:WCB',
-                            namespaces=inkex.NSS):
+                                               namespaces=inkex.NSS):
                         self.svg.remove(node)
-                    for node in self.svg.xpath('//svg:eggbot', namespaces=inkex.NSS):
+                    for node in self.svg.xpath('//svg:eggbot',
+                                               namespaces=inkex.NSS):
                         self.svg.remove(node)
                     inkex.errormsg(gettext.gettext(
-                        "I've removed all AxiDraw data from this SVG file. Have a great day!"))
+                        "I've removed all AxiDraw data from "
+                        "this SVG file. Have a great day!"))
                     return
                 else:
                     useOldResumeData = False
@@ -369,9 +370,10 @@ class WCB(inkex.Effect):
         self.svgDataRead = False
         self.UpdateSVGWCBData(self.svg)
         if self.serialPort is not None:
+            pass
             # Pause a moment for underway commands to finish...
-            ebb_motion.doTimedPause(self.serialPort, 10)
-            ebb_serial.closePort(self.serialPort)
+            # ebb_motion.doTimedPause(self.serialPort, 10)
+            # ebb_serial.closePort(self.serialPort)
 
     def resumePlotSetup(self):
         self.LayerFound = False
@@ -396,8 +398,10 @@ class WCB(inkex.Effect):
                 self.penUp()
                 self.EnableMotors()  # Set plotting resolution
                 self.fSpeed = self.options.penDownSpeed
-                self.fCurrX = self.svgLastKnownPosX_Old + axidraw_conf.StartPos_X
-                self.fCurrY = self.svgLastKnownPosY_Old + axidraw_conf.StartPos_Y
+                self.fCurrX = (self.svgLastKnownPosX_Old +
+                               axidraw_conf.StartPos_X)
+                self.fCurrY = (self.svgLastKnownPosY_Old +
+                               axidraw_conf.StartPos_Y)
 
     def CheckSVGforWCBData(self):
         self.svgDataRead = False
@@ -423,7 +427,8 @@ class WCB(inkex.Effect):
             for node in aNodeList:
                 if node.tag == 'svg':
                     self.recursiveWCBDataScan(node)
-                elif node.tag == inkex.addNS('WCB', 'svg') or node.tag == 'WCB':
+                elif (node.tag == inkex.addNS('WCB', 'svg') or
+                      node.tag == 'WCB'):
                     try:
                         self.svgLayer_Old = int(node.get('layer'))
                         self.svgNodeCount_Old = int(node.get('node'))
@@ -444,7 +449,8 @@ class WCB(inkex.Effect):
             for node in aNodeList:
                 if node.tag == 'svg':
                     self.UpdateSVGWCBData(node)
-                elif node.tag == inkex.addNS('WCB', 'svg') or node.tag == 'WCB':
+                elif (node.tag == inkex.addNS('WCB', 'svg') or
+                      node.tag == 'WCB'):
                     node.set('layer', str(self.svgLayer))
                     node.set('node', str(self.svgNodeCount))
                     node.set('lastpath', str(self.svgLastPath))
@@ -466,10 +472,11 @@ class WCB(inkex.Effect):
 
         if self.options.setupType == "align-mode":
             self.penUp()
-            ebb_motion.sendDisableMotors(self.serialPort)
+            # ebb_motion.sendDisableMotors(self.serialPort)
 
         elif self.options.setupType == "toggle-pen":
-            ebb_motion.TogglePen(self.serialPort)
+            pass
+            # ebb_motion.TogglePen(self.serialPort)
 
     def manualCommand(self):
         """Execute commands from the "manual" tab"""
@@ -492,12 +499,14 @@ class WCB(inkex.Effect):
             self.EnableMotors()
 
         elif self.options.manualType == "disable-motors":
-            ebb_motion.sendDisableMotors(self.serialPort)
+            pass
+            # ebb_motion.sendDisableMotors(self.serialPort)
 
         elif self.options.manualType == "version-check":
-            strVersion = ebb_serial.query(self.serialPort, 'v\r')
+            # strVersion = ebb_serial.query(self.serialPort, 'v\r')
             inkex.errormsg(
-                'I asked the EBB for its version info, and it replied:\n ' + strVersion)
+                'I asked the EBB for its version '
+                'info, and it replied:\n ' + strVersion)
 
         else:  # self.options.manualType is walk motor:
             if self.options.manualType == "walk-y-motor":
@@ -511,7 +520,7 @@ class WCB(inkex.Effect):
 
             self.fSpeed = self.options.penDownSpeed
 
-                self.EnableMotors()  # Set plotting resolution
+            self.EnableMotors()  # Set plotting resolution
             self.fCurrX = self.svgLastKnownPosX_Old + axidraw_conf.StartPos_X
             self.fCurrY = self.svgLastKnownPosY_Old + axidraw_conf.StartPos_Y
             self.ignoreLimits = True
@@ -548,12 +557,9 @@ class WCB(inkex.Effect):
             if (vinfo[2] != 0) and (vinfo[3] != 0):
                 sx = self.svgWidth / float(vinfo[2])
                 sy = self.svgHeight / float(vinfo[3])
-#                 inkex.errormsg( 'self.svgWidth:  ' + str(self.svgWidth) )
-#                 inkex.errormsg( 'float( vinfo[2] ):  ' + str(float( vinfo[2] ) ))
-#                 inkex.errormsg( 'sx:  ' + str(sx) )
-                self.svgTransform = parseTransform('scale(%f,%f) translate(%f,%f)' % (
+                self.svgTransform = parseTransform(
+                    'scale(%f,%f) translate(%f,%f)' % (
                     sx, sy, -float(vinfo[0]), -float(vinfo[1])))
-#                 inkex.errormsg( 'svgTransform:  ' + str(self.svgTransform) )
 
         self.ServoSetup()
         self.penUp()
@@ -570,7 +576,7 @@ class WCB(inkex.Effect):
                 self.yBoundsMin = axidraw_conf.StartPos_Y
                 fX = self.ptFirst[0]
                 fY = self.ptFirst[1]
-                    self.nodeCount = self.nodeTarget
+                self.nodeCount = self.nodeTarget
                 self.plotSegmentWithVelocity(fX, fY, 0, 0)
 
             if (not self.bStopped):
@@ -1926,8 +1932,8 @@ class WCB(inkex.Effect):
             if ((moveSteps1 != 0) or (moveSteps2 != 0)):
 
                 if (not self.resumeMode) and (not self.bStopped):
-                    ebb_motion.doXYMove(
-                        self.serialPort, moveSteps2, moveSteps1, moveTime)
+                    # ebb_motion.doXYMove(
+                    #     self.serialPort, moveSteps2, moveSteps1, moveTime)
                     if (moveTime > 15):
                         if self.options.tab != '"manual"':
                             # pause before issuing next command
@@ -1945,8 +1951,8 @@ class WCB(inkex.Effect):
                     # if spewSegmentDebugData:
                     #    inkex.errormsg( '\nfCurrX,fCurrY (x = %1.2f, y = %1.2f) ' % (self.fCurrX, self.fCurrY))
 
-        strButton = ebb_motion.QueryPRGButton(
-            self.serialPort)  # Query if button pressed
+        # strButton = ebb_motion.QueryPRGButton(
+        #    self.serialPort)  # Query if button pressed
         if strButton[0] == '1':  # button pressed
             self.svgNodeCount = self.nodeCount - 1
             self.svgPausedPosX = self.fCurrX - axidraw_conf.StartPos_X  # self.svgLastKnownPosX
@@ -1972,13 +1978,13 @@ class WCB(inkex.Effect):
 
         '''
         if (self.options.resolution == 1):
-            ebb_motion.sendEnableMotors(
-                self.serialPort, 1)  # 16X microstepping
+            # ebb_motion.sendEnableMotors(
+            #     self.serialPort, 1)  # 16X microstepping
             self.stepsPerInch = float(axidraw_conf.DPI_16X)
             self.PenDownSpeed = self.options.penDownSpeed * axidraw_conf.Speed_Scale / 110.0
             self.PenUpSpeed = self.options.rapidSpeed * axidraw_conf.Speed_Scale / 110.0
         elif (self.options.resolution == 2):
-            ebb_motion.sendEnableMotors(self.serialPort, 2)  # 8X microstepping
+            # ebb_motion.sendEnableMotors(self.serialPort, 2)  # 8X microstepping
             self.stepsPerInch = float(axidraw_conf.DPI_16X / 2.0)
             self.PenDownSpeed = self.options.penDownSpeed * axidraw_conf.Speed_Scale / 220.0
             self.PenUpSpeed = self.options.rapidSpeed * axidraw_conf.Speed_Scale / 110.0
@@ -2009,7 +2015,7 @@ class WCB(inkex.Effect):
             vTime += self.options.penUpDelay
             if (vTime < 0):  # Do not allow negative delay times
                 vTime = 0
-            ebb_motion.sendPenUp(self.serialPort, vTime)
+            # ebb_motion.sendPenUp(self.serialPort, vTime)
             if (vTime > 15):
                 if self.options.tab != '"manual"':
                     # pause before issuing next command
@@ -2029,7 +2035,7 @@ class WCB(inkex.Effect):
                 vTime += self.options.penDownDelay
                 if (vTime < 0):  # Do not allow negative delay times
                     vTime = 0
-                ebb_motion.sendPenDown(self.serialPort, vTime)
+                # ebb_motion.sendPenDown(self.serialPort, vTime)
                 if (vTime > 15):
                     if self.options.tab != '"manual"':
                         # pause before issuing next command
@@ -2040,7 +2046,7 @@ class WCB(inkex.Effect):
         # Assert what the defined "up" and "down" positions of the servo motor should be,
         #    and determine what the pen state is.
         self.ServoSetup()
-        strVersion = ebb_serial.query(self.serialPort, 'QP\r')
+        # strVersion = ebb_serial.query(self.serialPort, 'QP\r')
         if strVersion[0] == '0':
             self.bPenIsUp = False
         else:
@@ -2057,11 +2063,11 @@ class WCB(inkex.Effect):
 
         intTemp = int(round(axidraw_conf.SERVO_MIN +
                             servo_slope * self.options.penUpPosition))
-        ebb_serial.command(self.serialPort,  'SC,4,' + str(intTemp) + '\r')
+        # ebb_serial.command(self.serialPort,  'SC,4,' + str(intTemp) + '\r')
 
         intTemp = int(round(axidraw_conf.SERVO_MIN +
                             servo_slope * self.options.penDownPosition))
-        ebb_serial.command(self.serialPort,  'SC,5,' + str(intTemp) + '\r')
+        # ebb_serial.command(self.serialPort,  'SC,5,' + str(intTemp) + '\r')
 
         ''' Servo speed units are in units of %/second, referring to the
             percentages above.  The EBB takes speeds in units of 1/(12 MHz) steps
@@ -2072,10 +2078,10 @@ class WCB(inkex.Effect):
             Rounding this to 5 steps/24 ms is sufficient.        '''
 
         intTemp = 5 * self.options.ServoUpSpeed
-        ebb_serial.command(self.serialPort, 'SC,11,' + str(intTemp) + '\r')
+        # ebb_serial.command(self.serialPort, 'SC,11,' + str(intTemp) + '\r')
 
         intTemp = 5 * self.options.ServoDownSpeed
-        ebb_serial.command(self.serialPort,  'SC,12,' + str(intTemp) + '\r')
+        # ebb_serial.command(self.serialPort,  'SC,12,' + str(intTemp) + '\r')
 
     def stop(self):
         self.bStopped = True
