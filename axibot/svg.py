@@ -193,10 +193,41 @@ def convert_to_path(node, matrix):
         raise NotImplementedError("doesn't support polyline yet")
     elif node.tag == svgns('polygon'):
         raise NotImplementedError("doesn't support polygon yet")
-    elif node.tag == svgns('ellipse'):
-        raise NotImplementedError("doesn't support ellipse yet")
-    elif node.tag == svgns('circle'):
-        raise NotImplementedError("doesn't support circle yet")
+    elif node.tag == svgns('ellipse') or node.tag == svgns('circle'):
+        # Convert circles and ellipses to a path with two 180 degree arcs.
+        # In general (an ellipse), we convert
+        #   <ellipse rx="RX" ry="RY" cx="X" cy="Y"/>
+        # to
+        #   <path d="MX1,CY A RX,RY 0 1 0 X2,CY A RX,RY 0 1 0 X1,CY"/>
+        # where
+        #   X1 = CX - RX
+        #   X2 = CX + RX
+        if node.tag == 'ellipse':
+            rx = float(node.get('rx', '0'))
+            ry = float(node.get('ry', '0'))
+        else:
+            rx = float(node.get('r', '0'))
+            ry = rx
+        # XXX handle rx or ry of zero?
+
+        cx = float(node.get('cx', '0'))
+        cy = float(node.get('cy', '0'))
+        x1 = cx - rx
+        x2 = cx + rx
+        d = 'M %f,%f ' % ( x1, cy ) + \
+            'A %f,%f ' % ( rx, ry ) + \
+            '0 1 0 %f,%f ' % ( x2, cy ) + \
+            'A %f,%f ' % ( rx, ry ) + \
+            '0 1 0 %f,%f' % (x1, cy)
+        newpath = ElementTree.Element('path')
+        s = node.get('style')
+        if s:
+            newpath.set('style', s)
+        t = node.get('transform')
+        if t:
+            newpath.set('transform', t)
+        newpath.set('d', d)
+        return newpath
     else:
         raise ValueError("Don't know how to convert %s tag to a path." %
                          node.tag)
