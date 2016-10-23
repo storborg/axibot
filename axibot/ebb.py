@@ -190,7 +190,7 @@ class EiBotBoard:
 
         Not used in "stock" AxiDraw Inkscape driver.
         """
-        self.command('MX,%s,%s,%s\r' % (duration, da, db))
+        self.command('XM,%s,%s,%s\r' % (duration, da, db))
 
     def do(self, move):
         kw = move.__dict__.copy()
