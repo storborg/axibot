@@ -89,7 +89,7 @@ def plot(opts):
 
     # XXX find pen positions with user interaction?
     pen_up_position = 85
-    pen_down_position = 50
+    pen_down_position = 30
 
     try:
         actions = generate_actions(
@@ -100,7 +100,7 @@ def plot(opts):
         count = len(actions)
         print("Calculated %d actions." % count)
 
-        bot.pen_up()
+        bot.pen_up(1000)
         bot.disable_motors()
         print("Pen up and motors off. Move carriage to top left corner.")
         input("Press enter to begin.")
@@ -108,10 +108,10 @@ def plot(opts):
         bot.enable_motors(1)
 
         for ii, move in enumerate(actions):
-            print("Move %d/%d" % (ii, count))
+            print("Move %d/%d: %r" % (ii, count, move))
             bot.do(move)
 
-        bot.pen_up()
+        bot.pen_up(1000)
         print("Finished!")
     finally:
         bot.close()
