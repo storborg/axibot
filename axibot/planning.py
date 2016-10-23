@@ -61,26 +61,19 @@ def dot_product_xy(a, b):
         return temp
 
 
-def plot_segment_with_velocity(p0, p1, v_initial, v_final, pen_up):
+def plot_segment_with_velocity(xy, v_initial, v_final, pen_up):
     """
     Generate the low-level machine moves to plot a straight line segment, with
     a trapezoidal velocity profile. That is, ramp velocity up to v_final,
     starting from v_initial, move at a constant v_final, then ramp velocity
     back down to v_initial.
 
-    Move from p0 (x, y) to p1 (x, y).
-
     Units are inches (for position points) or inches per second (for velocity).
-    Note that position inputs to this function are differential: that is, the
-    initial point is assumed to be the initial position of the robot, and this
-    function does not generate a move that sends the robot to that first
-    absolute point.
+    Note that position inputs to this function is differential: it only moves
+    relative to the existing position of the robot.
     """
     # XXX This function is abysmal and could use a lot of cleanup. But maybe
     # write some tests first.
-
-    x0, y0 = p0
-    x1, y1 = p1
 
     # Steps per inch of microstepping.
     spi = config.DPI_16X
@@ -88,8 +81,9 @@ def plot_segment_with_velocity(p0, p1, v_initial, v_final, pen_up):
     # XXX should this check bounds limits??
 
     # convert to motor step units
-    xmove_ideal = spi * (x1 - x0)
-    ymove_ideal = spi * (y1 - y0)
+    x, y = xy
+    xmove_ideal = spi * x
+    ymove_ideal = spi * y
     v_initial *= spi
     v_final *= spi
 
@@ -335,11 +329,14 @@ def plan_trajectory(path, pen_up):
     Generate the sequence of moves for a full path, accounting for
     acceleration.
 
-    The move to the beginning of the path will not be generated.
-
     The input path is an ordered list of (x, y) pairs to cover, in the
     coordinate space of the document, not in the coordinate space of the
     motors. Units are in inches.
+
+    Coordinates are 'absolute', but the move to the beginning of the path will
+    not be generated, so the caller of this function is responsible for
+    ensuring that paths are linked: that is, the first point of a path must be
+    the last path of the previous path.
     """
     assert len(path) >= 2
 
@@ -553,9 +550,15 @@ def plan_trajectory(path, pen_up):
                 v_initial = v_init_max
             traj_velocities[i - 1] = v_initial
 
+    # XXX It might make sense to refactor this function so that it just returns
+    # a list of (start_point, end_point, initial_velocity, final_velocity)
+    # tuples, so that it can be tested in isolation.
+
     actions = []
     for i in range(1, traj_length):
-        actions.extend(plot_segment_with_velocity(path[i], path[i - 1],
+        dx = path[i][0] - path[i - 1][0]
+        dy = path[i][1] - path[i - 1][1]
+        actions.extend(plot_segment_with_velocity((dx, dy),
                                                   traj_velocities[i - 1],
                                                   traj_velocities[i],
                                                   pen_up=pen_up))

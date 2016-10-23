@@ -5,9 +5,10 @@ SERVO_MIN = 7500
 SERVO_MAX = 28000
 
 SERVO_SPEED = 50
+
+# Milliseconds?
 EXTRA_PEN_UP_DELAY = 400
 EXTRA_PEN_DOWN_DELAY = 400
-SMOOTHNESS = 2.0
 
 SPEED_SCALE = 24950
 
@@ -16,7 +17,8 @@ ACCEL_TIME_PEN_DOWN = 0.25
 SPEED_PEN_DOWN = 0.25 * SPEED_SCALE
 
 # Seconds of acceleration to reach full speed with pen up.
-#ACCEL_TIME_PEN_UP = 1.0
+# Original default
+# ACCEL_TIME_PEN_UP = 1.0
 ACCEL_TIME_PEN_UP = 2.0
 SPEED_PEN_UP = 0.75 * SPEED_SCALE
 
@@ -30,5 +32,11 @@ DPI_16X = 2032
 # Time interval in seconds to update motor control.
 TIME_SLICE = 0.030
 
-# Corner rounding/tolerance factor.
+# Smoothness of curves. Unitless?
+SMOOTHNESS = 2.0
+
+# Corner rounding/tolerance factor. Unitless?
 CORNERING = 2.0
+
+# Skip pen-up moves shorter than this distance when possible. Units in inches.
+MIN_GAP = 0.010

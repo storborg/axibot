@@ -9,7 +9,7 @@ class Move:
 
     def __str__(self):
         attrs = ['%s:%s' % (k, v) for k, v in self.__dict__.items()]
-        return '%s %s' % (self.name, attrs.join(' '))
+        return '%s %s' % (self.name, ' '.join(attrs))
 
 
 class PenUpMove(Move):

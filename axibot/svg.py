@@ -1,10 +1,56 @@
 import logging
 
+import math
+
 from xml.etree import ElementTree
 
-from . import moves
+from . import moves, config, planning
+
+from .ext import (cspsubdiv, cubicsuperpath, simplepath, bezmisc,
+                  simpletransform)
 
 log = logging.getLogger(__name__)
+
+
+def subdivide_cubic_path(sp, flat, i=1):
+    """
+    Initially taken from plot_utils.
+
+    This should possibly be modified to return a new path rather than mutating
+    the supplied one.
+
+    Original docstring:
+
+    Break up a bezier curve into smaller curves, each of which
+    is approximately a straight line within a given tolerance
+    (the "smoothness" defined by [flat]).
+
+    This is a modified version of cspsubdiv.cspsubdiv(). I rewrote the
+    recursive call because it caused recursion-depth errors on complicated line
+    segments.
+    """
+
+    while True:
+        while True:
+            if i >= len(sp):
+                return
+
+            p0 = sp[i - 1][1]
+            p1 = sp[i - 1][2]
+            p2 = sp[i][0]
+            p3 = sp[i][1]
+
+            b = (p0, p1, p2, p3)
+
+            if cspsubdiv.maxdist(b) > flat:
+                break
+            i += 1
+
+        one, two = bezmisc.beziersplitatt(b, 0.5)
+        sp[i - 1][2] = one[1]
+        sp[i][0] = two[2]
+        p = [one[2], one[3], two[1]]
+        sp[i:1] = [p]
 
 
 def get_length_inches(tree, name):
@@ -32,15 +78,67 @@ def get_document_properties(tree):
     return svg_width, svg_height
 
 
-def parse_transform(s):
-    # XXX actually compute this
-    return [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
+def path_to_moves(start_position, path, transform_matrix, motion_config):
+    """
+    Generate the moves required to plot this path, while applying the
+    supplied transformation matrix.
 
+    Returns a tuple of (final_position, actions)
 
-def path_to_moves(path, matrix):
+    Coordinates supplied to this function are absolute, and this function is
+    responsible for computing any necessary moves to travel from last_position
+    to the start point in the path.
+
+    This is an analog to the legacy plotPath() function from the InkScape
+    plugin.
+    """
     d = path.get('d')
-    # XXX
-    return []
+
+    print("path_to_moves: %s" % d)
+
+    if len(simplepath.parsePath(d)) == 0:
+        # Skip empty paths
+        return (start_position, [])
+
+    p = cubicsuperpath.parsePath(d)
+
+    # ...and apply the transformation to each point
+    simpletransform.applyTransformToPath(transform_matrix, p)
+
+    actions = []
+    pos = start_position
+    # p is now a list of lists of cubic beziers [control pt1, control pt2,
+    # endpoint] where the start-point is the last point in the previous
+    # segment.
+    for sp in p:
+        subdivide_cubic_path(sp, 0.02 / config.SMOOTHNESS)
+        n_index = 0
+
+        single_path = []
+        for csp in sp:
+            fX = float(csp[1][0])  # Set move destination
+            fY = float(csp[1][1])
+
+            if n_index == 0:
+                dx = fX - pos[0]
+                dy = fY - pos[1]
+                if math.sqrt((dx**2) + (dy**2)) > config.MIN_GAP:
+                    actions.append(moves.PenUpMove(
+                        motion_config['pen_up_delay']))
+                    actions.extend(
+                        planning.plot_segment_with_velocity((dx, dy), 0, 0,
+                                                            pen_up=True))
+            elif n_index == 1:
+                actions.append(moves.PenDownMove(
+                    motion_config['pen_down_delay']))
+            n_index += 1
+
+            single_path.append([fX, fY])
+
+        pos = single_path[-1]
+        actions.extend(planning.plan_trajectory(single_path, pen_up=False))
+
+    return (pos, actions)
 
 
 def svgns(tag):
@@ -96,7 +194,7 @@ def convert_to_path(node, matrix):
                          node.tag)
 
 
-def recurse_tree(actions, tree,
+def recurse_tree(actions, last_position, tree, motion_config,
                  matrix_current=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]],
                  parent_visibility='visible', plot_current_layer=True):
     for node in tree:
@@ -110,22 +208,32 @@ def recurse_tree(actions, tree,
             pass
 
         # first apply current transform to this node's transform
-        # XXX
-        matrix_new = matrix_current
+        matrix_new = simpletransform.composeTransform(
+            matrix_current,
+            simpletransform.parseTransform(node.get('transform')))
 
         if node.tag == svgns('g'):
-            recurse_tree(actions, node, matrix_new, parent_visibility=v,
+            recurse_tree(actions, last_position, node, motion_config,
+                         matrix_new,
+                         parent_visibility=v,
                          plot_current_layer=plot_current_layer)
         elif node.tag == svgns('use'):
             raise NotImplementedError("we don't support the svg 'use' tag yet")
         elif plot_current_layer:
             if node.tag == svgns('path'):
-                actions.extend(path_to_moves(node, matrix_new))
+                last_position, path_actions = path_to_moves(last_position,
+                                                            node, matrix_new,
+                                                            motion_config)
+                actions.extend(path_actions)
             elif node.tag in (svgns('rect'), svgns('line'), svgns('polyline'),
                               svgns('polygon'), svgns('ellipse'),
                               svgns('circle')):
                 newpath = convert_to_path(node, matrix_new)
-                actions.extend(path_to_moves(newpath, matrix_new))
+                last_position, path_actions = path_to_moves(last_position,
+                                                            newpath,
+                                                            matrix_new,
+                                                            motion_config)
+                actions.extend(path_actions)
             elif node.tag == svgns('text'):
                 log.warn("Cannot directly draw text. Convert text to path.")
             elif node.tag == svgns('image'):
@@ -169,6 +277,10 @@ def generate_actions(filename,
 
     pen_up_delay, pen_down_delay = \
         moves.calculate_pen_delays(pen_up_position, pen_down_position)
+    motion_config = {
+        'pen_up_delay': pen_up_delay,
+        'pen_down_delay': pen_down_delay,
+    }
 
     doc = ElementTree.parse(filename)
     root = doc.getroot()
@@ -178,14 +290,16 @@ def generate_actions(filename,
     info = viewbox.strip().replace(',', ' ').split(' ')
     sx = svg_width / float(info[2])
     sy = svg_height / float(info[3])
-    transform = parse_transform('scale(%f,%f) translate(%f,%f)' %
-                                (sx, sy, -float(info[0]), -float(info[1])))
+    transform = simpletransform.parseTransform(
+        'scale(%f,%f) translate(%f,%f)' %
+        (sx, sy, -float(info[0]), -float(info[1])))
 
     # Always start with a pen up.
     actions.append(moves.PenUpMove(pen_up_delay))
 
     # Build list of actions.
-    recurse_tree(actions, root, transform)
+    start_position = 0, 0
+    recurse_tree(actions, start_position, root, motion_config, transform)
 
     # Always end with a pen up.
     actions.append(moves.PenUpMove(pen_up_delay))
