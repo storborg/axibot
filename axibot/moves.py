@@ -157,6 +157,7 @@ def plot_segment_with_velocity(p0, p1, v_initial, v_final, pen_up):
 
     if plot_distance > (accel_dist + decel_dist + timeslice * speed):
         # Make a trapezoid velocity profile
+        print("trapezoidal velocity profile")
 
         print("accel phase, t_accel:%s, timeslice:%s" % (t_accel, timeslice))
         intervals = int(math.floor(t_accel / timeslice))
@@ -198,8 +199,113 @@ def plot_segment_with_velocity(p0, p1, v_initial, v_final, pen_up):
 
     else:
         # Make a triangle velocity profile
-        raise NotImplementedError(
-            "triangle velocity profile not supported yet")
+        ta = ((math.sqrt(2 * v_initial * v_initial + 2 *
+                         v_final * v_final + 4 *
+                         accel_rate * plot_distance) - 2 * v_initial) /
+              (2 * accel_rate))
+
+        if (ta < 0):
+            ta = 0
+
+        v_max = v_initial + accel_rate * ta
+
+        # Number of intervals during acceleration
+        intervals = int(math.floor(ta / timeslice))
+
+        if (intervals == 0):
+            ta = 0
+        td = ta - (v_final - v_initial) / accel_rate
+        # Number of intervals during acceleration
+        d_intervals = int(math.floor(td / timeslice))
+
+        if ((intervals + d_intervals) > 4):
+            print("triangular velocity profile")
+            if (intervals > 0):
+                time_per_interval = ta / intervals
+                velocity_step = (
+                    v_max - v_initial) / (intervals + 1.0)
+                # For six time intervals of acceleration, first interval is at
+                # velocity (max/7)
+                # 6th (last) time interval is at 6*max/7
+                # after this interval, we are at full speed.
+
+                # Calculate acceleration phase
+                for index in range(0, intervals):
+                    velocity += velocity_step
+                    time_elapsed += time_per_interval
+                    position += velocity * time_per_interval
+                    duration_array.append(
+                        int(round(time_elapsed * 1000.0)))
+                    # Estimated distance along direction of travel
+                    distance_array.append(position)
+
+            if (d_intervals > 0):
+                time_per_interval = td / d_intervals
+                velocity_step = (
+                    v_max - v_final) / (d_intervals + 1.0)
+                # For six time intervals of acceleration, first interval is at
+                # velocity (max/7)
+                # 6th (last) time interval is at 6*max/7
+                # after this interval, we are at full speed.
+
+                # Calculate acceleration phase
+                for index in range(0, d_intervals):
+                    velocity -= velocity_step
+                    time_elapsed += time_per_interval
+                    position += velocity * time_per_interval
+                    duration_array.append(
+                        int(round(time_elapsed * 1000.0)))
+                    # Estimated distance along direction of travel
+                    distance_array.append(position)
+        else:
+            print("linear velocity profile")
+            # linear velocity change
+            # xFinal = vi * t  + (1/2) a * t^2, and vFinal = vi + a * t
+            # Combining these (with same t) gives:
+            # 2 a x = (vf^2 - vi^2)  => a = (vf^2 - vi^2)/2x
+            # So long as this 'a' is less than accel_rate, we can
+            # linearly interpolate in velocity.
+
+            # Boost initial speed for this segment
+            v_initial = (v_max + v_initial) / 2
+            velocity = v_initial  # Boost initial speed for this segment
+
+            local_accel = ((v_final * v_final - v_initial * v_initial) /
+                           (2.0 * plot_distance))
+
+            if (local_accel > accel_rate):
+                local_accel = accel_rate
+            elif (local_accel < -accel_rate):
+                local_accel = -accel_rate
+            if local_accel != 0:
+                t_segment = (v_final - v_initial) / local_accel
+
+            # Number of intervals during deceleration
+            intervals = int(math.floor(t_segment / timeslice))
+            if (intervals > 1):
+                time_per_interval = t_segment / intervals
+                velocity_step = (
+                    v_final - v_initial) / (intervals + 1.0)
+                # For six time intervals of acceleration, first interval is at
+                # velocity (max/7)
+                # 6th (last) time interval is at 6*max/7
+                # after this interval, we are at full speed.
+
+                # Calculate acceleration phase
+                for index in range(0, intervals):
+                    velocity += velocity_step
+                    time_elapsed += time_per_interval
+                    position += velocity * time_per_interval
+                    duration_array.append(
+                        int(round(time_elapsed * 1000.0)))
+                    # Estimated distance along direction of travel
+                    distance_array.append(position)
+            else:
+                # Short segment; Not enough time for multiple segments
+                # at different velocities.
+                # These are _slow_ segments-- use fastest possible
+                # interpretation.
+                v_initial = v_max
 
     dest_array1 = []
     dest_array2 = []
