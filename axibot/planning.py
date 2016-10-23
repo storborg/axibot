@@ -82,6 +82,10 @@ def plot_segment_with_velocity(xy, v_initial, v_final, pen_up):
 
     # convert to motor step units
     x, y = xy
+
+    # invert y-axis to translate from SVG coordinate space to axidraw
+    y = -y
+
     xmove_ideal = spi * x
     ymove_ideal = spi * y
     v_initial *= spi
