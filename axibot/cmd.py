@@ -88,8 +88,8 @@ def plot(opts):
     bot = EiBotBoard.find()
 
     # XXX find pen positions with user interaction?
-    pen_up_position = 85
-    pen_down_position = 30
+    pen_up_position = 75
+    pen_down_position = 45
 
     try:
         actions = generate_actions(
