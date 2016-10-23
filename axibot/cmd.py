@@ -52,7 +52,7 @@ def test(opts):
             count = len(actions)
             input("Ready for path ")
             for ii, move in enumerate(actions):
-                print("Move %d/%d: %r" % (ii, count, move))
+                print("Move %d/%d: %s" % (ii, count, move))
                 bot.do(move)
     finally:
         bot.close()
@@ -108,7 +108,7 @@ def plot(opts):
         bot.enable_motors(1)
 
         for ii, move in enumerate(actions):
-            print("Move %d/%d: %r" % (ii, count, move))
+            print("Move %d/%d: %s" % (ii, count, move))
             bot.do(move)
 
         bot.pen_up(1000)
