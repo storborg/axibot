@@ -3,7 +3,7 @@ import logging
 import sys
 import argparse
 
-from . import moves
+from . import planning
 from .svg import generate_actions
 from .ebb import EiBotBoard
 
@@ -21,13 +21,39 @@ def debug(opts):
 
 def test(opts):
     print("Running test action...")
+
+    # start the bot from kinda the middle and draw a square 8 times over, so we
+    # can see route planning
+
+    edge = 7
+
+    paths = [
+        [(0, 0), (edge, 0), (edge, edge), (0, edge), (0, 0)],
+        # [(0, 0), (edge, 0)],
+        # [(edge, 0), (edge, edge)],
+        # [(edge, edge), (0, edge)],
+        # [(0, edge), (0, 0)],
+    ]
+
+    # actions = planning.plot_segment_with_velocity(
+    #               (0, 0), (-11.5, -8.5), 0, 0, pen_up=True)
+
     bot = EiBotBoard.find()
     try:
-        actions = moves.plot_segment_with_velocity((0, 0), (-11.5, -8.5), 0, 0, pen_up=True)
-        count = len(actions)
-        for ii, move in enumerate(actions):
-            print("Move %d/%d: %r" % (ii, count, move))
-            bot.do(move)
+        bot.pen_up(1000)
+        bot.disable_motors()
+        print("Pen up and motors off.")
+        input("Press enter to begin.")
+
+        bot.enable_motors(1)
+
+        for path in paths:
+            actions = planning.plan_trajectory(path, pen_up=False)
+            count = len(actions)
+            input("Ready for path ")
+            for ii, move in enumerate(actions):
+                print("Move %d/%d: %r" % (ii, count, move))
+                bot.do(move)
     finally:
         bot.close()
 
