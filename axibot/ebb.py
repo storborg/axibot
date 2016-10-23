@@ -1,7 +1,11 @@
+import logging
+
 import serial
 from serial.tools.list_ports import comports
 
 from . import config
+
+log = logging.getLogger(__name__)
 
 
 class EiBotException(Exception):
@@ -59,7 +63,9 @@ class EiBotBoard:
         return resp
 
     def command(self, cmd):
-        self.serial.write(cmd.encode('ascii'))
+        cmd = cmd.encode('ascii')
+        log.debug("Sending command: %s", cmd)
+        self.serial.write(cmd)
         resp = self.robust_readline()
         if not resp.strip().startswith(b'OK'):
             if resp:
@@ -147,16 +153,32 @@ class EiBotBoard:
         is the X axis of motion. On EggBot, Axis 1 is the "pen" motor, and Axis
         2 is the "egg" motor. Note that minimum move duration is 5 ms.
         Important: Requires firmware version 2.4 or higher.
+
+        Not used in "stock" AxiDraw Inkscape driver.
         """
         self.command('AM,%s,%s,%s,%s\r' % (v_initial, v_final, dx, dy))
 
     def xy_move(self, dx, dy, duration):
         """
         Move X/Y axes as: "SM,<move_duration>,<axis1>,<axis2><CR>"
+
+        Move duration is in milliseconds and can be 1 to 16777215.
+        Dx and dy are in steps and are signed 24-bit integers.
+
         Typically, this is wired up such that axis 1 is the Y axis and axis 2
         is the X axis of motion. On EggBot, Axis 1 is the "pen" motor, and Axis
         2 is the "egg" motor.
         """
+        assert isinstance(dx, int)
+        assert isinstance(dy, int)
+        assert isinstance(duration, int)
+        assert (duration >= 1) and (duration <= 16777215), \
+            "Invalid duration %r" % duration
+
+        # XXX add checks for minimum or maximum step rates
+
+        log.error("Doing xy move, dx:%s / dy:%s / duration:%s", dx, dy,
+                  duration)
         self.command('SM,%s,%s,%s\r' % (duration, dy, dx))
 
     def ab_move(self, da, db, duration):
@@ -165,6 +187,8 @@ class EiBotBoard:
             "XM,<move_duration>,<axisA>,<axisB><CR>"
         Then, <Axis1> moves by <AxisA> + <AxisB>,
         and <Axis2> as <AxisA> - <AxisB>
+
+        Not used in "stock" AxiDraw Inkscape driver.
         """
         self.command('MX,%s,%s,%s\r' % (duration, da, db))
 
