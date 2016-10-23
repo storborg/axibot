@@ -177,8 +177,6 @@ class EiBotBoard:
 
         # XXX add checks for minimum or maximum step rates
 
-        log.error("Doing xy move, dx:%s / dy:%s / duration:%s", dx, dy,
-                  duration)
         self.command('SM,%s,%s,%s\r' % (duration, dy, dx))
 
     def ab_move(self, da, db, duration):

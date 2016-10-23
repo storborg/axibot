@@ -21,16 +21,15 @@ def debug(opts):
 
 def test(opts):
     print("Running test action...")
-    # bot = EiBotBoard.find()
+    bot = EiBotBoard.find()
     try:
-        actions = moves.plot_segment_with_velocity((0, 0), (0.01, 0.01), 0, 0, pen_up=True)
+        actions = moves.plot_segment_with_velocity((0, 0), (-11.5, -8.5), 0, 0, pen_up=True)
         count = len(actions)
         for ii, move in enumerate(actions):
             print("Move %d/%d: %r" % (ii, count, move))
-            #bot.do(move)
+            bot.do(move)
     finally:
-        pass
-        #bot.close()
+        bot.close()
 
 
 def manual_command(bot, cmd):
