@@ -213,10 +213,11 @@ def recurse_tree(actions, last_position, tree, motion_config,
             simpletransform.parseTransform(node.get('transform')))
 
         if node.tag == svgns('g'):
-            recurse_tree(actions, last_position, node, motion_config,
-                         matrix_new,
-                         parent_visibility=v,
-                         plot_current_layer=plot_current_layer)
+            last_position = recurse_tree(
+                actions, last_position, node, motion_config,
+                matrix_new,
+                parent_visibility=v,
+                plot_current_layer=plot_current_layer)
         elif node.tag == svgns('use'):
             raise NotImplementedError("we don't support the svg 'use' tag yet")
         elif plot_current_layer:
@@ -240,6 +241,8 @@ def recurse_tree(actions, last_position, tree, motion_config,
                 log.warn("Cannot draw raster images. Vectorize first.")
             else:
                 log.debug("Ignoring <%s> tag.", node.tag)
+
+    return last_position
 
 
 def generate_actions(filename,
@@ -299,9 +302,13 @@ def generate_actions(filename,
 
     # Build list of actions.
     start_position = 0, 0
-    recurse_tree(actions, start_position, root, motion_config, transform)
+    last_position = recurse_tree(actions, start_position, root, motion_config, transform)
 
-    # Always end with a pen up.
+    # Always end with a pen up and a move back to the start position.
     actions.append(moves.PenUpMove(pen_up_delay))
+    dx = -last_position[0]
+    dy = -last_position[1]
+    actions.extend(planning.plot_segment_with_velocity((dx, dy), 0, 0,
+                                                       pen_up=True))
 
     return actions
