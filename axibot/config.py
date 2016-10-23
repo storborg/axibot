@@ -4,14 +4,16 @@ MAX_RETRIES = 100
 SERVO_MIN = 7500
 SERVO_MAX = 28000
 
-SERVO_SPEED = 50
+# Default
+# SERVO_SPEED = 50
+SERVO_SPEED = 85
 
 # Milliseconds?
 # Defaults? These don't seem good.
 # EXTRA_PEN_UP_DELAY = 400
 # EXTRA_PEN_DOWN_DELAY = 400
 EXTRA_PEN_UP_DELAY = 100
-EXTRA_PEN_DOWN_DELAY = 100
+EXTRA_PEN_DOWN_DELAY = 0
 
 SPEED_SCALE = 24950
 
@@ -20,9 +22,7 @@ ACCEL_TIME_PEN_DOWN = 0.25
 SPEED_PEN_DOWN = 0.25 * SPEED_SCALE
 
 # Seconds of acceleration to reach full speed with pen up.
-# Original default
-# ACCEL_TIME_PEN_UP = 1.0
-ACCEL_TIME_PEN_UP = 2.0
+ACCEL_TIME_PEN_UP = 1.0
 SPEED_PEN_UP = 0.75 * SPEED_SCALE
 
 # Short-move pen-up distance threshold in inches, below which we use the faster
