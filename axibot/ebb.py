@@ -194,7 +194,7 @@ class EiBotBoard:
 
     def do(self, move):
         kw = move.__dict__.copy()
-        name = kw.pop('name')
+        name = move.name
         if name in ('pen_up', 'pen_down',
                     'xy_accel_move', 'xy_move',
                     'ab_move'):
