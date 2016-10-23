@@ -85,21 +85,21 @@ def manual(opts):
 
 def plot(opts):
     print("Loading %s..." % opts.filename)
-    bot = EiBotBoard.find()
 
     # XXX find pen positions with user interaction?
     pen_up_position = 75
     pen_down_position = 45
 
-    try:
-        actions = generate_actions(
-            opts.filename,
-            pen_up_position=pen_up_position,
-            pen_down_position=pen_down_position,
-        )
-        count = len(actions)
-        print("Calculated %d actions." % count)
+    actions = generate_actions(
+        opts.filename,
+        pen_up_position=pen_up_position,
+        pen_down_position=pen_down_position,
+    )
+    count = len(actions)
+    print("Calculated %d actions." % count)
 
+    bot = EiBotBoard.find()
+    try:
         bot.pen_up(1000)
         bot.disable_motors()
         print("Pen up and motors off. Move carriage to top left corner.")

@@ -136,13 +136,11 @@ def plot_segment_with_velocity(xy, v_initial, v_final, pen_up):
         # Make a trapezoid velocity profile
         print("trapezoidal velocity profile")
 
-        print("accel phase, t_accel:%s, timeslice:%s" % (t_accel, timeslice))
         intervals = int(math.floor(t_accel / timeslice))
         if intervals:
             interval_time = t_accel / intervals
             velocity_step = (speed - v_initial) / (intervals + 1.0)
             for ii in range(intervals):
-                print("  step")
                 velocity += velocity_step
                 time_elapsed += interval_time
                 position += velocity * interval_time
@@ -150,7 +148,6 @@ def plot_segment_with_velocity(xy, v_initial, v_final, pen_up):
                 # distance along the line of travel
                 distance_array.append(position)
 
-        print("coast phase")
         coast_distance = plot_distance - (accel_dist + decel_dist)
         if coast_distance > (timeslice * speed):
             velocity = speed
@@ -160,13 +157,11 @@ def plot_segment_with_velocity(xy, v_initial, v_final, pen_up):
             position += velocity * cruising_time
             distance_array.append(position)
 
-        print("decel phase, t_decel:%s, timeslice:%s" % (t_decel, timeslice))
         intervals = int(math.floor(t_decel / timeslice))
         if intervals:
             interval_time = t_decel / intervals
             velocity_step = (speed - v_final) / (intervals + 1.0)
             for ii in range(intervals):
-                print("  step")
                 velocity -= velocity_step
                 time_elapsed += interval_time
                 position += velocity * interval_time
@@ -348,7 +343,7 @@ def plan_trajectory(path, pen_up):
 
     if len(path) == 2:
         # Just a straight line, skip trajectory planning
-        return plot_segment_with_velocity(path[0], path[1], 0, 0,
+        return plot_segment_with_velocity(path[1], 0, 0,
                                           pen_up=pen_up)
 
     traj_length = len(path)

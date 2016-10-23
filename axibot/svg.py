@@ -94,7 +94,7 @@ def path_to_moves(start_position, path, transform_matrix, motion_config):
     """
     d = path.get('d')
 
-    print("path_to_moves: %s" % d)
+    print("-- start path_to_moves: %s" % d)
 
     if len(simplepath.parsePath(d)) == 0:
         # Skip empty paths
@@ -111,7 +111,9 @@ def path_to_moves(start_position, path, transform_matrix, motion_config):
     # endpoint] where the start-point is the last point in the previous
     # segment.
     for sp in p:
+        print("path_to_moves sp: %s" % sp)
         subdivide_cubic_path(sp, 0.02 / config.SMOOTHNESS)
+        print("  subdivided: %s" % sp)
         n_index = 0
 
         single_path = []
@@ -136,7 +138,13 @@ def path_to_moves(start_position, path, transform_matrix, motion_config):
             single_path.append([fX, fY])
 
         pos = single_path[-1]
-        actions.extend(planning.plan_trajectory(single_path, pen_up=False))
+        print("  single_path %s" % single_path)
+        traj_moves = planning.plan_trajectory(single_path, pen_up=False)
+        actions.extend(traj_moves)
+
+    for action in actions:
+        print("     %s" % action)
+    print("-- end path_to_moves: %s" % d)
 
     return (pos, actions)
 
