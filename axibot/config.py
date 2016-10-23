@@ -5,14 +5,10 @@ SERVO_MIN = 7500
 SERVO_MAX = 28000
 
 # Default
-# SERVO_SPEED = 50
-SERVO_SPEED = 85
+SERVO_SPEED = 150
 
 # Milliseconds?
-# Defaults? These don't seem good.
-# EXTRA_PEN_UP_DELAY = 400
-# EXTRA_PEN_DOWN_DELAY = 400
-EXTRA_PEN_UP_DELAY = 100
+EXTRA_PEN_UP_DELAY = 0
 EXTRA_PEN_DOWN_DELAY = 0
 
 SPEED_SCALE = 24950
@@ -36,10 +32,23 @@ DPI_16X = 2032
 TIME_SLICE = 0.030
 
 # Smoothness of curves. Unitless?
-SMOOTHNESS = 2.0
+SMOOTHNESS = 10.0
 
 # Corner rounding/tolerance factor. Unitless?
-CORNERING = 2.0
+CORNERING = 0.01
 
 # Skip pen-up moves shorter than this distance when possible. Units in inches.
 MIN_GAP = 0.010
+
+"""
+InkScape settings:
+
+    writing/drawing speed: 25%
+    pen up speed: 75%
+    pen moving up speed: 150%
+    pen up delay: 0
+    pen moving down speed: 150%
+    pen down delay: 0
+    smoothing: 10
+    cornering: 10
+"""
