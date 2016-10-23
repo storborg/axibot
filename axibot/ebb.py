@@ -154,7 +154,10 @@ class EiBotBoard:
         2 is the "egg" motor. Note that minimum move duration is 5 ms.
         Important: Requires firmware version 2.4 or higher.
 
-        Not used in "stock" AxiDraw Inkscape driver.
+        Not used in "stock" AxiDraw Inkscape driver: theoretically this could
+        replace a substantial portion of the motion planning, and eliminate the
+        plot_segment... planning, but there are some comments in firmware code
+        and such that indicate that it doesn't work correctly yet.
         """
         self.command('AM,%s,%s,%s,%s\r' % (v_initial, v_final, dx, dy))
 

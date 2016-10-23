@@ -100,6 +100,9 @@ def plot_segment_with_velocity(p0, p1, v_initial, v_final, pen_up):
 
     Units are inches (for position points) or inches per second (for velocity).
     """
+    # XXX This function is abysmal and could use a lot of cleanup. But maybe
+    # write some tests first.
+
     x0, y0 = p0
     x1, y1 = p1
 
