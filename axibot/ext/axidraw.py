@@ -1123,10 +1123,7 @@ class WCB(inkex.Effect):
             Motor2Steps = xSteps - ysteps
 
         Important note: This routine uses *inch* units (inches, inches/second, etc.). 
-
         '''
-
-#         spewTrajectoryDebugData = True
         spewTrajectoryDebugData = False
 
         if spewTrajectoryDebugData:
@@ -1227,7 +1224,7 @@ class WCB(inkex.Effect):
         '''
         Now, step through every vertex in the trajectory, and calculate what the speed
         should be when arriving at that vertex.
-        
+
         In order to do so, we need to understand how the trajectory will evolve in terms 
         of position and velocity for a certain amount of time in the future, past that vertex. 
         The most extreme cases of this is when we are traveling at 
@@ -1236,7 +1233,7 @@ class WCB(inkex.Effect):
             go through zero velocity at the same rate of deceleration, and a full reversal
             that does not occur at the path end might be able to have a 
             nonzero velocity at the endpoint.)
-            
+
         Thus, we look ahead from each vertex until one of the following occurs:
             (1) We have looked ahead by at least tMax, or
             (2) We reach the end of the path.
@@ -1248,36 +1245,36 @@ class WCB(inkex.Effect):
             - The velocity at the final vertex (zero)
 
         To determine the correct velocity at each vertex, we will apply the following rules:
-        
+
         (A) For the first point, V(i = 0) = 0.
 
         (B) For the last point point, Vi = 0 as well.
-        
+
         (C) If the length of the segment is greater than the distance 
         required to reach full speed, then the vertex velocity may be as 
         high as the maximum speed.
-        
+
         (D) However, if the length of the segment is less than the total distance
         required to get to full speed, then the velocity at that vertex
         is limited by to the value that can be reached from the initial
         starting velocity, in the distance given.
-                
+
         (E) The maximum velocity through the junction is also limited by the
         turn itself-- if continuing straight, then we do not need to slow down
         as much as if we were fully reversing course. 
         We will model each corner as a short curve that we can accelerate around.
-        
+
         (F) To calculate the velocity through each turn, we must _look ahead_ to
         the subsequent (i+1) vertex, and determine what velocity 
         is appropriate when we arrive at the next point. 
-        
+
         Because future points may be close together-- the subsequent vertex could
         occur just before the path end -- we actually must look ahead past the 
         subsequent (i + 1) vertex, all the way up to the limits that we have described 
         (e.g., tMax) to understand the subsequent behavior. Once we have that effective
         endpoint, we can work backwards, ensuring that we will be able to get to the
         final speed/position that we require. 
-        
+
         A less complete (but far simpler) procedure is to first complete the trajectory
         description, and then -- only once the trajectory is complete -- go back through,
         but backwards, and ensure that we can actually decelerate to each velocity.
@@ -1301,8 +1298,8 @@ class WCB(inkex.Effect):
 
             '''
             Velocity at vertex: Part I
-            
-            Check to see what our plausible maximum speeds are, from 
+
+            Check to see what our plausible maximum speeds are, from
             acceleration only, without concern about cornering, nor deceleration.
             '''
 
@@ -1328,15 +1325,15 @@ class WCB(inkex.Effect):
 
             '''
             Velocity at vertex: Part II 
-            
+
             Assuming that we have the same velocity when we enter and
             leave a corner, our acceleration limit provides a velocity
             that depends upon the angle between input and output directions.
-            
+
             The cornering algorithm models the corner as a slightly smoothed corner,
             to estimate the angular acceleration that we encounter:
             https://onehossshay.wordpress.com/2011/09/24/improving_grbl_cornering_algorithm/
-            
+
             The dot product of the unit vectors is equal to the cosine of the angle between the
             two unit vectors, giving the deflection between the incoming and outgoing angles. 
             Note that this angle is (pi - theta), in the convention of that article, giving us
@@ -1375,14 +1372,14 @@ class WCB(inkex.Effect):
                 inkex.errormsg('TrajVels II: %1.3f' % dist)
             inkex.errormsg(' ')
 
-        '''            
+        '''
         Velocity at vertex: Part III
 
         We have, thus far, ensured that we could reach the desired velocities, going forward, but
-        have also assumed an effectively infinite deceleration rate.        
+        have also assumed an effectively infinite deceleration rate.
 
         We now go through the completed array in reverse, limiting velocities to ensure that we 
-        can properly decelerate in the given distances.        
+        can properly decelerate in the given distances.
         '''
 
         for j in xrange(1, TrajLength):
@@ -1415,9 +1412,9 @@ class WCB(inkex.Effect):
                                          1], TrajVels[i - 1], TrajVels[i])
 
     def plotSegmentWithVelocity(self, xDest, yDest, Vi, Vf):
-        ''' 
+        '''
         Control the serial port to command the machine to draw
-        a straight line segment, with basic acceleration support. 
+        a straight line segment, with basic acceleration support.
 
         Inputs:     Destination (x,y)
                     Initial velocity
@@ -1430,13 +1427,11 @@ class WCB(inkex.Effect):
         takes to draw.the segments take to draw. 
         Uses linear ("trapezoid") acceleration and deceleration strategy.
 
-        Inputs are expected be in units of inches (for distance) 
+        Inputs are expected be in units of inches (for distance)
             or inches per second (for velocity).
-
         '''
 
         spewSegmentDebugData = False
-#         spewSegmentDebugData = True
 
         if spewSegmentDebugData:
             inkex.errormsg('\nPlotSegment (x = %1.2f, y = %1.2f, Vi = %1.2f, Vf = %1.2f ) '
@@ -1555,7 +1550,6 @@ class WCB(inkex.Effect):
         velocity = initialVel
 
         '''
-        
         Next, we wish to estimate total time duration of this segment. 
         In doing so, we must consider the possible cases:
 
@@ -1564,12 +1558,12 @@ class WCB(inkex.Effect):
             Segment length > accelDistMax + decelDistMax
             We will get to full speed, with an opportunity to "coast" at full speed
             in the middle.
-            
+
         Case 2: 'Linear velocity ramp'
             For small enough moves -- say less than 10 intervals (typ 500 ms),
             we do not have significant time to ramp the speed up and down.
             Instead, perform only a simple speed ramp between initial and final.
-            
+
         Case 3: 'Triangle'
             Segment length is not long enough to reach full speed.
             Accelerate from initial velocity to a local maximum speed,
@@ -1578,13 +1572,12 @@ class WCB(inkex.Effect):
         Case 4: 'Constant velocity'
             Use a single, constant velocity for all pen-down movements.
             Also a fallback position, when moves are too short for linear ramps.
-            
+
         In each case, we ultimately construct the trajectory in segments at constant velocity.
         In cases 1-3, that set of segments approximates a linear slope in velocity. 
-        
+
         Because we may end up with slight over/undershoot in position along the paths
         with this approach, we perform a final scaling operation (to the correct distance) at the end.
-        
         '''
 
         # Allow accel when pen is up.
@@ -1965,106 +1958,6 @@ class WCB(inkex.Effect):
             inkex.errormsg('Use the "resume" feature to continue.')
             self.bStopped = True
             return
-
-    def plotLineAndTime(self, xDest, yDest):
-        '''
-        Send commands out the com port as a line segment (dx, dy) and a time (ms) the segment
-        should take to draw. Draws a single line segment with constant velocity.
-        Important note: Everything up to this point uses *inch* scale. 
-        Here, we convert to actual motor steps, w/ set DPI.
-        '''
-
-        inkex.errormsg('PlotLine: x, y: ' + str(xDest) + ', ' + str(yDest))
-
-        if (self.ignoreLimits == False):
-            xDest, xBounded = plot_utils.checkLimits(
-                xDest, self.xBoundsMin, self.xBoundsMax)
-            yDest, yBounded = plot_utils.checkLimits(
-                yDest, self.yBoundsMin, self.yBoundsMax)
-            if (xBounded or yBounded):
-                self.warnOutOfBounds = True
-
-        if self.bStopped:
-            return
-        if (self.fCurrX is None):
-            return
-
-        # Distances to move:
-        xMovementIdeal = self.stepsPerInch * (xDest - self.fCurrX)
-        yMovementIdeal = self.stepsPerInch * (yDest - self.fCurrY)
-
-        # Look at distance to move along 45-degree axes, for native motor
-        # steps:
-        # Number of native motor steps required, Axis 1
-        motorSteps1 = int(round(xMovementIdeal + yMovementIdeal))
-        # Number of native motor steps required, Axis 2
-        motorSteps2 = int(round(xMovementIdeal - yMovementIdeal))
-
-        plotDistance = plot_utils.distance(motorSteps1, motorSteps2)
-
-        if (plotDistance < 1.0):  # if not moving at least one motor step...
-            return
-
-        # Set the speed at which we will plot this segment
-
-        self.fSpeed = self.PenDownSpeed
-
-        if self.resumeMode:  # Handle a "corner case" -- just in case.
-            if (self.nodeCount >= self.nodeTarget):
-                if (not self.virtualPenIsUp):
-                    self.fSpeed = self.PenDownSpeed
-
-        # in milliseconds
-        nTime = int(math.ceil(1000.0 * plotDistance / self.fSpeed))
-        if (nTime < 1):
-            nTime = 1        # don't allow zero-time moves.
-
-        if (abs((float(motorSteps1) / float(nTime))) < 0.002):
-            motorSteps1 = 0  # don't allow too-slow movements of this axis
-        if (abs((float(motorSteps2) / float(nTime))) < 0.002):
-            motorSteps2 = 0  # don't allow too-slow movements of this axis
-
-        # will force result to be a float.
-        xSteps = (motorSteps1 + motorSteps2) / 2.0
-        # will force result to be a float.
-        ySteps = (motorSteps1 - motorSteps2) / 2.0
-
-        # if at least one motor step is required for this move....
-        if ((motorSteps1 != 0) or (motorSteps2 != 0)):
-            self.nodeCount += 1
-
-            if self.resumeMode:
-                if (self.nodeCount >= self.nodeTarget):
-                    self.resumeMode = False
-                    if (not self.virtualPenIsUp):
-                        self.penDown()
-
-            if (not self.resumeMode) and (not self.bStopped):
-                ebb_motion.doXYMove(
-                    self.serialPort, motorSteps2, motorSteps1, nTime)
-                if (nTime > 60):
-                    if self.options.tab != '"manual"':
-                        # pause before issuing next command
-                        time.sleep(float(nTime - 50) / 1000.0)
-
-                self.fCurrX += xSteps / self.stepsPerInch   # Update current position
-                self.fCurrY += ySteps / self.stepsPerInch
-
-                self.svgLastKnownPosX = self.fCurrX - axidraw_conf.StartPos_X
-                self.svgLastKnownPosY = self.fCurrY - axidraw_conf.StartPos_Y
-
-            strButton = ebb_motion.QueryPRGButton(
-                self.serialPort)  # Query if button pressed
-            if strButton[0] == '1':  # button pressed
-                self.svgNodeCount = self.nodeCount
-                self.svgPausedPosX = self.fCurrX - axidraw_conf.StartPos_X  # self.svgLastKnownPosX
-                self.svgPausedPosY = self.fCurrY - axidraw_conf.StartPos_Y  # self.svgLastKnownPosY
-                self.penUp()
-                inkex.errormsg(
-                    'Plot paused by button press after node number ' + str(self.nodeCount) + '.')
-                inkex.errormsg('Use the "resume" feature to continue.')
-                self.bStopped = True
-                return
 
     def EnableMotors(self):
         ''' 
