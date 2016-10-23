@@ -1122,7 +1122,7 @@ class WCB(inkex.Effect):
             Motor1Steps = xSteps + ySteps
             Motor2Steps = xSteps - ysteps
 
-        Important note: This routine uses *inch* units (inches, inches/second, etc.). 
+        Important note: This routine uses *inch* units (inches, inches/second, etc.).
         '''
         spewTrajectoryDebugData = False
 
@@ -1225,13 +1225,13 @@ class WCB(inkex.Effect):
         Now, step through every vertex in the trajectory, and calculate what the speed
         should be when arriving at that vertex.
 
-        In order to do so, we need to understand how the trajectory will evolve in terms 
-        of position and velocity for a certain amount of time in the future, past that vertex. 
-        The most extreme cases of this is when we are traveling at 
+        In order to do so, we need to understand how the trajectory will evolve in terms
+        of position and velocity for a certain amount of time in the future, past that vertex.
+        The most extreme cases of this is when we are traveling at
         full speed initially, and must come to a complete stop.
             (This is actually more sudden than if we must reverse course-- that must also
             go through zero velocity at the same rate of deceleration, and a full reversal
-            that does not occur at the path end might be able to have a 
+            that does not occur at the path end might be able to have a
             nonzero velocity at the endpoint.)
 
         Thus, we look ahead from each vertex until one of the following occurs:
@@ -1261,19 +1261,19 @@ class WCB(inkex.Effect):
 
         (E) The maximum velocity through the junction is also limited by the
         turn itself-- if continuing straight, then we do not need to slow down
-        as much as if we were fully reversing course. 
+        as much as if we were fully reversing course.
         We will model each corner as a short curve that we can accelerate around.
 
         (F) To calculate the velocity through each turn, we must _look ahead_ to
-        the subsequent (i+1) vertex, and determine what velocity 
-        is appropriate when we arrive at the next point. 
+        the subsequent (i+1) vertex, and determine what velocity
+        is appropriate when we arrive at the next point.
 
         Because future points may be close together-- the subsequent vertex could
-        occur just before the path end -- we actually must look ahead past the 
-        subsequent (i + 1) vertex, all the way up to the limits that we have described 
+        occur just before the path end -- we actually must look ahead past the
+        subsequent (i + 1) vertex, all the way up to the limits that we have described
         (e.g., tMax) to understand the subsequent behavior. Once we have that effective
         endpoint, we can work backwards, ensuring that we will be able to get to the
-        final speed/position that we require. 
+        final speed/position that we require.
 
         A less complete (but far simpler) procedure is to first complete the trajectory
         description, and then -- only once the trajectory is complete -- go back through,
@@ -1282,7 +1282,7 @@ class WCB(inkex.Effect):
         (G) The minimum velocity through a junction may be set to a constant.
         There is often some (very slow) speed -- perhaps a few percent of the maximum speed
         at which there are little or no resonances. Even when the path must directly reverse
-        itself, we can usually travel at a non-zero speed. This, of course, presumes that we 
+        itself, we can usually travel at a non-zero speed. This, of course, presumes that we
         still have a solution for getting to the endpoint at zero speed.
         '''
 
@@ -1324,7 +1324,7 @@ class WCB(inkex.Effect):
                     inkex.errormsg('TrajVels I: %1.3f' % VcurrentMax)
 
             '''
-            Velocity at vertex: Part II 
+            Velocity at vertex: Part II
 
             Assuming that we have the same velocity when we enter and
             leave a corner, our acceleration limit provides a velocity
@@ -1335,7 +1335,7 @@ class WCB(inkex.Effect):
             https://onehossshay.wordpress.com/2011/09/24/improving_grbl_cornering_algorithm/
 
             The dot product of the unit vectors is equal to the cosine of the angle between the
-            two unit vectors, giving the deflection between the incoming and outgoing angles. 
+            two unit vectors, giving the deflection between the incoming and outgoing angles.
             Note that this angle is (pi - theta), in the convention of that article, giving us
             a sign inversion. [cos(pi - theta) = - cos(theta)]
             '''
@@ -1550,7 +1550,7 @@ class WCB(inkex.Effect):
         velocity = initialVel
 
         '''
-        Next, we wish to estimate total time duration of this segment. 
+        Next, we wish to estimate total time duration of this segment.
         In doing so, we must consider the possible cases:
 
         Case 1: 'Trapezoid'
@@ -1574,7 +1574,7 @@ class WCB(inkex.Effect):
             Also a fallback position, when moves are too short for linear ramps.
 
         In each case, we ultimately construct the trajectory in segments at constant velocity.
-        In cases 1-3, that set of segments approximates a linear slope in velocity. 
+        In cases 1-3, that set of segments approximates a linear slope in velocity.
 
         Because we may end up with slight over/undershoot in position along the paths
         with this approach, we perform a final scaling operation (to the correct distance) at the end.
@@ -1583,7 +1583,7 @@ class WCB(inkex.Effect):
         # Allow accel when pen is up.
         if (ConstantVelMode == False) or (self.virtualPenIsUp):
             if (plotDistance > (accelDistMax + decelDistMax + timeSlice * speedLimit)):
-                ''' 
+                '''
                 # Case 1: 'Trapezoid'
                 '''
 
@@ -1652,8 +1652,8 @@ class WCB(inkex.Effect):
                         inkex.errormsg('Decel intervals: ' + str(intervals))
 
             else:
-                ''' 
-                # Case 3: 'Triangle' 
+                '''
+                # Case 3: 'Triangle'
 
                 We will _not_ reach full cruising speed, but let's go as fast as we can!
 
@@ -1662,7 +1662,7 @@ class WCB(inkex.Effect):
 
                 The optimal solution is to accelerate at the maximum rate, to some maximum velocity Vmax,
                 and then to decelerate at same maximum rate, to the final velocity. 
-                This forms a triangle on the plot of V(t). 
+                This forms a triangle on the plot of V(t).
 
                 The value of Vmax -- and the time at which we reach it -- may be varied in order to
                 accommodate our choice of distance-traveled and velocity requirements.
@@ -1673,10 +1673,10 @@ class WCB(inkex.Effect):
                     Amax = accelRate, Dv = (Vf - Vi)
 
                 (i) We accelerate from Vi, at Amax to some maximum velocity Vmax.
-                This takes place during an interval of time Ta. 
+                This takes place during an interval of time Ta.
 
                 (ii) We then decelerate from Vmax, to Vf, at the same maximum rate, Amax.
-                This takes place during an interval of time Td.                     
+                This takes place during an interval of time Td.
 
                 (iii) The total time elapsed is Ta + Td
 
@@ -1785,16 +1785,16 @@ class WCB(inkex.Effect):
                             inkex.errormsg(
                                 'Note: Skipping decel phase in triangle.')
                 else:
-                    ''' 
-                    # Case 2: 'Linear or constant velocity changes' 
+                    '''
+                    # Case 2: 'Linear or constant velocity changes'
 
-                    Picked for segments that are shorter than 6 time slices. 
+                    Picked for segments that are shorter than 6 time slices.
                     Linear velocity interpolation between two endpoints.
 
                     Because these are typically short segments (not enough time for a good "triangle"--
                     we slightly boost the starting speed, by taking its average with Vmax for the segment.
 
-                    For very short segments (less than 2 time slices), use a single 
+                    For very short segments (less than 2 time slices), use a single
                         segment with constant velocity.
                     '''
 
@@ -1878,12 +1878,11 @@ class WCB(inkex.Effect):
             distArray.append(plotDistance)
             position += plotDistance
 
-        ''' 
+        '''
         The time & distance motion arrays for this path segment are now computed.
         Next: We scale to the correct intended travel distance, 
         round into integer motor steps and manage the process
         of sending the output commands to the motors.
-        
         '''
 
         if spewSegmentDebugData:
@@ -2002,8 +2001,11 @@ class WCB(inkex.Effect):
             vDistance = float(self.options.penUpPosition -
                               self.options.penDownPosition)
             vTime = int((1000.0 * vDistance) / self.options.ServoUpSpeed)
-            if (vTime < 0):  # Handle case that penDownPosition is above penUpPosition
+
+            # Handle case that penDownPosition is above penUpPosition
+            if (vTime < 0):
                 vTime = -vTime
+
             vTime += self.options.penUpDelay
             if (vTime < 0):  # Do not allow negative delay times
                 vTime = 0
