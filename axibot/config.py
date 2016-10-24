@@ -35,7 +35,7 @@ TIME_SLICE = 0.030
 SMOOTHNESS = 1.0
 
 # Corner rounding/tolerance factor. Unitless?
-CORNERING = 0.1
+CORNERING = 0.01
 
 # Skip pen-up moves shorter than this distance when possible. Units in inches.
 MIN_GAP = 0.010
