@@ -32,10 +32,10 @@ DPI_16X = 2032
 TIME_SLICE = 0.030
 
 # Smoothness of curves. Unitless?
-SMOOTHNESS = 10.0
+SMOOTHNESS = 1.0
 
 # Corner rounding/tolerance factor. Unitless?
-CORNERING = 0.01
+CORNERING = 0.1
 
 # Skip pen-up moves shorter than this distance when possible. Units in inches.
 MIN_GAP = 0.010
