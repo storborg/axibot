@@ -118,12 +118,15 @@ def path_to_moves(start_position, path, transform_matrix, motion_config):
 
         single_path = []
         for csp in sp:
-            fX = float(csp[1][0])  # Set move destination
-            fY = float(csp[1][1])
+            fx = float(csp[1][0])  # Set move destination
+            fy = float(csp[1][1])
+
+            assert fx > 0, "collision!"
+            assert fy > 0, "collision!"
 
             if n_index == 0:
-                dx = fX - pos[0]
-                dy = fY - pos[1]
+                dx = fx - pos[0]
+                dy = fy - pos[1]
                 if math.sqrt((dx**2) + (dy**2)) > config.MIN_GAP:
                     actions.append(moves.PenUpMove(
                         motion_config['pen_up_delay']))
@@ -135,7 +138,7 @@ def path_to_moves(start_position, path, transform_matrix, motion_config):
                     motion_config['pen_down_delay']))
             n_index += 1
 
-            single_path.append([fX, fY])
+            single_path.append([fx, fy])
 
         pos = single_path[-1]
         print("  single_path %s" % single_path)
