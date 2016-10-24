@@ -205,7 +205,7 @@ def convert_to_path(node, matrix):
         # where
         #   X1 = CX - RX
         #   X2 = CX + RX
-        if node.tag == 'ellipse':
+        if node.tag == svgns('ellipse'):
             rx = float(node.get('rx', '0'))
             ry = float(node.get('ry', '0'))
         else:
