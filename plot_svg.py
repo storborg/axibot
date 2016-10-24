@@ -41,7 +41,7 @@ for move in actions:
 
 plt.plot(up_xdata, up_ydata, 'gs', down_xdata, down_ydata, 'rs')
 
-# plt.show()
+plt.show()
 
-print("Saving to motion.png...")
-plt.savefig('motion.png')
+#print("Saving to motion.png...")
+#plt.savefig('motion.png')
