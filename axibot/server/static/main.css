@@ -1,0 +1,59 @@
+#wrapper {
+    display: flex;
+}
+#nav {
+    width: 200px;
+    color: #eee;
+    background-color:#222;
+}
+#main {
+    flex: 1;
+    background-color:white;
+    height:100%;
+    color: #222;
+}
+
+button {
+    border-radius:8px;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+
+button:active {
+    filter: brightness(1.2);
+}
+
+/*Don't put stupid blue outlines around buttons*/
+button:focus {outline:0;}
+
+button.positive {
+    background-color: #22cc88;
+}
+button.neutral {
+    background-color: #666;
+}
+
+div.manual_controls {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1em;
+}
+div.manual_controls button {
+    flex 1;
+    padding: 8px 16px;
+    margin-left: 1em;
+    margin-right: 1em;
+}
+
+#dropper {
+    flex:1;
+}
+#dropper { border: 10px dashed #ccc; width: 300px; min-height: 300px; margin: 20px auto;}
+#dropper.hover { border: 10px dashed #22cc88; }
+#dropper img { display: block; margin: 10px auto; }
+#dropper p { margin: 10px; font-size: 14px; }

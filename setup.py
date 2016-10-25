@@ -20,6 +20,7 @@ setup(name='axibot',
       packages=find_packages(),
       install_requires=[
           'pyserial',
+          'aiohttp'
       ],
       test_suite='nose.collector',
       tests_require=['nose'],
