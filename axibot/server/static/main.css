@@ -5,6 +5,7 @@
     width: 200px;
     color: #eee;
     background-color:#222;
+    padding: 1em;
 }
 #main {
     flex: 1;
