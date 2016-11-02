@@ -43,11 +43,11 @@ MIN_GAP = 0.010
 """
 InkScape settings:
 
-    writing/drawing speed: 25%
+    writing/drawing (pen down) speed: 25%
     pen up speed: 75%
-    pen moving up speed: 150%
+    pen servo moving up speed: 150%
     pen up delay: 0
-    pen moving down speed: 150%
+    pen servo moving down speed: 150%
     pen down delay: 0
     smoothing: 10
     cornering: 10
