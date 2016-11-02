@@ -29,4 +29,5 @@ setup(name='axibot',
       entry_points="""\
       [console_scripts]
       axibot = axibot.cmd:main
+      axibot-debug = axibot.debug:main
       """)
