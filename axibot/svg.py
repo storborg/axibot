@@ -76,7 +76,13 @@ point, adding pen-up transits that start and stop at zero velocity.
 
     This should result in a list of moves.
 
-    ???
+    Unit-testable functions:
+        plan_segment_velocity(start, end, v_initial, v_final, pen_up)
+            -> list of moves
+
+    Other functions:
+        plan_moves([list of (start, end, v_final, pen_up_to) tuples])
+            -> list of moves
 
     Diagnostic functions:
         render_trajectory([list of moves])
