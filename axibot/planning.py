@@ -605,13 +605,20 @@ def segment_corner_limits(segment, pen_up):
     return out
 
 
-def plan_velocity(transits):
+def plan_speed_limits(transits):
     """
     Given a list of (segment, pen_up) tuples, return a list of
-    (point, pen_up, speed_limit) tuples.
+    (start, end, vmax_start, vmax_end, pen_up) tuples.
     """
-    points = []
+    out = []
     for segment, pen_up in transits:
-        for point, speed_limit in segment_corner_limits(segment, pen_up):
-            points.append((point, pen_up, speed_limit))
-    return points
+        points = segment_corner_limits(segment, pen_up)
+        prev_point, prev_speed_limit = points[0]
+        for point, speed_limit in points[1:]:
+            out.append((prev_point, point,
+                        prev_speed_limit, speed_limit,
+                        pen_up))
+            prev_point = point
+            prev_speed_limit = speed_limit
+
+    return out

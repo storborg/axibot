@@ -10,7 +10,7 @@ from axibot import svg, planning, config
 
 def show(opts):
     if opts.out:
-        plt.savefig(opts.out)
+        plt.savefig(opts.out, dpi=300)
     else:
         plt.show()
 
@@ -75,7 +75,7 @@ def debug_corners(opts):
     paths = svg.extract_paths(opts.filename)
     segments = svg.plan_segments(paths, smoothness=smoothness)
     transits = svg.add_pen_transits(segments)
-    points = planning.plan_velocity(transits)
+    segments_limits = planning.plan_speed_limits(transits)
 
     up_xdata = []
     up_ydata = []
@@ -84,29 +84,46 @@ def debug_corners(opts):
     down_ydata = []
     down_speed = []
 
+    def speed_to_opacity(speed, limit, min_opacity=0.2):
+        opacity = speed / limit
+        if opacity < min_opacity:
+            return min_opacity
+        elif opacity > 1.0:
+            return 1.0
+        else:
+            return opacity
+
     def speed_to_color(speed, pen_up):
         if pen_up:
-            alpha = 1 - (speed / config.SPEED_PEN_UP)
-            alpha = max(0, alpha)
-            return (1.0, 0.0, 0.0, alpha)
+            return (1.0, 0.0, 0.0,
+                    speed_to_opacity(speed, config.SPEED_PEN_UP))
         else:
-            alpha = 1 - (speed / config.SPEED_PEN_DOWN)
-            alpha = max(0, alpha)
-            return (0.0, 1.0, 0.0, alpha)
+            return (0.0, 0.1, 0.0,
+                    speed_to_opacity(speed, config.SPEED_PEN_DOWN))
 
-    for point, pen_up, speed_limit in points:
+    def record_point(point, vmax, pen_up):
         x, y = point
         y = -y
         if pen_up:
             up_xdata.append(x)
             up_ydata.append(y)
-            up_speed.append(speed_to_color(speed_limit, pen_up))
+            up_speed.append(speed_to_color(vmax, pen_up))
         else:
             down_xdata.append(x)
             down_ydata.append(y)
-            down_speed.append(speed_to_color(speed_limit, pen_up))
-    plt.scatter(up_xdata, up_ydata, s=100, linewidths=1, c=up_speed)
-    plt.scatter(down_xdata, down_ydata, s=100, linewidths=1, c=down_speed)
+            down_speed.append(speed_to_color(vmax, pen_up))
+
+    init_segment = segments_limits[0]
+    record_point(init_segment[0], init_segment[2], init_segment[4])
+
+    for start, end, start_vmax, end_vmax, pen_up in segments_limits:
+        xdata = [start[0], end[0]]
+        ydata = [-start[1], -end[1]]
+        record_point(end, end_vmax, pen_up)
+        plt.plot(xdata, ydata, 'r-' if pen_up else 'g-')
+
+    plt.scatter(up_xdata, up_ydata, s=50, linewidths=0, c=up_speed)
+    plt.scatter(down_xdata, down_ydata, s=50, linewidths=0, c=down_speed)
 
     show(opts)
 
