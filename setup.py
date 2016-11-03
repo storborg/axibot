@@ -20,7 +20,11 @@ setup(name='axibot',
       packages=find_packages(),
       install_requires=[
           'pyserial',
-          'aiohttp'
+          'svg.path',
+          # Required for server
+          'aiohttp',
+          # Required for debug tool
+          'matplotlib',
       ],
       test_suite='nose.collector',
       tests_require=['nose'],
