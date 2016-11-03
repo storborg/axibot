@@ -23,6 +23,7 @@ setup(name='axibot',
           'svg.path',
           # Required for server
           'aiohttp',
+          'aiohttp_mako',
           # Required for debug tool
           'matplotlib',
       ],
