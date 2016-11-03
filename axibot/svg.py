@@ -19,10 +19,7 @@ transforms.
     Diagnostic functions:
         render_paths(paths)
 
-2. Add pen-up transits?
-
-2. Subdivide all paths into straight line segments, tracking pen state for each
-segment.
+2. Subdivide all paths into straight line segments.
 
     Ideally, we could put the 'smoothness' parameter into real units, so that
     it can be set more carefully based on the precision of the entire system
@@ -44,21 +41,19 @@ segment.
     We might also want to do a least-squares fit of the subdivided segments to
     the original curve, but this could be quite computational intensive.
 
-    This should result in a list of (((x0, y0), (x1, y1)), pen_up) tuples. It
-    should be possible to render this to check for correctness.
-
     Unit testable functions:
         subdivide_path(path, smoothness)
             -> list of ((x0, y0), (x1, y1)) segments for path
 
     Other functions:
-        plan_segments([list of (path, pen_up) tuples])
-            -> list of (segment, pen_up) tuples
+        plan_segments([list of paths])
+            -> list of [list of points]
 
     Diagnostic functions:
-        render_segments([list of (segment, pen_up) tuples])
+        render_segments([list of segment lists])
 
-3. For each corner point, compute max cornering velocity.
+3. For each point, compute max cornering velocity in and out of that
+point, adding pen-up transits that start and stop at zero velocity.
 
     The max cornering velocity should vary from the max speed for that pen
     state (faster for pen-up), for a trajectory change of 0 degrees, to zero,
@@ -72,7 +67,7 @@ segment.
         cornering_velocity(angle, pen_up) -> velocity
 
     Other functions:
-        plan_corners(list of (segment, pen_up) tuples) -> list of tuples
+        plan_velocity(list of (segment, pen_up) tuples) -> list of tuples
 
     Diagnostic functions:
         render_corners([list of tuples])
@@ -90,7 +85,7 @@ segment.
 import logging
 
 from xml.etree import ElementTree
-from svg.path import parse_path
+from svg.path import parse_path, Line, Arc, QuadraticBezier, CubicBezier
 
 from . import transform
 
@@ -178,7 +173,91 @@ def convert_to_path(node, matrix):
                          node.tag)
 
 
-def process_path(s, transform_matrix):
+def subdivide_path(path, smoothness):
+    """
+    Given a svg.path.Path instance, output a list of points to traverse. The
+    ``smoothness`` parameter specifies how smooth the curve approximation
+    should be.
+
+    XXX the 'smoothness' parameter sucks right now and should be made better.
+    """
+    points = []
+    for piece in path:
+        if isinstance(piece, Line):
+            # Don't subdivide lines.
+            points.append((piece.start.real, piece.start.imag))
+            points.append((piece.end.real, piece.end.imag))
+        else:
+            for n in range(smoothness):
+                point = piece.point(n / smoothness)
+                points.append((point.real, point.imag))
+    return points
+
+
+def plan_segments(paths, smoothness):
+    """
+    Takes a list of Path instances, returns a list of lists of points.
+    """
+    return [subdivide_path(path, smoothness) for path in paths]
+
+
+def join_segments(segments, min_gap):
+    """
+    Takes a list of segments (which are lists of points) and joins them when
+    the start of one segment is within a certain tolerance of the end of the
+    previous segment.
+    """
+    if len(segments) < 2:
+        return segments
+    last_segment = segments[0]
+    new_segments = [last_segment]
+    for segment in segments[1:]:
+        x0, y0 = last_segment[-1]
+        x1, y1 = segment[0]
+        if math.sqrt((x1 - x0)**2 + (y1 - y0)**2) < min_gap:
+            last_segment.extend(segment)
+        else:
+            last_segment = segment
+            new_segments.append(segment)
+    return new_segments
+
+
+def add_pen_transits(segments):
+    """
+    Takes a list of pen-down segments. Returns a list of (segment, pen_up)
+    tuples, with additional segments added that pen-up transit between
+    segments. Also add segments at the beginning and end to transit the pen
+    from and to the origin location.
+
+    The output list should thus always have 2n+1 elements, where n is the
+    length of the input list.
+    """
+    assert segments
+    origin = 0, 0
+
+    out_segments = []
+    start_seg = [origin, segments[0][0]]
+    out_segments.append((start_seg, True))
+
+    count = len(segments)
+
+    for n, seg in enumerate(segments, start=1):
+        out_segments.append((seg, False))
+        if n == count:
+            # last one
+            next_seg_start = origin
+        else:
+            next_seg_start = segments[n][0]
+        transit_seg = [seg[-1], next_seg_start]
+        out_segments.append((transit_seg, True))
+
+    return out_segments
+
+
+def transform_path(s, transform_matrix):
+    """
+    Parse the path described by string ``s`` and apply the transform matrix.
+    """
     p = parse_path(s)
     transform.apply(p, transform_matrix)
     return p
@@ -208,12 +287,12 @@ def recurse_tree(paths, tree, transform_matrix, parent_visibility='visible'):
         elif node.tag == svgns('use'):
             raise NotImplementedError("we don't support the svg 'use' tag yet")
         elif node.tag == svgns('path'):
-            paths.append(process_path(node.get('d'), matrix_new))
+            paths.append(transform_path(node.get('d'), matrix_new))
         elif node.tag in (svgns('rect'), svgns('line'), svgns('polyline'),
                           svgns('polygon'), svgns('ellipse'),
                           svgns('circle')):
             s = convert_to_path(node, matrix_new)
-            paths.append(process_path(s, matrix_new))
+            paths.append(transform_path(s, matrix_new))
         elif node.tag == svgns('text'):
             log.warn("Cannot directly draw text. Convert text to path.")
         elif node.tag == svgns('image'):
