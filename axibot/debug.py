@@ -35,7 +35,8 @@ def debug_paths(opts):
 
 def debug_segments(opts):
     """
-    Render an SVG file into linear segments, and then plot them with matplotlib.
+    Render an SVG file into linear segments, and then plot them with
+    matplotlib.
     """
     smoothness = 10
     paths = svg.extract_paths(opts.filename)

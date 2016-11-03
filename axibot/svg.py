@@ -67,7 +67,7 @@ point, adding pen-up transits that start and stop at zero velocity.
         cornering_velocity(angle, pen_up) -> velocity
 
     Other functions:
-        plan_velocity(list of (segment, pen_up) tuples) -> list of tuples
+        plan_speed_limits(list of (segment, pen_up) tuples) -> list of tuples
 
     Diagnostic functions:
         render_corners([list of tuples])
@@ -90,8 +90,10 @@ point, adding pen-up transits that start and stop at zero velocity.
 
 import logging
 
+import math
+
 from xml.etree import ElementTree
-from svg.path import parse_path, Line, Arc, QuadraticBezier, CubicBezier
+from svg.path import parse_path, Line
 
 from . import transform
 
@@ -212,6 +214,8 @@ def join_segments(segments, min_gap):
     Takes a list of segments (which are lists of points) and joins them when
     the start of one segment is within a certain tolerance of the end of the
     previous segment.
+
+    XXX this needs to actually get called, maybe. Not sure it helps.
     """
     if len(segments) < 2:
         return segments

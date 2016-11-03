@@ -5,6 +5,9 @@ from svg.path import Line, Arc, QuadraticBezier, CubicBezier
 
 
 def parse(s, base=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]):
+    """
+    Parse SVG transform syntax into a 2x3 affine transform matrix.
+    """
     s = (s or "").strip()
     if not s:
         return base
@@ -66,6 +69,10 @@ def parse(s, base=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]):
 
 
 def compose(mbase, mnew):
+    """
+    Compose a new affine transform matrix based on an existing one and a new
+    one.
+    """
     a11 = mbase[0][0] * mnew[0][0] + mbase[0][1] * mnew[1][0]
     a12 = mbase[0][0] * mnew[0][1] + mbase[0][1] * mnew[1][1]
     a21 = mbase[1][0] * mnew[0][0] + mbase[1][1] * mnew[1][0]
@@ -77,6 +84,9 @@ def compose(mbase, mnew):
 
 
 def apply_to_point(pt, matrix):
+    """
+    Apply a 2x3 affine transform matrix to a point.
+    """
     x = matrix[0][0] * pt.real + matrix[0][1] * pt.imag + matrix[0][2]
     y = matrix[1][0] * pt.real + matrix[1][1] * pt.imag + matrix[1][2]
     return complex(x, y)
@@ -87,6 +97,8 @@ def apply_to_ellipse(rx, ry, ax, matrix):
     Given an ellipse centered at 0, 0 defined by rx (x-radius), ry (y-radius),
     ax (angle x-axis is rotated), apply a transform matrix. Then return new rx,
     ry, ax.
+
+    XXX this is most likely broken
     """
     epsilon = 0.0000000001
     m = [matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1]]
@@ -140,6 +152,11 @@ def apply_to_ellipse(rx, ry, ax, matrix):
 
 
 def apply(path, matrix):
+    """
+    Apply an affine transform to a Path instance.
+
+    XXX this is broken for arcs
+    """
     for piece in path:
         piece.start = apply_to_point(piece.start, matrix)
         piece.end = apply_to_point(piece.end, matrix)
