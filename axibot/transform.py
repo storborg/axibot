@@ -4,7 +4,11 @@ import math
 from svg.path import Line, Arc, QuadraticBezier, CubicBezier
 
 
-def parse(s, base=[[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]):
+identity = [[1.0, 0.0, 0.0],
+            [0.0, 1.0, 0.0]]
+
+
+def parse(s, base=identity):
     """
     Parse SVG transform syntax into a 2x3 affine transform matrix.
     """
