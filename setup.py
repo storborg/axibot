@@ -21,6 +21,7 @@ setup(name='axibot',
       install_requires=[
           'pyserial',
           'svg.path',
+          'colormath',
           # Required for server
           'aiohttp',
           'aiohttp_mako',
