@@ -1,3 +1,5 @@
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 import math
 
 from . import config
@@ -237,7 +239,7 @@ def interpolate_segment(segment, pen_up):
     for point, speed in segment[1:]:
         dist_array = interpolate_pair(last_point, last_speed,
                                       point, speed, pen_up)
-        actions.extend(...)
+        # actions.extend(...)
     return actions
 
 

@@ -1,3 +1,5 @@
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 import logging
 
 import sys
@@ -8,6 +10,7 @@ from .ebb import EiBotBoard
 
 
 def manual_command(bot, cmd):
+    # XXX can't do this on python 2
     method, *arg = cmd.split()
     arg = tuple(map(int, arg))
     try:
