@@ -8,16 +8,28 @@ subdivide = 100
 
 
 # Make an arc path
-base_path = parse_path('A 30 50 0 0 1 100 100')
-new_path = parse_path('A 30 50 0 0 1 100 100')
+#s = 'A 30 52 37 0 1 100 100'
+s = 'A 20 10 0 0 0 40 0'
+
+base_path = parse_path(s)
+new_path = parse_path(s)
 
 # Make a matrix for a simple operation
-# matrix = transform.parse('scale(0.5')
-# matrix = transform.parse('translate(1, 1)')
-matrix = transform.identity
+#matrix = transform.parse('scale(0.5)')
+#matrix = transform.parse('translate(10, 0)')
+#matrix = transform.compose(transform.parse('translate(40, 0)'),
+#                           transform.parse('scale(0.5)'))
+#matrix = transform.identity
 
 # Scale the arc path into a new path
-transform.apply(new_path, matrix)
+transform.apply(new_path, transform.parse('scale(0.5)'))
+transform.apply(new_path, transform.parse('translate(4, 0)'))
+
+print("base start %r" % base_path[0].start)
+print("base end %r" % base_path[0].end)
+print("new start %r" % new_path[0].start)
+print("new end %r" % new_path[0].end)
+print("new dict %r" % new_path[0].__dict__)
 
 
 def plot_path(path, spec):

@@ -8,6 +8,17 @@ identity = [[1.0, 0.0, 0.0],
             [0.0, 1.0, 0.0]]
 
 
+def _flatten(mat):
+    """
+    Convert array format:
+        [[A, C, E],
+         [B, D, F]]
+         ->
+        [A, B, C, D, E, F]
+    """
+    return [mat[0][0], mat[1][0], mat[0][1], mat[1][1], mat[0][2], mat[1][2]]
+
+
 def parse(s, base=identity):
     """
     Parse SVG transform syntax into a 2x3 affine transform matrix.
@@ -91,25 +102,24 @@ def apply_to_point(pt, matrix):
     """
     Apply a 2x3 affine transform matrix to a point.
     """
+    print("apply_to_point %r" % matrix)
+    print("from %f, %f" % (pt.real, pt.imag))
     x = matrix[0][0] * pt.real + matrix[0][1] * pt.imag + matrix[0][2]
     y = matrix[1][0] * pt.real + matrix[1][1] * pt.imag + matrix[1][2]
+    print("to   %f, %f" % (x, y))
     return complex(x, y)
 
 
-def apply_to_ellipse(rx, ry, ax, matrix):
+def apply_to_ellipse(rx, ry, ax, m):
     """
     Given an ellipse centered at 0, 0 defined by rx (x-radius), ry (y-radius),
-    ax (angle x-axis is rotated), apply a transform matrix. Then return new rx,
-    ry, ax.
-
-    XXX this is most likely broken
+    ax (angle x-axis is rotated), apply a flattened transform matrix. Then
+    return new rx, ry, ax.
     """
     epsilon = 0.0000000001
-    m = [matrix[0][0], matrix[1][0], matrix[0][1], matrix[1][1]]
-    torad = math.pi / 180
 
-    c = math.cos(ax * torad)
-    s = math.sin(ax * torad)
+    c = math.cos(math.radians(ax))
+    s = math.sin(math.radians(ax))
 
     ma = [rx * (m[0] * c + m[2] * s),
           rx * (m[1] * c + m[3] * s),
@@ -127,32 +137,34 @@ def apply_to_ellipse(rx, ry, ax, matrix):
     jk = (j + k) / 2
 
     if (d < epsilon * jk):
-        rx = ry = math.sqrt(jk)
-        ax = 0
-        return rx, ry, ax
+        new_rx = new_ry = math.sqrt(jk)
+        new_ax = 0
+        return new_rx, new_ry, new_ax
 
     l = ma[0] * ma[1] + ma[2] * ma[3]
 
     d = math.sqrt(d)
+
     l1 = jk + d / 2
     l2 = jk - d / 2
 
     if abs(l) < epsilon and abs(l1 - k) < epsilon:
-        ax = 90
-    elif abs(l) > abs(l1 - k):
-        ax = math.atan((l1 - j) / l) * 180 / math.pi
+        new_ax = 90
     else:
-        ax = math.atan(l / (l1 - k)) * 180 / math.pi
+        if abs(l) > abs(l1 - k):
+            new_ax = math.degrees(math.atan((l1 - j) / l))
+        else:
+            new_ax = math.degrees(math.atan(l / (l1 - k)))
 
     if ax >= 0:
-        rx = math.sqrt(l1)
-        ry = math.sqrt(l2)
+        new_rx = math.sqrt(l1)
+        new_ry = math.sqrt(l2)
     else:
-        ax += 90
-        rx = math.sqrt(l2)
-        ry = math.sqrt(l1)
+        new_ax += 90
+        new_rx = math.sqrt(l2)
+        new_ry = math.sqrt(l1)
 
-    return rx, ry, ax
+    return new_rx, new_ry, new_ax
 
 
 def apply(path, matrix):
@@ -162,28 +174,30 @@ def apply(path, matrix):
     XXX this is broken for arcs
     """
     for piece in path:
-        piece.start = apply_to_point(piece.start, matrix)
-        piece.end = apply_to_point(piece.end, matrix)
         if isinstance(piece, Line):
-            pass
+            piece.start = apply_to_point(piece.start, matrix)
+            piece.end = apply_to_point(piece.end, matrix)
         elif isinstance(piece, Arc):
-            rx, ry, ax = apply_to_ellipse(piece.radius.real, piece.radius.imag,
-                                          piece.rotation, matrix)
-            print("%f %f %f" % (piece.radius.real, piece.radius.imag,
-                                piece.rotation))
-            print("   %r" % matrix)
-            print("   %f %f %f" % (rx, ry, ax))
-
-            if (matrix[0][0] * matrix[1][1] - matrix[1][0] * matrix[0][1]) < 0:
+            ma = _flatten(matrix)
+            rx, ry, ax = apply_to_ellipse(
+                piece.radius.real,
+                piece.radius.imag,
+                piece.rotation,
+                ma)
+            if ma[0] * ma[3] - ma[1] * ma[2] < 0:
                 piece.sweep = not piece.sweep
-
-            # XXX handle empty arcs or degenerate (flattened) arcs here?
-
+            piece.start = apply_to_point(piece.start, matrix)
+            piece.end = apply_to_point(piece.end, matrix)
+            piece.center = apply_to_point(piece.center, matrix)
             piece.radius = complex(rx, ry)
             piece.rotation = ax
         elif isinstance(piece, QuadraticBezier):
-            piece.control1 = apply_to_point(piece.control1, matrix)
+            piece.start = apply_to_point(piece.start, matrix)
+            piece.end = apply_to_point(piece.end, matrix)
+            piece.control = apply_to_point(piece.control, matrix)
         elif isinstance(piece, CubicBezier):
+            piece.start = apply_to_point(piece.start, matrix)
+            piece.end = apply_to_point(piece.end, matrix)
             piece.control1 = apply_to_point(piece.control1, matrix)
             piece.control2 = apply_to_point(piece.control2, matrix)
         else:
