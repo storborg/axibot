@@ -2,7 +2,7 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import math
 
-from . import config
+from . import config, moves
 
 
 def distance(a, b):
@@ -73,7 +73,7 @@ def segment_acceleration_limits(segment, pen_up):
     out = []
     last_point, last_speed = segment[0]
     for point, speed_limit in segment[1:]:
-        d = distance(point, last_point)
+        dist = distance(point, last_point)
         # can we accelerate from last_speed to speed_limit in this distance?
         top_speed = math.sqrt((2 * accel_rate * dist) + last_speed**2)
         # if not we need to limit the speed at this point
@@ -110,34 +110,6 @@ def plan_velocity(transits):
     return out
 
 
-def interpolate_dist_trapezoidal(dist, vstart, vend, vmax,
-                                 accel_rate, accel_time, decel_time):
-    timeslice = config.TIME_SLICE
-    accel_slices = accel_time / timeslice
-    decel_slices = decel_time / timeslice
-
-
-def interpolate_dist_triangular(dist, vstart, vend, accel_rate):
-    timeslice = config.TIME_SLICE
-
-
-def interpolate_dist_linear(dist, vstart, vend, accel_rate):
-    timeslice = config.TIME_SLICE
-    total_time = (vend - vstart) / accel_rate
-    slices = total_time / timeslice
-
-    v = vstart
-    vstep = (vend - vstart) / slices
-
-    x = 0
-    dist_array = []
-    for slice in range(slices):
-        x += (v * timeslice)
-        v += vstep
-        dist_array.append(x)
-    return dist_array
-
-
 def distance_array_to_moves(start, end, dist_array):
     """
     Given a start point, an end point, and an array of linear distances, return
@@ -154,75 +126,8 @@ def interpolate_pair(start, vstart, end, vend, pen_up):
     We basically want to always be accelerating at a constant rate,
     decelerating at a constant rate, or moving at the maximum velocity for this
     pen state.
-
-    There will be one of three velocity profiles:
-
-        1. Trapezoidal: we have plenty of time to accelerate, move at constant
-        speed, then decelerate.
-        2. Triangular: we will accelerate to our max velocity, then decelerate.
-        3. Linear: we will only accelerate or decelerate.
     """
-    if pen_up:
-        vmax = config.SPEED_PEN_UP
-        accel_rate = vmax / config.ACCEL_TIME_PEN_UP
-    else:
-        vmax = config.SPEED_PEN_DOWN
-        accel_rate = vmax / config.ACCEL_TIME_PEN_DOWN
-
-    dist = distance(end, start)
-
-    accel_time = (vmax - vstart) / accel_rate
-    decel_time = (vmax - vend) / accel_rate
-
-    accel_dist = (vstart * accel_time) + (0.5 * accel_rate * (accel_time**2))
-    decel_dist = (vend * decel_time) + (0.5 * accel_rate * (decel_time**2))
-
-    timeslice = config.TIME_SLICE
-
-    x = 0
-    v = vstart
-    dtarray = []
-    if dist > (accel_dist + decel_dist + (timeslice * vmax)):
-        # Trapezoidal
-        accel_slices = accel_time / timeslice
-        decel_slices = decel_time / timeslice
-        coast_dist = dist - (accel_dist + decel_dist)
-
-        vstep = (vmax - vstart) / accel_slices
-        for slice in range(accel_slices):
-            x += (v * timeslice)
-            v += vstep
-            dtarray.append((x, timeslice))
-
-        x += coast_dist
-        dtarray.append((x, coast_dist / v))
-
-        vstep = (vend - vmax) / decel_slices
-        for slice in range(decel_slices):
-            x += (v * timeslice)
-            v += vstep
-            dtarray.append((x, timeslice))
-
-    else:
-        linear_time = abs(vend - vstart) / accel_rate
-        linear_dist = ((vstart * linear_time) +
-                       (0.5 * accel_rate * (linear_time**2)))
-        if dist > (linear_dist + (timeslice * vend)):
-            # Triangular
-            # XXX
-            pass
-
-        else:
-            # Linear
-            total_time = (vend - vstart) / accel_rate
-            slices = total_time / timeslice
-            vstep = (vend - vstart) / slices
-            for slice in range(slices):
-                x += (v * timeslice)
-                v += vstep
-                dtarray.append((x, timeslice))
-
-    return dtarray
+    pass
 
 
 def interpolate_segment(segment, pen_up):
@@ -239,7 +144,7 @@ def interpolate_segment(segment, pen_up):
     for point, speed in segment[1:]:
         dist_array = interpolate_pair(last_point, last_speed,
                                       point, speed, pen_up)
-        # actions.extend(...)
+        actions.extend(distance_array_to_moves(last_point, point, dist_array))
     return actions
 
 
