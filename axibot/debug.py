@@ -135,7 +135,7 @@ def debug_actions(opts):
     segments = svg.plan_segments(paths, smoothness=smoothness)
     transits = svg.add_pen_transits(segments)
     segments_limits = planning.plan_speed_limits(transits)
-    actions = planning.plan_actions(segments_limits)
+    actions = planning.plan_actions(segments_limits, 1000, 1000)
 
     up_xdata = []
     up_ydata = []
