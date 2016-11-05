@@ -3,6 +3,13 @@ import math
 from . import config
 
 
+def distance(a, b):
+    """
+    Distance between two points.
+    """
+    return math.sqrt((b[0] - a[0])**2 + (b[1] - a[1])**2)
+
+
 def cornering_angle(a, b, c):
     """
     Given three points, compute the angle in radians between AB and BC.
@@ -30,7 +37,7 @@ def cornering_velocity(angle, pen_up):
 def segment_corner_limits(segment, pen_up):
     """
     Given a segment and pen state, tag each point with the 'speed limit' for
-    that corner.
+    that corner. Ensure that the segment starts and ends at zero velocity.
     """
     out = []
     out.append((segment[0], 0.0))
@@ -44,34 +51,208 @@ def segment_corner_limits(segment, pen_up):
     return out
 
 
-def plan_speed_limits(transits):
+def segment_acceleration_limits(segment, pen_up):
     """
-    Given a list of (segment, pen_up) tuples, return a list of
-    (start, end, vmax_start, vmax_end, pen_up) tuples.
+    Given a segment w/ speed limits and pen state, tag each point with the
+    target speed for that corner. This will possibly reduce speeds from the
+    speed limit, to account for acceleration and deceleration requirements.
+
+    We'll do two passes through the list of points: one forward for
+    acceleration, one backward for deceleration.
     """
+    if pen_up:
+        vmax = config.SPEED_PEN_UP
+        accel_time = config.ACCEL_TIME_PEN_UP
+    else:
+        vmax = config.SPEED_PEN_DOWN
+        accel_time = config.ACCEL_TIME_PEN_DOWN
+    accel_rate = vmax / accel_time
+
     out = []
-    for segment, pen_up in transits:
-        points = segment_corner_limits(segment, pen_up)
-        prev_point, prev_speed_limit = points[0]
-        for point, speed_limit in points[1:]:
-            out.append((prev_point, point,
-                        prev_speed_limit, speed_limit,
-                        pen_up))
-            prev_point = point
-            prev_speed_limit = speed_limit
+    last_point, last_speed = segment[0]
+    for point, speed_limit in segment[1:]:
+        d = distance(point, last_point)
+        # can we accelerate from last_speed to speed_limit in this distance?
+        top_speed = math.sqrt((2 * accel_rate * dist) + last_speed**2)
+        # if not we need to limit the speed at this point
+        speed = max(speed_limit, top_speed)
+        out.append((point, speed))
+        last_point = point
+        last_speed = speed
 
     return out
 
 
-def plan_actions(segments_limits, pen_up_delay, pen_down_delay):
+def plan_velocity(transits):
     """
-    Given a list of (start, end, vmax_start, vmax_end, pen_up) tuples as
-    returned by plan_speed_limits(), return a list of moves, with acceleration
-    and deceleration plotted between points.  Also add any pen state changes.
+    Given a list of (segment, pen_up) tuples, tag each segment with a target
+    velocity for that corner. This combines two limits:
 
-    Planning acceleration is non-trivial here, since it's possible to end up in
-    a short segment where the initial speed is too high to decelerate to the
-    speed limit at the end of the segment.
+    - The max speed at which we can plot through a given corner, based on how
+    tight that corner is and the pen state.
+    - The acceleration/deceleration limit.
+
+    Both of these limits serve to avoid the pen carriage oscillating and thus
+    making the pen line squiggly, or just slamming the motors around and
+    causing wear on the machine.
+    """
+    out = []
+    for segment, pen_up in transits:
+        points = segment_corner_limits(segment, pen_up)
+        # Calculate forward acceleration
+        points = segment_acceleration_limits(points, pen_up)
+        # Calculate reverse acceleration (deceleration)
+        points = segment_acceleration_limits(points[::-1], pen_up)
+        points = points[::-1]
+        out.append((points, pen_up))
+    return out
+
+
+def interpolate_dist_trapezoidal(dist, vstart, vend, vmax,
+                                 accel_rate, accel_time, decel_time):
+    timeslice = config.TIME_SLICE
+    accel_slices = accel_time / timeslice
+    decel_slices = decel_time / timeslice
+
+
+def interpolate_dist_triangular(dist, vstart, vend, accel_rate):
+    timeslice = config.TIME_SLICE
+
+
+def interpolate_dist_linear(dist, vstart, vend, accel_rate):
+    timeslice = config.TIME_SLICE
+    total_time = (vend - vstart) / accel_rate
+    slices = total_time / timeslice
+
+    v = vstart
+    vstep = (vend - vstart) / slices
+
+    x = 0
+    dist_array = []
+    for slice in range(slices):
+        x += (v * timeslice)
+        v += vstep
+        dist_array.append(x)
+    return dist_array
+
+
+def distance_array_to_moves(start, end, dist_array):
+    """
+    Given a start point, an end point, and an array of linear distances, return
+    the actions to move between the two points, with one move per linear
+    distance.
+    """
+
+
+def interpolate_pair(start, vstart, end, vend, pen_up):
+    """
+    Given start/end positions, velocities, and pen state, return the array of
+    distance per timeslice to move between two points.
+
+    We basically want to always be accelerating at a constant rate,
+    decelerating at a constant rate, or moving at the maximum velocity for this
+    pen state.
+
+    There will be one of three velocity profiles:
+
+        1. Trapezoidal: we have plenty of time to accelerate, move at constant
+        speed, then decelerate.
+        2. Triangular: we will accelerate to our max velocity, then decelerate.
+        3. Linear: we will only accelerate or decelerate.
+    """
+    if pen_up:
+        vmax = config.SPEED_PEN_UP
+        accel_rate = vmax / config.ACCEL_TIME_PEN_UP
+    else:
+        vmax = config.SPEED_PEN_DOWN
+        accel_rate = vmax / config.ACCEL_TIME_PEN_DOWN
+
+    dist = distance(end, start)
+
+    accel_time = (vmax - vstart) / accel_rate
+    decel_time = (vmax - vend) / accel_rate
+
+    accel_dist = (vstart * accel_time) + (0.5 * accel_rate * (accel_time**2))
+    decel_dist = (vend * decel_time) + (0.5 * accel_rate * (decel_time**2))
+
+    timeslice = config.TIME_SLICE
+
+    x = 0
+    v = vstart
+    dtarray = []
+    if dist > (accel_dist + decel_dist + (timeslice * vmax)):
+        # Trapezoidal
+        accel_slices = accel_time / timeslice
+        decel_slices = decel_time / timeslice
+        coast_dist = dist - (accel_dist + decel_dist)
+
+        vstep = (vmax - vstart) / accel_slices
+        for slice in range(accel_slices):
+            x += (v * timeslice)
+            v += vstep
+            dtarray.append((x, timeslice))
+
+        x += coast_dist
+        dtarray.append((x, coast_dist / v))
+
+        vstep = (vend - vmax) / decel_slices
+        for slice in range(decel_slices):
+            x += (v * timeslice)
+            v += vstep
+            dtarray.append((x, timeslice))
+
+    else:
+        linear_time = abs(vend - vstart) / accel_rate
+        linear_dist = ((vstart * linear_time) +
+                       (0.5 * accel_rate * (linear_time**2)))
+        if dist > (linear_dist + (timeslice * vend)):
+            # Triangular
+            # XXX
+            pass
+
+        else:
+            # Linear
+            total_time = (vend - vstart) / accel_rate
+            slices = total_time / timeslice
+            vstep = (vend - vstart) / slices
+            for slice in range(slices):
+                x += (v * timeslice)
+                v += vstep
+                dtarray.append((x, timeslice))
+
+    return dtarray
+
+
+def interpolate_segment(segment, pen_up):
+    """
+    Given a segment with assigned speeds at each point, and a max
+    acceleration/deceleration rate, create the moves to traverse the segment.
+    """
+    assert segment[0][1] == 0
+    assert segment[-1][1] == 0
+
+    actions = []
+    # Iterate over point pairs.
+    last_point, last_speed = segment[0]
+    for point, speed in segment[1:]:
+        dist_array = interpolate_pair(last_point, last_speed,
+                                      point, speed, pen_up)
+        actions.extend(...)
+    return actions
+
+
+def plan_actions(segments_with_velocity, pen_up_delay, pen_down_delay):
+    """
+    Given a list of (segment, pen_up) tuples as returned by plan_velocity(),
+    return a list of moves. Also add any pen state changes.
     """
     actions = []
+    last_pen_up = True
+    for segment, pen_up in segments_with_velocity:
+        if pen_up != last_pen_up:
+            if pen_up:
+                actions.append(moves.PenUpMove(pen_up_delay))
+            else:
+                actions.append(moves.PenDownMove(pen_down_delay))
+        actions.extend(interpolate_segment(segment, pen_up))
     return actions
