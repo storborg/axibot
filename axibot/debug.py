@@ -151,8 +151,8 @@ def debug_actions(opts):
         elif isinstance(action, moves.PenDownMove):
             pen_up = False
         elif isinstance(action, moves.XYMove):
-            x += move.dx - move.dy
-            y += move.dx + move.dy
+            x += action.m1 - action.m2
+            y += action.m1 + action.m2
             if pen_up:
                 up_xdata.append(x)
                 up_ydata.append(y)

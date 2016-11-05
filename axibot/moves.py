@@ -29,15 +29,16 @@ class PenDownMove(Move):
 class XYMove(Move):
     name = 'xy_move'
 
-    def __init__(self, dx, dy, duration):
-        self.dx = dx
-        self.dy = dy
+    def __init__(self, m1, m2, duration):
+        self.m1 = m1
+        self.m2 = m2
         self.duration = duration
 
 
 class XYAccelMove(Move):
     name = 'xy_accel_move'
 
+    # XXX These might be better as "m1" and "m2" rather than dx/dy.
     def __init__(self, dx, dy, v_initial, v_final):
         self.dx = dx
         self.dy = dy

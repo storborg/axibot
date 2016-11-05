@@ -161,26 +161,26 @@ class EiBotBoard:
         """
         self.command('AM,%s,%s,%s,%s\r' % (v_initial, v_final, dx, dy))
 
-    def xy_move(self, dx, dy, duration):
+    def xy_move(self, m1, m2, duration):
         """
-        Move X/Y axes as: "SM,<move_duration>,<axis1>,<axis2><CR>"
+        Move M1/M2 axes as: "SM,<move_duration>,<axis1>,<axis2><CR>"
 
         Move duration is in milliseconds and can be 1 to 16777215.
-        Dx and dy are in steps and are signed 24-bit integers.
+        m1 and m2 are in steps and are signed 24-bit integers.
 
-        Typically, this is wired up such that axis 1 is the Y axis and axis 2
-        is the X axis of motion. On EggBot, Axis 1 is the "pen" motor, and Axis
-        2 is the "egg" motor.
+        On the AxiDraw, these axes are blended: the coordinate space of the
+        control API is rotated 45 degrees from the coordinate space of the
+        actual movement. It's unclear why this is.
         """
-        assert isinstance(dx, int)
-        assert isinstance(dy, int)
+        assert isinstance(m1, int)
+        assert isinstance(m2, int)
         assert isinstance(duration, int)
         assert (duration >= 1) and (duration <= 16777215), \
             "Invalid duration %r" % duration
 
         # XXX add checks for minimum or maximum step rates
 
-        self.command('SM,%s,%s,%s\r' % (duration, dy, dx))
+        self.command('SM,%s,%s,%s\r' % (duration, m1, m2))
 
     def ab_move(self, da, db, duration):
         """
