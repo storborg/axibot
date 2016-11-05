@@ -12,7 +12,7 @@ setup(name='axibot',
           'License :: OSI Approved :: MIT License',
           'Programming Language :: Python :: 3.5',
       ],
-      keywords='axidraw cam plotter',
+      keywords='eibotboard axidraw cam pen drawing plotter',
       url='https://github.com/storborg/axibot',
       author='Scott Torborg',
       author_email='storborg@gmail.com',
@@ -22,20 +22,17 @@ setup(name='axibot',
           'pyserial',
           'svg.path',
           'colormath',
-          # Required for server
-          # XXX put these in extras
-          #'aiohttp',
-          #'aiohttp_mako',
-          # Required for debug tool
-          # XXX put these in extras
-          #'matplotlib',
       ],
       setup_requires=['pytest-runner'],
       tests_require=['pytest'],
+      extras_require={
+          'server': ['aiohttp', 'aiohttp_mako'],
+          'debug': ['matplotlib'],
+      },
       include_package_data=True,
       zip_safe=False,
       entry_points="""\
       [console_scripts]
       axibot = axibot.cmd:main
-      axibot-debug = axibot.debug:main
+      axibot-debug = axibot.debug:main [debug]
       """)
