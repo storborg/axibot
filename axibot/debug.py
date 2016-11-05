@@ -5,7 +5,7 @@ import argparse
 
 import matplotlib.pyplot as plt
 
-from axibot import svg, planning, config
+from axibot import svg, planning, config, moves
 
 
 def show(opts):
@@ -129,6 +129,45 @@ def debug_corners(opts):
     show(opts)
 
 
+def debug_actions(opts):
+    smoothness = 10
+    paths = svg.extract_paths(opts.filename)
+    segments = svg.plan_segments(paths, smoothness=smoothness)
+    transits = svg.add_pen_transits(segments)
+    segments_limits = planning.plan_speed_limits(transits)
+    actions = planning.plan_actions(segments_limits)
+
+    up_xdata = []
+    up_ydata = []
+    down_xdata = []
+    down_ydata = []
+
+    x = y = 0
+    pen_up = True
+
+    for action in actions:
+        if isinstance(action, moves.PenUpMove):
+            pen_up = True
+        elif isinstance(action, moves.PenDownMove):
+            pen_up = False
+        elif isinstance(action, moves.XYMove):
+            x += move.dx - move.dy
+            y += move.dx + move.dy
+            if pen_up:
+                up_xdata.append(x)
+                up_ydata.append(y)
+            else:
+                down_xdata.append(x)
+                down_ydata.append(y)
+        else:
+            raise ValueError("Not expecting %r" % action)
+
+    plt.plot(up_xdata, up_ydata, 'rs')
+    plt.plot(down_xdata, down_ydata, 'gs')
+
+    show(opts)
+
+
 def main(argv=sys.argv):
     p = argparse.ArgumentParser(description='Debug axibot software internals.')
     p.add_argument('--verbose', action='store_true')
@@ -159,6 +198,12 @@ def main(argv=sys.argv):
     p_corners.add_argument('filename')
     p_corners.add_argument('--out')
     p_corners.set_defaults(function=debug_corners)
+
+    p_actions = subparsers.add_parser(
+        'actions', help='Render final computed actions.')
+    p_actions.add_argument('filename')
+    p_actions.add_argument('--out')
+    p_actions.set_defaults(function=debug_actions)
 
     opts, args = p.parse_known_args(argv[1:])
 

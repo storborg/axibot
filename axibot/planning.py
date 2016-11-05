@@ -1,6 +1,6 @@
 import math
 
-from . import config
+from . import config, moves
 
 
 def cornering_angle(a, b, c):
@@ -115,11 +115,15 @@ def plan_acceleration(start, end, v_start, vmax_end, pen_up):
     return v, actions
 
 
-def plan_moves(segments_limits):
+def plan_actions(segments_limits):
     """
     Given a list of (start, end, vmax_start, vmax_end, pen_up) tuples, return a
     list of moves, with acceleration and deceleration plotted between points.
     Also add any pen state changes.
+
+    Planning acceleration is non-trivial here, since it's possible to end up in
+    a short segment where the initial speed is too high to decelerate to the
+    speed limit at the end of the segment.
     """
     v_last = 0
     pen_up_last = False
@@ -135,8 +139,8 @@ def plan_moves(segments_limits):
             else:
                 # XXX get the right delay
                 actions.append(moves.PenDownMove(1000))
-        assert v_last <= vmax_start
-        v_last, seg_actions = plan_acceleration(start, end, v_last, vmax_end, pen_up)
-        actions.extend(seg_actions)
+        #assert v_last <= vmax_start
+        #v_last, seg_actions = plan_acceleration(start, end, v_last, vmax_end, pen_up)
+        #actions.extend(seg_actions)
 
     return actions
