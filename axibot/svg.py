@@ -291,7 +291,6 @@ def recurse_tree(paths, tree, transform_matrix, parent_visibility='visible'):
         # first apply current transform to this node's transform
         matrix_new = transform.compose(transform_matrix,
                                        transform.parse(node.get('transform')))
-        print("matrix %r" % matrix_new)
 
         if node.tag == svgns('g'):
             recurse_tree(paths, node, matrix_new, parent_visibility=v)

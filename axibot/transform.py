@@ -102,11 +102,8 @@ def apply_to_point(pt, matrix):
     """
     Apply a 2x3 affine transform matrix to a point.
     """
-    print("apply_to_point %r" % matrix)
-    print("from %f, %f" % (pt.real, pt.imag))
     x = matrix[0][0] * pt.real + matrix[0][1] * pt.imag + matrix[0][2]
     y = matrix[1][0] * pt.real + matrix[1][1] * pt.imag + matrix[1][2]
-    print("to   %f, %f" % (x, y))
     return complex(x, y)
 
 
