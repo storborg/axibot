@@ -38,7 +38,7 @@ def debug_segments(opts):
     Render an SVG file into linear segments, and then plot them with
     matplotlib.
     """
-    smoothness = 10
+    smoothness = 100
     paths = svg.extract_paths(opts.filename)
     segments = svg.plan_segments(paths, smoothness=smoothness)
 
@@ -55,7 +55,7 @@ def debug_segments(opts):
 
 
 def debug_transits(opts):
-    smoothness = 10
+    smoothness = 100
     paths = svg.extract_paths(opts.filename)
     segments = svg.plan_segments(paths, smoothness=smoothness)
     transits = svg.add_pen_transits(segments)
