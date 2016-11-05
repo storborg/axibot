@@ -23,13 +23,15 @@ setup(name='axibot',
           'svg.path',
           'colormath',
           # Required for server
-          'aiohttp',
-          'aiohttp_mako',
+          # XXX put these in extras
+          #'aiohttp',
+          #'aiohttp_mako',
           # Required for debug tool
-          'matplotlib',
+          # XXX put these in extras
+          #'matplotlib',
       ],
-      test_suite='nose.collector',
-      tests_require=['nose'],
+      setup_requires=['pytest-runner'],
+      tests_require=['pytest'],
       include_package_data=True,
       zip_safe=False,
       entry_points="""\

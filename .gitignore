@@ -27,3 +27,6 @@ docs/_build/
 
 # Tox working dir.
 .tox/
+
+.cache
+.eggs
