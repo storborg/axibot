@@ -1,6 +1,7 @@
 include README.rst
 include CHANGES
 include LICENSE
+recursive-include examples *.svg
 
 prune docs/_build
 recursive-exclude * __pycache__
