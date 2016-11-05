@@ -196,7 +196,7 @@ def subdivide_path(path, smoothness):
             points.append((piece.start.real, piece.start.imag))
             points.append((piece.end.real, piece.end.imag))
         else:
-            for n in range(smoothness):
+            for n in range(smoothness + 1):
                 point = piece.point(n / smoothness)
                 points.append((point.real, point.imag))
     return points

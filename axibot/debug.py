@@ -24,7 +24,7 @@ def debug_paths(opts):
     for path in paths:
         xdata = []
         ydata = []
-        for n in range(subdivide):
+        for n in range(subdivide + 1):
             point = path.point(n / subdivide)
             xdata.append(point.real)
             ydata.append(-point.imag)
