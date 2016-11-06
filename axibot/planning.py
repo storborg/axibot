@@ -35,12 +35,10 @@ def cornering_angle(a, b, c):
     ax, ay = a
     bx, by = b
     cx, cy = c
-    rad = abs(math.atan2(ay - by, ax - bx) - math.atan2(cy - by, cx - bx))
-    assert rad < (2 * math.pi)
-    assert rad >= 0
-    if rad > math.pi:
-        rad -= math.pi
-    return rad
+    x = (bx - ax)**2 + (by - ay)**2
+    y = (bx - cx)**2 + (by - cy)**2
+    z = (cx - ax)**2 + (cy - ay)**2
+    return math.acos((x + y - z) / math.sqrt(4 * x * y))
 
 
 def cornering_velocity(angle, pen_up):

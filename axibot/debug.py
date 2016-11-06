@@ -158,6 +158,7 @@ def debug_actions(opts):
         elif isinstance(action, moves.XYMove):
             dx = action.m1 + action.m2
             dy = action.m1 - action.m2
+            print("move %d, %d" % (dx, dy))
             x += dx
             y += dy
             t += action.duration

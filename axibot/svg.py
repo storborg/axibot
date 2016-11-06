@@ -207,8 +207,22 @@ def subdivide_path(path, smoothness):
 def plan_segments(paths, smoothness):
     """
     Takes a list of Path instances, returns a list of lists of points.
+
+    This also 'collapses points': that is, if there are two or more adjacent
+    points in a segment that are at the same position, they are combined into
+    one.
     """
-    return [subdivide_path(path, smoothness) for path in paths]
+    out = []
+    for path in paths:
+        segment = subdivide_path(path, smoothness)
+        last_point = segment[0]
+        points = [last_point]
+        for point in segment[1:]:
+            if point != last_point:
+                points.append(point)
+                last_point = point
+        out.append(points)
+    return out
 
 
 def join_segments(segments, min_gap):
