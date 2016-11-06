@@ -149,18 +149,26 @@ def debug_actions(opts):
     x = y = 0
     pen_up = True
 
-    up_xdata = []
-    up_ydata = []
-    down_xdata = []
-    down_ydata = []
+    xdata = []
+    ydata = []
 
     for action in actions:
         if isinstance(action, moves.PenUpMove):
-            pen_up = True
             print("pen up")
+            if not pen_up:
+                # plot the pen down stuff
+                plt.plot(xdata, ydata, 'g-')
+                xdata = []
+                ydata = []
+            pen_up = True
         elif isinstance(action, moves.PenDownMove):
-            pen_up = False
             print("pen down")
+            if pen_up:
+                # plot the pen up stuff
+                plt.plot(xdata, ydata, 'r-')
+                xdata = []
+                ydata = []
+            pen_up = False
         elif isinstance(action, moves.XYMove):
             dx = action.m1 + action.m2
             dy = action.m1 - action.m2
@@ -168,17 +176,12 @@ def debug_actions(opts):
             x += dx
             y += dy
 
-            if pen_up:
-                up_xdata.append(x)
-                up_ydata.append(y)
-            else:
-                down_xdata.append(x)
-                down_ydata.append(y)
+            xdata.append(x)
+            ydata.append(y)
         else:
             raise ValueError("Not expecting %r" % action)
 
-        plt.plot(up_xdata, up_ydata, 'r-')
-        plt.plot(down_xdata, down_ydata, 'g-')
+    plt.plot(xdata, ydata, 'r-' if pen_up else 'g-')
 
     show(opts)
 
