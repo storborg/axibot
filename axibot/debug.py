@@ -4,6 +4,7 @@ import logging
 
 import sys
 import argparse
+import math
 
 import matplotlib.pyplot as plt
 
@@ -141,13 +142,13 @@ def debug_actions(opts):
     segments_limits = planning.plan_velocity(step_transits)
     actions = planning.plan_actions(segments_limits, 1000, 1000)
 
+    x = y = t = 0
+    pen_up = True
+
     up_xdata = []
     up_ydata = []
     down_xdata = []
     down_ydata = []
-
-    x = y = 0
-    pen_up = True
 
     for action in actions:
         if isinstance(action, moves.PenUpMove):
@@ -155,26 +156,43 @@ def debug_actions(opts):
         elif isinstance(action, moves.PenDownMove):
             pen_up = False
         elif isinstance(action, moves.XYMove):
-            x += action.m1 - action.m2
-            y += action.m1 + action.m2
-            if pen_up:
-                up_xdata.append(x)
-                up_ydata.append(y)
+            dx = action.m1 + action.m2
+            dy = action.m1 - action.m2
+            x += dx
+            y += dy
+            t += action.duration
+
+            if opts.velocity:
+                dist = math.sqrt(dx**2 + dy**2)
+                # XXX We have to ensure that duration is never zero -- this is
+                # broken
+                v = dist / max(action.duration, 0.01)
+                if pen_up:
+                    up_xdata.append(t)
+                    up_ydata.append(v)
+                else:
+                    down_xdata.append(t)
+                    down_ydata.append(v)
             else:
-                down_xdata.append(x)
-                down_ydata.append(y)
+                if pen_up:
+                    up_xdata.append(x)
+                    up_ydata.append(y)
+                else:
+                    down_xdata.append(x)
+                    down_ydata.append(y)
         else:
             raise ValueError("Not expecting %r" % action)
 
-    plt.plot(up_xdata, up_ydata, 'rs')
-    plt.plot(down_xdata, down_ydata, 'gs')
+        plt.plot(up_xdata, up_ydata, 'r-')
+        plt.plot(down_xdata, down_ydata, 'g-')
 
     show(opts)
 
 
 def main(argv=sys.argv):
     p = argparse.ArgumentParser(description='Debug axibot software internals.')
-    p.add_argument('--verbose', action='store_true')
+    p.add_argument('--verbose', action='store_true',
+                   help='Print verbose debug output.')
     p.set_defaults(function=None)
 
     subparsers = p.add_subparsers(help='sub-command help')
@@ -182,31 +200,33 @@ def main(argv=sys.argv):
     p_paths = subparsers.add_parser(
         'paths', help='Render normalized paths.')
     p_paths.add_argument('filename')
-    p_paths.add_argument('--out')
+    p_paths.add_argument('--out', help='Save rendering to file.')
     p_paths.set_defaults(function=debug_paths)
 
     p_segments = subparsers.add_parser(
         'segments', help='Render linear segments.')
     p_segments.add_argument('filename')
-    p_segments.add_argument('--out')
+    p_segments.add_argument('--out', help='Save rendering to file.')
     p_segments.set_defaults(function=debug_segments)
 
     p_transits = subparsers.add_parser(
         'transits', help='Render segments with pen transits.')
     p_transits.add_argument('filename')
-    p_transits.add_argument('--out')
+    p_transits.add_argument('--out', help='Save rendering to file.')
     p_transits.set_defaults(function=debug_transits)
 
     p_corners = subparsers.add_parser(
         'corners', help='Render points with speeds.')
     p_corners.add_argument('filename')
-    p_corners.add_argument('--out')
+    p_corners.add_argument('--out', help='Save rendering to file.')
     p_corners.set_defaults(function=debug_corners)
 
     p_actions = subparsers.add_parser(
         'actions', help='Render final computed actions.')
     p_actions.add_argument('filename')
-    p_actions.add_argument('--out')
+    p_actions.add_argument('--out', help='Save rendering to file.')
+    p_actions.add_argument('--velocity', action='store_true',
+                           help='Plot velocity instead of position.')
     p_actions.set_defaults(function=debug_actions)
 
     opts, args = p.parse_known_args(argv[1:])

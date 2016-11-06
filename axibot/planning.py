@@ -236,6 +236,7 @@ def interpolate_pair_triangular(start, vstart,
     v = vstart
 
     if (accel_slices + decel_slices) > 4:
+        print("triangular")
         # Triangular
         if accel_slices:
             accel_timeslice = accel_time / accel_slices
@@ -253,6 +254,7 @@ def interpolate_pair_triangular(start, vstart,
                 x += v * decel_timeslice
                 dtarray.append((x, decel_timeslice))
     elif vend == vstart:
+        print("flat")
         if vstart:
             # Constant velocity that is non-zero
             return [(dist, dist / vstart)]
@@ -263,6 +265,7 @@ def interpolate_pair_triangular(start, vstart,
             # XXX ????
             return [(dist, 0.1)]
     else:
+        print("linear")
         # Linear
         lin_accel = ((vend**2 - vstart**2) / (2 * dist))
         lin_accel = min(lin_accel, accel_rate)
@@ -312,6 +315,7 @@ def interpolate_pair(start, vstart, end, vend, pen_up):
 
     if dist > (accel_dist + decel_dist + timeslice * vmax):
         # Trapezoidal
+        print("trapezoidal")
         return interpolate_pair_trapezoidal(
             start, vstart, accel_time, accel_dist,
             end, vend, decel_time, decel_dist,
