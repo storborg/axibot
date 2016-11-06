@@ -31,8 +31,7 @@ SHORT_THRESHOLD = 1.0
 DPI_16X = 2032
 
 # Time interval in seconds to update motor control.
-#TIME_SLICE = 0.030
-TIME_SLICE = 0.020
+TIME_SLICE = 0.030
 
 # Smoothness of curves. Unitless?
 SMOOTHNESS = 1.0

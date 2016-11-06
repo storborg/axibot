@@ -157,12 +157,14 @@ def debug_actions(opts):
     for action in actions:
         if isinstance(action, moves.PenUpMove):
             pen_up = True
+            print("pen up")
         elif isinstance(action, moves.PenDownMove):
             pen_up = False
+            print("pen down")
         elif isinstance(action, moves.XYMove):
             dx = action.m1 + action.m2
             dy = action.m1 - action.m2
-            print("move %d, %d" % (dx, dy))
+            print("%s move %d, %d" % ('up' if pen_up else 'down', dx, dy))
             x += dx
             y += dy
 

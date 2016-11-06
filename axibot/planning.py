@@ -32,13 +32,30 @@ def cornering_angle(a, b, c):
     """
     Given three points, compute the angle in radians between AB and BC.
     """
+    assert a != b
+    assert b != c
+
     ax, ay = a
     bx, by = b
     cx, cy = c
     x = (bx - ax)**2 + (by - ay)**2
     y = (bx - cx)**2 + (by - cy)**2
     z = (cx - ax)**2 + (cy - ay)**2
-    return math.acos((x + y - z) / math.sqrt(4 * x * y))
+
+    arg = (x + y - z) / math.sqrt(4 * x * y)
+
+    # Floating point error can accumulate here and give us an argument to
+    # acos() that will be like 1.00000000000whatever
+    # Catch that and just make it 1 or -1.
+
+    if arg > 1:
+        assert arg < 1.000002
+        arg = 1
+    elif arg < -1:
+        assert arg > -1.000002
+        arg = -1
+
+    return math.acos(arg)
 
 
 def cornering_velocity(angle, pen_up):
@@ -149,16 +166,23 @@ def distance_array_to_moves(start, end, dt_array):
     xdiff = end[0] - start[0]
     ydiff = end[1] - start[1]
     dist = distance(end, start)
+
+    print("xdiff %r" % xdiff)
+    print("ydiff %r" % ydiff)
+    print("dist %r" % dist)
+
     xratio = xdiff / dist
     yratio = ydiff / dist
+
+    print("xratio %r" % xratio)
+    print("yratio %r" % yratio)
+
     last_x, last_y = start
-    last_t = 0
 
     actions = []
-    for d, t in dt_array:
-        duration = t - last_t
-        new_x = xratio * d
-        new_y = yratio * d
+    for d, duration in dt_array:
+        new_x = (xratio * d) + start[0]
+        new_y = (yratio * d) + start[1]
 
         dx = new_x - last_x
         dy = new_y - last_y
@@ -171,7 +195,6 @@ def distance_array_to_moves(start, end, dt_array):
 
         last_x = new_x
         last_y = new_y
-        last_t = t
 
     return actions
 
@@ -304,8 +327,9 @@ def interpolate_pair(start, vstart, end, vend, pen_up):
 
     dist = distance(end, start)
 
-    assert vstart < vmax
-    assert vend < vmax
+    assert vstart <= vmax, "%f must be <= %f" % (vstart, vmax)
+    assert vend <= vmax, "%f must be <= %f" % (vend, vmax)
+
     accel_time = (vmax - vstart) / accel_rate
     decel_time = (vmax - vend) / accel_rate
     accel_dist = (vstart * accel_time) + (0.5 * accel_rate * (accel_time**2))
@@ -361,5 +385,6 @@ def plan_actions(segments_with_velocity, pen_up_delay, pen_down_delay):
                 actions.append(moves.PenUpMove(pen_up_delay))
             else:
                 actions.append(moves.PenDownMove(pen_down_delay))
+            last_pen_up = pen_up
         actions.extend(interpolate_segment(segment, pen_up))
     return actions
