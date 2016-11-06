@@ -133,16 +133,20 @@ def debug_corners(opts):
     show(opts)
 
 
-def debug_actions(opts):
-    smoothness = 10
+def generate_actions(opts):
+    smoothness = 100
     paths = svg.extract_paths(opts.filename)
     segments = svg.plan_segments(paths, smoothness=smoothness)
     transits = svg.add_pen_transits(segments)
     step_transits = planning.convert_inches_to_steps(transits)
     segments_limits = planning.plan_velocity(step_transits)
-    actions = planning.plan_actions(segments_limits, 1000, 1000)
+    return planning.plan_actions(segments_limits, 1000, 1000)
 
-    x = y = t = 0
+
+def debug_actions(opts):
+    actions = generate_actions(opts)
+
+    x = y = 0
     pen_up = True
 
     up_xdata = []
@@ -161,31 +165,60 @@ def debug_actions(opts):
             print("move %d, %d" % (dx, dy))
             x += dx
             y += dy
-            t += action.duration
 
-            if opts.velocity:
-                dist = math.sqrt(dx**2 + dy**2)
-                # XXX We have to ensure that duration is never zero -- this is
-                # broken
-                v = dist / max(action.duration, 0.01)
-                if pen_up:
-                    up_xdata.append(t)
-                    up_ydata.append(v)
-                else:
-                    down_xdata.append(t)
-                    down_ydata.append(v)
+            if pen_up:
+                up_xdata.append(x)
+                up_ydata.append(y)
             else:
-                if pen_up:
-                    up_xdata.append(x)
-                    up_ydata.append(y)
-                else:
-                    down_xdata.append(x)
-                    down_ydata.append(y)
+                down_xdata.append(x)
+                down_ydata.append(y)
         else:
             raise ValueError("Not expecting %r" % action)
 
         plt.plot(up_xdata, up_ydata, 'r-')
         plt.plot(down_xdata, down_ydata, 'g-')
+
+    show(opts)
+
+
+def debug_velocity(opts):
+    actions = generate_actions(opts)
+
+    x = y = t = 0
+    pen_up = True
+
+    up_tdata = []
+    up_vdata = []
+    down_tdata = []
+    down_vdata = []
+
+    for action in actions:
+        if isinstance(action, moves.PenUpMove):
+            pen_up = True
+        elif isinstance(action, moves.PenDownMove):
+            pen_up = False
+        elif isinstance(action, moves.XYMove):
+            dx = action.m1 + action.m2
+            dy = action.m1 - action.m2
+            x += dx
+            y += dy
+            t += action.duration
+
+            dist = math.sqrt(dx**2 + dy**2)
+            # XXX We have to ensure that duration is never zero -- this is
+            # broken
+            v = dist / max(action.duration, 0.01)
+            if pen_up:
+                up_tdata.append(t)
+                up_vdata.append(v)
+            else:
+                down_tdata.append(t)
+                down_vdata.append(v)
+        else:
+            raise ValueError("Not expecting %r" % action)
+
+        plt.plot(up_tdata, up_vdata, 'r-')
+        plt.plot(down_tdata, down_vdata, 'g-')
 
     show(opts)
 
@@ -226,9 +259,13 @@ def main(argv=sys.argv):
         'actions', help='Render final computed actions.')
     p_actions.add_argument('filename')
     p_actions.add_argument('--out', help='Save rendering to file.')
-    p_actions.add_argument('--velocity', action='store_true',
-                           help='Plot velocity instead of position.')
     p_actions.set_defaults(function=debug_actions)
+
+    p_velocity = subparsers.add_parser(
+        'velocity', help='Render final computed velocity profile.')
+    p_velocity.add_argument('filename')
+    p_velocity.add_argument('--out', help='Save rendering to file.')
+    p_velocity.set_defaults(function=debug_velocity)
 
     opts, args = p.parse_known_args(argv[1:])
 
