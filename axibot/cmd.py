@@ -48,7 +48,8 @@ def plot(opts):
     paths = svg.extract_paths(opts.filename)
     segments = svg.plan_segments(paths, smoothness=smoothness)
     transits = svg.add_pen_transits(segments)
-    segments_limits = planning.plan_speed_limits(transits)
+    step_transits = planning.convert_inches_to_steps(transits)
+    segments_limits = planning.plan_velocity(step_transits)
     actions = planning.plan_actions(segments_limits,
                                     pen_up_position=pen_up_position,
                                     pen_down_position=pen_down_position)

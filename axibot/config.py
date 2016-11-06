@@ -13,7 +13,7 @@ SERVO_SPEED = 150
 EXTRA_PEN_UP_DELAY = 0
 EXTRA_PEN_DOWN_DELAY = 0
 
-SPEED_SCALE = 24950
+SPEED_SCALE = 24950  # ticks per second
 
 # Seconds of acceleration to reach full speed with pen down.
 ACCEL_TIME_PEN_DOWN = 0.25
@@ -31,7 +31,8 @@ SHORT_THRESHOLD = 1.0
 DPI_16X = 2032
 
 # Time interval in seconds to update motor control.
-TIME_SLICE = 0.030
+#TIME_SLICE = 0.030
+TIME_SLICE = 0.020
 
 # Smoothness of curves. Unitless?
 SMOOTHNESS = 1.0

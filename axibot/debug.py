@@ -78,7 +78,8 @@ def debug_corners(opts):
     paths = svg.extract_paths(opts.filename)
     segments = svg.plan_segments(paths, smoothness=smoothness)
     transits = svg.add_pen_transits(segments)
-    segments_limits = planning.plan_speed_limits(transits)
+    step_transits = planning.convert_inches_to_steps(transits)
+    segments_limits = planning.plan_velocity(step_transits)
 
     up_xdata = []
     up_ydata = []
@@ -116,13 +117,13 @@ def debug_corners(opts):
             down_ydata.append(y)
             down_speed.append(speed_to_color(vmax, pen_up))
 
-    init_segment = segments_limits[0]
-    record_point(init_segment[0], init_segment[2], init_segment[4])
-
-    for start, end, start_vmax, end_vmax, pen_up in segments_limits:
-        xdata = [start[0], end[0]]
-        ydata = [-start[1], -end[1]]
-        record_point(end, end_vmax, pen_up)
+    for segment, pen_up in segments_limits:
+        xdata = []
+        ydata = []
+        for point, vmax in segment:
+            record_point(point, vmax, pen_up)
+            xdata.append(point[0])
+            ydata.append(-point[1])
         plt.plot(xdata, ydata, 'r-' if pen_up else 'g-')
 
     plt.scatter(up_xdata, up_ydata, s=50, linewidths=0, c=up_speed)
@@ -136,7 +137,8 @@ def debug_actions(opts):
     paths = svg.extract_paths(opts.filename)
     segments = svg.plan_segments(paths, smoothness=smoothness)
     transits = svg.add_pen_transits(segments)
-    segments_limits = planning.plan_speed_limits(transits)
+    step_transits = planning.convert_inches_to_steps(transits)
+    segments_limits = planning.plan_velocity(step_transits)
     actions = planning.plan_actions(segments_limits, 1000, 1000)
 
     up_xdata = []

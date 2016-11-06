@@ -69,7 +69,7 @@ point, adding pen-up transits that start and stop at zero velocity.
         cornering_velocity(angle, pen_up) -> velocity
 
     Other functions:
-        plan_speed_limits(list of (segment, pen_up) tuples) -> list of tuples
+        plan_velocity(list of (segment, pen_up) tuples) -> list of tuples
 
     Diagnostic functions:
         render_corners([list of tuples])
@@ -254,6 +254,7 @@ def add_pen_transits(segments):
     count = len(segments)
 
     for n, seg in enumerate(segments, start=1):
+        assert seg
         out_segments.append((seg, False))
         if n == count:
             # last one
