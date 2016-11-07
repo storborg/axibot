@@ -32,6 +32,9 @@ class XYMove(Move):
     name = 'xy_move'
 
     def __init__(self, m1, m2, duration):
+        assert isinstance(m1, int), "got %r, wanted an int" % m1
+        assert isinstance(m2, int), "got %r, wanted an int" % m2
+        assert isinstance(duration, int), "got %r, wanted an int" % duration
         self.m1 = m1
         self.m2 = m2
         self.duration = duration

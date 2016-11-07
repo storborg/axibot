@@ -155,39 +155,43 @@ def plan_velocity(transits):
     return out
 
 
-def distance_array_to_moves(start, end, dt_array):
+def dtarray_to_moves(start, end, dt_array):
     """
     Given a start point, an end point, and an array of linear distances/times,
     return the actions to move between the two points, with one move per point
     in the array.
     """
     assert end != start
+    print("dtarray_to_moves %r -> %r" % (start, end))
 
-    xdiff = end[0] - start[0]
-    ydiff = end[1] - start[1]
     dist = distance(end, start)
+    end_dist = dt_array[-1][0]
+    assert end_dist == dist, "expected %r == %r" % (end_dist, dist)
+    xratio = (end[0] - start[0]) / dist
+    yratio = (end[1] - start[1]) / dist
 
-    xratio = xdiff / dist
-    yratio = ydiff / dist
-
-    last_x, last_y = start
+    dots = []
+    for d, duration in dt_array:
+        x = round(xratio * d)
+        y = round(yratio * d)
+        dots.append((x, y, duration))
 
     actions = []
-    for d, duration in dt_array:
-        new_x = (xratio * d) + start[0]
-        new_y = (yratio * d) + start[1]
-
-        dx = new_x - last_x
-        dy = new_y - last_y
+    prev_x, prev_y = 0, 0
+    for x, y, duration in dots:
+        dx = x - prev_x
+        dy = y - prev_y
+        prev_x = x
+        prev_y = y
 
         # Convert to AxiDraw coordinate space.
         m1 = dx + dy
         m2 = dx - dy
 
+        duration = round(duration * 1000)
         actions.append(moves.XYMove(m1=m1, m2=m2, duration=duration))
 
-        last_x = new_x
-        last_y = new_y
+        print("  pos %d, %d" % (x, y))
 
     return actions
 
@@ -208,8 +212,8 @@ def interpolate_pair_trapezoidal(start, vstart, accel_time, accel_dist,
         accel_timeslice = accel_time / accel_slices
         vstep = (vmax - vstart) / (accel_slices + 1)
         for n in range(accel_slices):
-            v += vstep
             x += v * accel_timeslice
+            v += vstep
             dtarray.append((x, accel_timeslice))
 
     coast_dist = dist - (accel_dist + decel_dist)
@@ -222,8 +226,8 @@ def interpolate_pair_trapezoidal(start, vstart, accel_time, accel_dist,
         decel_timeslice = decel_time / decel_slices
         vstep = (vend - vmax) / (decel_slices + 1)
         for n in range(decel_slices):
-            v += vstep
             x += v * decel_timeslice
+            v += vstep
             dtarray.append((x, decel_timeslice))
 
     return dtarray
@@ -251,22 +255,24 @@ def interpolate_pair_triangular(start, vstart,
 
     if (accel_slices + decel_slices) > 4:
         # Triangular
+        print("triangular")
         if accel_slices:
             accel_timeslice = accel_time / accel_slices
             vstep = (vmax - vstart) / (accel_slices + 1.0)
             for n in range(accel_slices):
-                v += vstep
                 x += v * accel_timeslice
+                v += vstep
                 dtarray.append((x, accel_timeslice))
 
         if decel_slices:
             decel_timeslice = decel_time / decel_slices
             vstep = (vend - vmax) / (decel_slices + 1.0)
             for n in range(decel_slices):
-                v += vstep
                 x += v * decel_timeslice
+                v += vstep
                 dtarray.append((x, decel_timeslice))
     elif vend == vstart:
+        print("constant")
         if vstart:
             # Constant velocity that is non-zero
             return [(dist, dist / vstart)]
@@ -277,6 +283,7 @@ def interpolate_pair_triangular(start, vstart,
             # XXX ????
             return [(dist, 0.1)]
     else:
+        print("linear")
         # Linear
         lin_accel = ((vend**2 - vstart**2) / (2 * dist))
         lin_accel = min(lin_accel, accel_rate)
@@ -288,13 +295,15 @@ def interpolate_pair_triangular(start, vstart,
             lin_timeslice = lin_time / timeslice
             vstep = (vend - vstart) / (slices + 1.0)
             for n in range(slices):
-                v += vstep
                 x += v * lin_timeslice
+                v += vstep
                 dtarray.append((x, lin_timeslice))
         else:
             # XXX ???
             dtarray.append((dist, timeslice))
 
+    end_dist = dtarray[-1][0]
+    assert end_dist == dist, "%r must == %r" % (end_dist, dist)
     return dtarray
 
 
@@ -326,12 +335,14 @@ def interpolate_pair(start, vstart, end, vend, pen_up):
     decel_dist = (vend * decel_time) + (0.5 * accel_rate * (decel_time**2))
 
     if dist > (accel_dist + decel_dist + timeslice * vmax):
+        print("trapezoidal")
         # Trapezoidal
         return interpolate_pair_trapezoidal(
             start, vstart, accel_time, accel_dist,
             end, vend, decel_time, decel_dist,
             vmax, dist)
     else:
+        print("triangular or linear")
         # Triangular or linear
         return interpolate_pair_triangular(
             start, vstart,
@@ -355,7 +366,7 @@ def interpolate_segment(segment, pen_up):
         if point != last_point:
             dist_array = interpolate_pair(last_point, last_speed,
                                           point, speed, pen_up)
-            actions.extend(distance_array_to_moves(last_point, point, dist_array))
+            actions.extend(dtarray_to_moves(last_point, point, dist_array))
         last_point = point
         last_speed = speed
     return actions

@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from axibot import planning
 
 
-dist = 2000
+dist = 1700
 
 dtarray = planning.interpolate_pair((0, 0), 0, (dist, 0), 0, False)
 
