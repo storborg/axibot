@@ -16,14 +16,22 @@ def convert_inches_to_steps(transits):
     """
     Take the output from add_pen_transits() and convert all points from inches
     to steps.
+
+    This also 'collapses points': that is, if there are two or more adjacent
+    points in a segment are at the same position, they are combined into one.
     """
     spi = config.DPI_16X
     out = []
     for segment, pen_up in transits:
         points = []
-        for point in segment:
-            assert len(point) == 2
-            points.append((spi * point[0], spi * point[1]))
+        last_point = None
+        for inches_point in segment:
+            assert len(inches_point) == 2
+            steps_point = (round(spi * inches_point[0]),
+                           round(spi * inches_point[1]))
+            if (last_point is None) or (steps_point != last_point):
+                points.append(steps_point)
+            last_point = steps_point
         out.append((points, pen_up))
     return out
 
