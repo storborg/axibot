@@ -196,8 +196,8 @@ def dtarray_to_moves(start, end, dt_array):
     return actions
 
 
-def interpolate_pair_trapezoidal(start, vstart, accel_time, accel_dist,
-                                 end, vend, decel_time, decel_dist,
+def interpolate_pair_trapezoidal(vstart, accel_time, accel_dist,
+                                 vend, decel_time, decel_dist,
                                  vmax, dist):
     timeslice = config.TIME_SLICE
     accel_slices = int(math.floor(accel_time / timeslice))
@@ -233,9 +233,7 @@ def interpolate_pair_trapezoidal(start, vstart, accel_time, accel_dist,
     return dtarray
 
 
-def interpolate_pair_triangular(start, vstart,
-                                end, vend,
-                                vmax, dist, accel_rate):
+def interpolate_pair_triangular(vstart, vend, dist, accel_rate):
     timeslice = config.TIME_SLICE
     accel_time = ((math.sqrt((2 * vstart**2) +
                              (2 * vend**2) +
@@ -245,6 +243,8 @@ def interpolate_pair_triangular(start, vstart,
     accel_slices = int(math.floor(accel_time / timeslice))
     if accel_slices == 0:
         accel_time = 0
+
+    vmax = vstart + (accel_time * accel_rate)
 
     decel_time = accel_time - (vend - vstart) / accel_rate
     decel_slices = int(math.floor(decel_time / timeslice))
@@ -338,17 +338,13 @@ def interpolate_pair(start, vstart, end, vend, pen_up):
         print("trapezoidal")
         # Trapezoidal
         return interpolate_pair_trapezoidal(
-            start, vstart, accel_time, accel_dist,
-            end, vend, decel_time, decel_dist,
+            vstart, accel_time, accel_dist,
+            vend, decel_time, decel_dist,
             vmax, dist)
     else:
         print("triangular or linear")
         # Triangular or linear
-        return interpolate_pair_triangular(
-            start, vstart,
-            end, vend,
-            vmax, dist, accel_rate,
-        )
+        return interpolate_pair_triangular(vstart, vend, dist, accel_rate)
 
 
 def interpolate_segment(segment, pen_up):
