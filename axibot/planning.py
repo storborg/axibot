@@ -1,5 +1,6 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+from pprint import pprint
 import math
 
 from . import config, moves
@@ -240,6 +241,44 @@ def interpolate_distance_trapezoidal(vstart, accel_time, accel_dist,
     return dtarray
 
 
+def interpolate_distance_linear(dist, vstart, vend, accel_rate, timeslice):
+    # Linear
+    lin_accel = ((vend**2 - vstart**2) / (2 * dist))
+    print("lin_accel %r" % lin_accel)
+    lin_accel = min(lin_accel, accel_rate)
+    lin_accel = max(lin_accel, -accel_rate)
+    print("cropped lin_accel %r" % lin_accel)
+    lin_time = (vend - vstart) / lin_accel
+    print("lin_time %r" %  lin_time)
+
+    vavg = (vend - vstart) / 2
+    print("vavg %r" % vavg)
+    lin_time = vavg / dist
+    print("vavg based lin_time %r" % lin_time)
+
+    x = 0
+    v = vstart
+    dtarray = []
+
+    slices = int(math.floor(lin_time / timeslice))
+    if not slices:
+        return [(dist, dist / vavg)]
+    print("slices %r" % slices)
+    if slices:
+        lin_timeslice = lin_time / slices
+        print("lin_timeslice %r" % lin_timeslice)
+        vstep = (vend - vstart) / slices
+        print("vstep %r" % vstep)
+        for n in range(slices):
+            x += v * lin_timeslice
+            v += vstep
+            dtarray.append((x, lin_timeslice))
+    else:
+        # XXX ???
+        dtarray.append((dist, timeslice))
+    return dtarray
+
+
 def interpolate_distance_triangular(vstart, vend, dist, accel_rate):
     timeslice = config.TIME_SLICE
     accel_time = ((math.sqrt((2 * vstart**2) +
@@ -286,29 +325,15 @@ def interpolate_distance_triangular(vstart, vend, dist, accel_rate):
         else:
             # Segment that has to start and end at zero velocity, but is really
             # short. This is a really obnoxious case, for now we're just going
-            # to set it to do the move in 100ms.
-            # XXX ????
+            # to set it to do the move in 100ms. Need to figure out the 'vmin'
+            # which can be accelerated to instantaneously.
             return [(dist, 0.1)]
     else:
         print("linear")
-        # Linear
-        lin_accel = ((vend**2 - vstart**2) / (2 * dist))
-        lin_accel = min(lin_accel, accel_rate)
-        lin_accel = max(lin_accel, -accel_rate)
-        lin_time = (vend - vstart) / lin_accel
+        dtarray = interpolate_distance_linear(dist, vstart, vend, accel_rate,
+                                              timeslice)
 
-        slices = int(math.floor(lin_time / timeslice))
-        if slices:
-            lin_timeslice = lin_time / timeslice
-            vstep = (vend - vstart) / (slices + 1.0)
-            for n in range(slices):
-                x += v * lin_timeslice
-                v += vstep
-                dtarray.append((x, lin_timeslice))
-        else:
-            # XXX ???
-            dtarray.append((dist, timeslice))
-
+    pprint(dtarray)
     # assert end_dist == dist, "%r must == %r" % (dtarray[-1][0], dist)
     return dtarray
 
