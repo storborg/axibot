@@ -173,8 +173,7 @@ def dtarray_to_moves(start, end, dt_array):
     print("dtarray_to_moves %r -> %r" % (start, end))
 
     dist = distance(end, start)
-    end_dist = dt_array[-1][0]
-    #assert end_dist == dist, "expected %r == %r" % (end_dist, dist)
+    # assert end_dist == dist, "expected %r == %r" % (dt_array[-1][0], dist)
     xratio = (end[0] - start[0]) / dist
     yratio = (end[1] - start[1]) / dist
 
@@ -204,9 +203,9 @@ def dtarray_to_moves(start, end, dt_array):
     return actions
 
 
-def interpolate_pair_trapezoidal(vstart, accel_time, accel_dist,
-                                 vend, decel_time, decel_dist,
-                                 vmax, dist):
+def interpolate_distance_trapezoidal(vstart, accel_time, accel_dist,
+                                     vend, decel_time, decel_dist,
+                                     vmax, dist):
     timeslice = config.TIME_SLICE
     accel_slices = int(math.floor(accel_time / timeslice))
     decel_slices = int(math.floor(decel_time / timeslice))
@@ -241,7 +240,7 @@ def interpolate_pair_trapezoidal(vstart, accel_time, accel_dist,
     return dtarray
 
 
-def interpolate_pair_triangular(vstart, vend, dist, accel_rate):
+def interpolate_distance_triangular(vstart, vend, dist, accel_rate):
     timeslice = config.TIME_SLICE
     accel_time = ((math.sqrt((2 * vstart**2) +
                              (2 * vend**2) +
@@ -310,9 +309,47 @@ def interpolate_pair_triangular(vstart, vend, dist, accel_rate):
             # XXX ???
             dtarray.append((dist, timeslice))
 
-    end_dist = dtarray[-1][0]
-    #assert end_dist == dist, "%r must == %r" % (end_dist, dist)
+    # assert end_dist == dist, "%r must == %r" % (dtarray[-1][0], dist)
     return dtarray
+
+
+def interpolate_distance(dist, vstart, vend, vmax, accel_max, timeslice):
+    """
+    Given a distance to traverse, start and end velocities in the direction of
+    movement, a maximum velocity, an acceleration rate, and a minimum
+    timeslice, generated an array of (distance, time) points.
+
+    Distancec units are motor steps.
+    Velocity units are motor steps per second.
+    Acceleration units are steps/second^2.
+    Timeslice provided is in seconds.
+    """
+    print("vstart %r" % vstart)
+    print("vend %r" % vend)
+    print("vmax %r" % vmax)
+    print("accel_max %r" % accel_max)
+
+    accel_time = (vmax - vstart) / accel_max
+    decel_time = (vmax - vend) / accel_max
+    accel_dist = (vstart * accel_time) + (0.5 * accel_max * (accel_time**2))
+    decel_dist = (vend * decel_time) + (0.5 * accel_max * (decel_time**2))
+
+    print("accel_time %r" % accel_time)
+    print("decel_time %r" % decel_time)
+    print("accel_dist %r" % accel_dist)
+    print("decel_dist %r" % decel_dist)
+
+    if dist > (accel_dist + decel_dist + timeslice * vmax):
+        print("trapezoidal")
+        # Trapezoidal
+        return interpolate_distance_trapezoidal(
+            vstart, accel_time, accel_dist,
+            vend, decel_time, decel_dist,
+            vmax, dist)
+    else:
+        print("triangular or linear")
+        # Triangular or linear
+        return interpolate_distance_triangular(vstart, vend, dist, accel_max)
 
 
 def interpolate_pair(start, vstart, end, vend, pen_up):
@@ -331,10 +368,10 @@ def interpolate_pair(start, vstart, end, vend, pen_up):
                                                     pen_up))
     if pen_up:
         vmax = config.SPEED_PEN_UP
-        accel_rate = vmax / config.ACCEL_TIME_PEN_UP
+        accel_max = vmax / config.ACCEL_TIME_PEN_UP
     else:
         vmax = config.SPEED_PEN_DOWN
-        accel_rate = vmax / config.ACCEL_TIME_PEN_DOWN
+        accel_max = vmax / config.ACCEL_TIME_PEN_DOWN
 
     timeslice = config.TIME_SLICE
 
@@ -342,23 +379,7 @@ def interpolate_pair(start, vstart, end, vend, pen_up):
 
     assert vstart <= vmax, "%f must be <= %f" % (vstart, vmax)
     assert vend <= vmax, "%f must be <= %f" % (vend, vmax)
-
-    accel_time = (vmax - vstart) / accel_rate
-    decel_time = (vmax - vend) / accel_rate
-    accel_dist = (vstart * accel_time) + (0.5 * accel_rate * (accel_time**2))
-    decel_dist = (vend * decel_time) + (0.5 * accel_rate * (decel_time**2))
-
-    if dist > (accel_dist + decel_dist + timeslice * vmax):
-        print("trapezoidal")
-        # Trapezoidal
-        return interpolate_pair_trapezoidal(
-            vstart, accel_time, accel_dist,
-            vend, decel_time, decel_dist,
-            vmax, dist)
-    else:
-        print("triangular or linear")
-        # Triangular or linear
-        return interpolate_pair_triangular(vstart, vend, dist, accel_rate)
+    return interpolate_distance(dist, vstart, vend, vmax, accel_max, timeslice)
 
 
 def interpolate_segment(segment, pen_up):
