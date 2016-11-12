@@ -174,7 +174,7 @@ def dtarray_to_moves(start, end, dt_array):
 
     dist = distance(end, start)
     end_dist = dt_array[-1][0]
-    assert end_dist == dist, "expected %r == %r" % (end_dist, dist)
+    #assert end_dist == dist, "expected %r == %r" % (end_dist, dist)
     xratio = (end[0] - start[0]) / dist
     yratio = (end[1] - start[1]) / dist
 
@@ -311,7 +311,7 @@ def interpolate_pair_triangular(vstart, vend, dist, accel_rate):
             dtarray.append((dist, timeslice))
 
     end_dist = dtarray[-1][0]
-    assert end_dist == dist, "%r must == %r" % (end_dist, dist)
+    #assert end_dist == dist, "%r must == %r" % (end_dist, dist)
     return dtarray
 
 
@@ -320,9 +320,15 @@ def interpolate_pair(start, vstart, end, vend, pen_up):
     Given start/end positions, velocities, and pen state, return the array of
     distance/time to move between two points.
 
+    Note that a given distance entry is the distance travelled *after* the
+    point/move has been made.
+
     We want to always be accelerating at a constant rate, decelerating at a
     constant rate, or moving at the maximum velocity for this pen state.
     """
+    print("interpolate_pair: %r, %r, %r, %r, %r" % (start, vstart,
+                                                    end, vend,
+                                                    pen_up))
     if pen_up:
         vmax = config.SPEED_PEN_UP
         accel_rate = vmax / config.ACCEL_TIME_PEN_UP
