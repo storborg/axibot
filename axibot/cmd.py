@@ -43,7 +43,7 @@ def plot(opts):
     pen_up_position = 75
     pen_down_position = 45
     # XXX better parameter config
-    smoothness = 1.0
+    smoothness = 100
 
     pen_up_delay, pen_down_delay = \
         moves.calculate_pen_delays(pen_up_position, pen_down_position)

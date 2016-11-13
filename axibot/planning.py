@@ -67,19 +67,23 @@ def cornering_angle(a, b, c):
     return math.acos(arg)
 
 
-def cornering_velocity(angle, pen_up):
+def cornering_velocity(angle, vmax):
     """
     Given a corner angle in radians, compute the desired cornering velocity.
 
     An angle of pi can go full speed. An angle of zero needs to fully changeh
     direction, so it needs to have zero velocity. Everywhere in between...?
 
+    0 < angle < pi/2 should be zero velocity
+    pi / 2 < angle < pi should be linear interpolation?
+
     XXX figure this out
     """
-    ratio = angle / math.pi
-    assert ratio <= 1.0
-    max_speed = config.SPEED_PEN_UP if pen_up else config.SPEED_PEN_DOWN
-    return ratio * max_speed
+    assert angle <= math.pi
+    if angle < (math.pi / 2):
+        return 0
+    else:
+        return 1.0 + math.sin(angle - math.pi)
 
 
 def segment_corner_limits(segment, pen_up):
@@ -90,9 +94,11 @@ def segment_corner_limits(segment, pen_up):
     out = []
     out.append((segment[0], 0.0))
 
+    vmax = config.SPEED_PEN_UP if pen_up else config.SPEED_PEN_DOWN
+
     for a, b, c in zip(segment[:-2], segment[1:-1], segment[2:]):
         angle = cornering_angle(a, b, c)
-        limit = cornering_velocity(angle, pen_up)
+        limit = cornering_velocity(angle, vmax)
         out.append((b, limit))
 
     out.append((segment[-1], 0.0))

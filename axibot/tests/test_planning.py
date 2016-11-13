@@ -1,3 +1,5 @@
+import math
+
 from .. import planning, config
 
 
@@ -46,3 +48,30 @@ def test_linear_changing_velocity():
     total_dist = dtarray[-1][0]
     assert dist == total_dist
     assert find_peak_velocity(dtarray) <= vmax
+
+
+def test_cornering_angle_straight():
+    angle = planning.cornering_angle((0, 0), (1, 1), (2, 2))
+    assert angle == math.pi
+
+
+def test_cornering_angle_reverse():
+    angle = planning.cornering_angle((0, 0), (1, 1), (0, 0))
+    assert angle == 0
+
+
+def test_cornering_angle_90():
+    angle = planning.cornering_angle((0, 0), (0, 5), (5, 5))
+    assert angle == math.pi / 2.0
+
+
+def test_cornering_velocity_straight():
+    vmax = config.SPEED_PEN_DOWN
+    vstraight = planning.cornering_velocity(math.pi, vmax)
+    assert vmax == vstraight
+
+
+def test_cornering_velocity_reverse():
+    vmax = config.SPEED_PEN_DOWN
+    v = planning.cornering_velocity(0, vmax)
+    assert v == 0
