@@ -20,12 +20,18 @@ class PenUpMove(Move):
     def __init__(self, delay):
         self.delay = delay
 
+    def time(self):
+        return self.delay
+
 
 class PenDownMove(Move):
     name = 'pen_down'
 
     def __init__(self, delay):
         self.delay = delay
+
+    def time(self):
+        return self.delay
 
 
 class XYMove(Move):
@@ -43,6 +49,9 @@ class XYMove(Move):
         self.m2 = m2
         self.duration = duration
 
+    def time(self):
+        return self.duration
+
 
 class XYAccelMove(Move):
     name = 'xy_accel_move'
@@ -54,6 +63,9 @@ class XYAccelMove(Move):
         self.v_initial = v_initial
         self.v_final = v_final
 
+    def time(self):
+        raise NotImplementedError
+
 
 class ABMove(Move):
     name = 'ab_move'
@@ -63,17 +75,8 @@ class ABMove(Move):
         self.db = db
         self.duration = duration
 
-
-# Precise V5 pens. Totally guessing here on values.
-pen_colors = {
-    'black': (0, 0, 0),
-    'blue': (0, 0, 255),
-    'red': (255, 0, 0),
-    'green': (0, 255, 0),
-    'purple': (127, 255, 0),
-    'lightblue': (80, 80, 255),
-    'pink': (255, 127, 127),
-}
+    def time(self):
+        raise NotImplementedError
 
 
 def calculate_pen_delays(up_position, down_position):

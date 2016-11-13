@@ -4,6 +4,7 @@ import logging
 
 import sys
 import argparse
+from datetime import timedelta
 
 from . import svg, planning, moves, config
 from .ebb import EiBotBoard
@@ -40,6 +41,53 @@ def manual(opts):
         bot.close()
 
 
+def file_to_actions(filename, pen_up_delay, pen_down_delay):
+    paths = svg.extract_paths(filename)
+    segments = svg.plan_segments(paths, smoothness=100)
+    transits = svg.add_pen_transits(segments)
+    step_transits = planning.convert_inches_to_steps(transits)
+    segments_limits = planning.plan_velocity(step_transits)
+    actions = planning.plan_actions(segments_limits,
+                                    pen_up_delay=pen_up_delay,
+                                    pen_down_delay=pen_down_delay)
+    return actions
+
+
+def human_friendly_timedelta(td):
+    days = td.days
+    hours, remainder = divmod(td.seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    pieces = []
+    if days:
+        pieces.append(("%d days" % days) if days > 1 else "1 day")
+    if hours:
+        pieces.append(("%d hours" % hours) if hours > 1 else "1 hour")
+    if minutes:
+        pieces.append(("%d minutes" % minutes) if minutes > 1 else "1 minute")
+    if seconds:
+        pieces.append(("%d seconds" % seconds) if seconds > 1 else "1 second")
+    return ", ".join(pieces)
+
+
+def info(opts):
+    print("Loading %s..." % opts.filename)
+
+    # XXX find pen positions with user interaction?
+    pen_up_position = 75
+    pen_down_position = 45
+    # XXX better parameter config
+    smoothness = 100
+
+    pen_up_delay, pen_down_delay = \
+        moves.calculate_pen_delays(pen_up_position, pen_down_position)
+
+    actions = file_to_actions(opts.filename, pen_up_delay, pen_down_delay)
+    duration_ms = sum(action.time() for action in actions)
+    td = timedelta(seconds=(duration_ms / 1000))
+    print("Number of moves: %s" % len(actions))
+    print("Expected time: %s" % human_friendly_timedelta(td))
+
+
 def plot(opts):
     print("Loading %s..." % opts.filename)
 
@@ -52,15 +100,7 @@ def plot(opts):
     pen_up_delay, pen_down_delay = \
         moves.calculate_pen_delays(pen_up_position, pen_down_position)
 
-    paths = svg.extract_paths(opts.filename)
-    segments = svg.plan_segments(paths, smoothness=smoothness)
-    transits = svg.add_pen_transits(segments)
-    step_transits = planning.convert_inches_to_steps(transits)
-    segments_limits = planning.plan_velocity(step_transits)
-    actions = planning.plan_actions(segments_limits,
-                                    pen_up_delay=pen_up_delay,
-                                    pen_down_delay=pen_down_delay)
-
+    actions = file_to_actions(opts.filename, pen_up_delay, pen_down_delay)
     count = len(actions)
     print("Calculated %d actions." % count)
 
@@ -102,6 +142,11 @@ def main(args=sys.argv):
         'plot', help='Plot an SVG file directly.')
     p_plot.add_argument('filename')
     p_plot.set_defaults(function=plot)
+
+    p_info = subparsers.add_parser(
+        'info', help='Print information about an SVG file.')
+    p_info.add_argument('filename')
+    p_info.set_defaults(function=info)
 
     p_server = subparsers.add_parser(
         'server', help='Run a server for remote plotting.')
