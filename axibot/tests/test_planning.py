@@ -16,6 +16,10 @@ def find_peak_velocity(dtarray):
         if v > vpeak:
             vpeak = v
         xlast = x
+
+    # Fudge factor for float error
+    vpeak -= 0.00001
+
     return vpeak
 
 
@@ -39,7 +43,7 @@ def test_triangular_from_rest():
 
 def test_linear_changing_velocity():
     dist = 150
-    dtarray = planning.interpolate_distance(dist, 700, 750,
+    dtarray = planning.interpolate_distance(dist, 0.7, 0.75,
                                             vmax, accel_max, timeslice)
     total_dist = dtarray[-1][0]
     assert dist == total_dist

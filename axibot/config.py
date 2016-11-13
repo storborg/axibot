@@ -17,10 +17,14 @@ SPEED_SCALE = 24.950  # ticks per millisecond
 
 # Milliseconds of acceleration to reach full speed with pen down.
 ACCEL_TIME_PEN_DOWN = 250
+
+# Speed in ticks per millisecond.
 SPEED_PEN_DOWN = 0.25 * SPEED_SCALE
 
 # Milliseconds of acceleration to reach full speed with pen up.
 ACCEL_TIME_PEN_UP = 1000
+
+# Speed in ticks per millisecond.
 SPEED_PEN_UP = 0.75 * SPEED_SCALE
 
 # Short-move pen-up distance threshold in inches, below which we use the faster
