@@ -214,7 +214,10 @@ def dtarray_to_moves(start, end, dtarray):
     yratio = (end[1] - start[1]) / dist
 
     dots = []
+    print("dtarray:")
     for d, duration in dtarray:
+        print("  d:%r, duration:%r" % (d, duration))
+        assert duration < 3000, "tried to set duration:%r" % duration
         x = round(xratio * d)
         y = round(yratio * d)
         duration = round(duration)
@@ -248,6 +251,7 @@ def dtarray_to_moves(start, end, dtarray):
 def interpolate_distance_trapezoidal(vstart, accel_time, accel_dist,
                                      vend, decel_time, decel_dist,
                                      vmax, dist, timeslice):
+    print("trapezoidal")
     accel_slices = int(math.floor(accel_time / timeslice))
     decel_slices = int(math.floor(decel_time / timeslice))
 
@@ -258,6 +262,8 @@ def interpolate_distance_trapezoidal(vstart, accel_time, accel_dist,
 
     if accel_slices:
         accel_timeslice = accel_time / accel_slices
+        assert accel_timeslice > timeslice, \
+            "accel timeslice %r too small" % accel_timeslice
         vstep = (vmax - vstart) / (accel_slices + 1)
         for n in range(accel_slices):
             v += vstep
@@ -269,10 +275,15 @@ def interpolate_distance_trapezoidal(vstart, accel_time, accel_dist,
     if coast_dist > (timeslice * vmax):
         v = vmax
         x += coast_dist
-        dtarray.append((x, coast_dist / v))
+        duration = coast_dist / v
+        assert duration > timeslice, \
+            "coast duration %r too small" % duration
+        dtarray.append((x, duration))
 
     if decel_slices:
         decel_timeslice = decel_time / decel_slices
+        assert decel_timeslice > timeslice, \
+            "decel timeslice %r too small" % decel_timeslice
         vstep = (vend - vmax) / (decel_slices + 1)
         for n in range(decel_slices):
             v += vstep
@@ -284,6 +295,8 @@ def interpolate_distance_trapezoidal(vstart, accel_time, accel_dist,
 
 
 def interpolate_distance_linear(dist, vstart, vend, accel_rate, timeslice):
+    print("linear")
+    print("  dist:%r, vstart:%r, vend:%r" % (dist, vstart, vend))
     # Linear
     lin_accel = ((vend**2 - vstart**2) / (2 * dist))
     lin_accel = min(lin_accel, accel_rate)
@@ -299,9 +312,18 @@ def interpolate_distance_linear(dist, vstart, vend, accel_rate, timeslice):
 
     slices = int(math.floor(lin_time / timeslice))
     if not slices:
-        return [(dist, dist / vavg)]
+        duration = dist / vavg
+        # XXX this should be set more intelligently
+        if duration > 200:
+            duration = 200
+        if duration < 30:
+            duration = 30
+        return [(dist, duration)]
     if slices:
+        print("slices:%r" % slices)
         lin_timeslice = lin_time / slices
+        assert lin_timeslice > timeslice, \
+            "lin timeslice %r too small" % lin_timeslice
         vstep = (vend - vstart) / slices
         for n in range(slices):
             v += vstep
@@ -335,8 +357,11 @@ def interpolate_distance_triangular(dist, vstart, vend, accel_rate, timeslice):
 
     if (accel_slices + decel_slices) > 4:
         # Triangular
+        print("triangular")
         if accel_slices:
             accel_timeslice = accel_time / accel_slices
+            assert accel_timeslice > timeslice, \
+                "accel timeslice %r too small" % accel_timeslice
             vstep = (vmax - vstart) / (accel_slices + 1.0)
             for n in range(accel_slices):
                 v += vstep
@@ -346,6 +371,8 @@ def interpolate_distance_triangular(dist, vstart, vend, accel_rate, timeslice):
 
         if decel_slices:
             decel_timeslice = decel_time / decel_slices
+            assert decel_timeslice > timeslice, \
+                "decel timeslice %r too small" % decel_timeslice
             vstep = (vend - vmax) / (decel_slices + 1.0)
             for n in range(decel_slices):
                 v += vstep
@@ -354,9 +381,18 @@ def interpolate_distance_triangular(dist, vstart, vend, accel_rate, timeslice):
                     dtarray.append((x, decel_timeslice))
     elif vend == vstart:
         if vstart:
+            print("constant nonzero velocity")
             # Constant velocity that is non-zero
-            return [(dist, dist / vstart)]
+            print(  "dist:%r, vstart:%r" % (dist, vstart))
+            duration = dist / vstart
+            # XXX this should be set more intelligently
+            if duration > 200:
+                duration = 200
+            if duration < 30:
+                duration = 30
+            return [(dist, duration)]
         else:
+            print("constant zero velocity")
             # Segment that has to start and end at zero velocity, but is really
             # short. This is a really obnoxious case, for now we're just going
             # to set it to do the move in 100ms. Need to figure out the 'vmin'

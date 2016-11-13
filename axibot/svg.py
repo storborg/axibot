@@ -189,8 +189,13 @@ def subdivide_path(path, smoothness):
     ``smoothness`` parameter specifies how smooth the curve approximation
     should be.
 
+    Note that typical "full speed" distance per timeslice is around 0.37".
+
     XXX the 'smoothness' parameter sucks right now and should be made better.
     """
+    resolution = 0.05
+    dist = path.length(error=1e-6)
+    count = int(math.ceil(dist / resolution))
     points = []
     for piece in path:
         if isinstance(piece, Line):
@@ -198,8 +203,8 @@ def subdivide_path(path, smoothness):
             points.append((piece.start.real, piece.start.imag))
             points.append((piece.end.real, piece.end.imag))
         else:
-            for n in range(smoothness + 1):
-                point = piece.point(n / smoothness)
+            for n in range(count + 1):
+                point = piece.point(n / count)
                 points.append((point.real, point.imag))
     return points
 

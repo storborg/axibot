@@ -5,7 +5,7 @@ import logging
 import sys
 import argparse
 
-from . import svg, planning, moves
+from . import svg, planning, moves, config
 from .ebb import EiBotBoard
 
 
@@ -25,6 +25,10 @@ def manual_command(bot, cmd):
 def manual(opts):
     bot = EiBotBoard.find()
     try:
+        pen_down_position = 45
+        pen_up_position = 75
+        bot.servo_setup(pen_down_position, pen_up_position,
+                        config.SERVO_SPEED, config.SERVO_SPEED)
         if opts.cmd:
             cmd = ' '.join(opts.cmd)
             manual_command(bot, cmd)
@@ -63,7 +67,10 @@ def plot(opts):
     bot = EiBotBoard.find()
     try:
         bot.pen_up(1000)
+        print("Configuring servos.")
         bot.disable_motors()
+        bot.servo_setup(pen_down_position, pen_up_position,
+                        config.SERVO_SPEED, config.SERVO_SPEED)
         print("Pen up and motors off. Move carriage to top left corner.")
         input("Press enter to begin.")
 
