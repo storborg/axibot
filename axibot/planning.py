@@ -232,12 +232,11 @@ def dtarray_to_moves(start, end, dtarray):
         prev_y = y
         check_x += dx
         check_y += dy
-
-        # Convert to AxiDraw coordinate space.
-        m1 = dx + dy
-        m2 = dx - dy
-
-        actions.append(moves.XYMove(m1=m1, m2=m2, duration=duration))
+        if dx or dy:
+            # Convert to AxiDraw coordinate space.
+            m1 = dx + dy
+            m2 = dx - dy
+            actions.append(moves.XYMove(m1=m1, m2=m2, duration=duration))
 
     check = check_x, check_y
     assert check == end, \
@@ -261,9 +260,10 @@ def interpolate_distance_trapezoidal(vstart, accel_time, accel_dist,
         accel_timeslice = accel_time / accel_slices
         vstep = (vmax - vstart) / (accel_slices + 1)
         for n in range(accel_slices):
-            x += v * accel_timeslice
             v += vstep
-            dtarray.append((x, accel_timeslice))
+            if v > 0:
+                x += v * accel_timeslice
+                dtarray.append((x, accel_timeslice))
 
     coast_dist = dist - (accel_dist + decel_dist)
     if coast_dist > (timeslice * vmax):
@@ -275,9 +275,10 @@ def interpolate_distance_trapezoidal(vstart, accel_time, accel_dist,
         decel_timeslice = decel_time / decel_slices
         vstep = (vend - vmax) / (decel_slices + 1)
         for n in range(decel_slices):
-            x += v * decel_timeslice
             v += vstep
-            dtarray.append((x, decel_timeslice))
+            if v > 0:
+                x += v * decel_timeslice
+                dtarray.append((x, decel_timeslice))
 
     return dtarray
 
@@ -303,9 +304,10 @@ def interpolate_distance_linear(dist, vstart, vend, accel_rate, timeslice):
         lin_timeslice = lin_time / slices
         vstep = (vend - vstart) / slices
         for n in range(slices):
-            x += v * lin_timeslice
             v += vstep
-            dtarray.append((x, lin_timeslice))
+            if v > 0:
+                x += v * lin_timeslice
+                dtarray.append((x, lin_timeslice))
     else:
         # XXX ???
         dtarray.append((dist, timeslice))
@@ -337,17 +339,19 @@ def interpolate_distance_triangular(dist, vstart, vend, accel_rate, timeslice):
             accel_timeslice = accel_time / accel_slices
             vstep = (vmax - vstart) / (accel_slices + 1.0)
             for n in range(accel_slices):
-                x += v * accel_timeslice
                 v += vstep
-                dtarray.append((x, accel_timeslice))
+                if v > 0:
+                    x += v * accel_timeslice
+                    dtarray.append((x, accel_timeslice))
 
         if decel_slices:
             decel_timeslice = decel_time / decel_slices
             vstep = (vend - vmax) / (decel_slices + 1.0)
             for n in range(decel_slices):
-                x += v * decel_timeslice
                 v += vstep
-                dtarray.append((x, decel_timeslice))
+                if v > 0:
+                    x += v * decel_timeslice
+                    dtarray.append((x, decel_timeslice))
     elif vend == vstart:
         if vstart:
             # Constant velocity that is non-zero
@@ -357,7 +361,7 @@ def interpolate_distance_triangular(dist, vstart, vend, accel_rate, timeslice):
             # short. This is a really obnoxious case, for now we're just going
             # to set it to do the move in 100ms. Need to figure out the 'vmin'
             # which can be accelerated to instantaneously.
-            return [(dist, 0.1)]
+            return [(dist, 100)]
     else:
         dtarray = interpolate_distance_linear(dist, vstart, vend, accel_rate,
                                               timeslice)
@@ -405,9 +409,9 @@ def interpolate_pair(start, vstart, end, vend, pen_up):
     We want to always be accelerating at a constant rate, decelerating at a
     constant rate, or moving at the maximum velocity for this pen state.
     """
-    print("interpolate_pair: %r, %r, %r, %r, %r" % (start, vstart,
-                                                    end, vend,
-                                                    pen_up))
+    #print("interpolate_pair: %r, %r, %r, %r, %r" % (start, vstart,
+    #                                                end, vend,
+    #                                                pen_up))
     if pen_up:
         vmax = config.SPEED_PEN_UP
         accel_max = vmax / config.ACCEL_TIME_PEN_UP
