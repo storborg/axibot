@@ -42,11 +42,18 @@ def manual(opts):
 
 
 def file_to_actions(filename, pen_up_delay, pen_down_delay):
+    print("Loading %s..." % filename)
+    print("Extracting paths...")
     paths = svg.extract_paths(filename)
+    print("Planning segments...")
     segments = svg.plan_segments(paths, smoothness=100)
+    print("Adding pen-up moves...")
     transits = svg.add_pen_transits(segments)
+    print("Converting inches to steps...")
     step_transits = planning.convert_inches_to_steps(transits)
+    print("Planning velocity limits...")
     segments_limits = planning.plan_velocity(step_transits)
+    print("Planning actions...")
     actions = planning.plan_actions(segments_limits,
                                     pen_up_delay=pen_up_delay,
                                     pen_down_delay=pen_down_delay)
@@ -70,7 +77,6 @@ def human_friendly_timedelta(td):
 
 
 def info(opts):
-    print("Loading %s..." % opts.filename)
 
     # XXX find pen positions with user interaction?
     pen_up_position = 75
