@@ -1,6 +1,6 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
-from pprint import pprint
+
 import math
 
 from . import config, moves
@@ -170,18 +170,11 @@ def check_limits(dots):
 
 
 def mess_with_dots(start, end, dots):
-    print("mess_with_dots %r" % dots)
     if not dots:
         return []
     x_desired = end[0] - start[0]
     y_desired = end[1] - start[1]
     x_got, y_got = check_limits(dots)
-
-    print("x_desired %r" % x_desired)
-    print("y_desired %r" % y_desired)
-    print("x_got %r" % x_got)
-    print("y_got %r" % y_got)
-    print("dots %r" % dots)
 
     if x_got:
         x_adjust = x_desired / x_got
@@ -208,7 +201,6 @@ def dtarray_to_moves(start, end, dtarray):
     in the array.
     """
     assert end != start
-    print("dtarray_to_moves %r -> %r / %r" % (start, end, dtarray))
 
     dist = distance(end, start)
     # assert end_dist == dist, "expected %r == %r" % (dtarray[-1][0], dist)
@@ -240,8 +232,6 @@ def dtarray_to_moves(start, end, dtarray):
         m2 = dx - dy
 
         actions.append(moves.XYMove(m1=m1, m2=m2, duration=duration))
-
-        print("  pos %d, %d" % (x, y))
 
     check = check_x, check_y
     assert check == end, \
@@ -289,17 +279,12 @@ def interpolate_distance_trapezoidal(vstart, accel_time, accel_dist,
 def interpolate_distance_linear(dist, vstart, vend, accel_rate, timeslice):
     # Linear
     lin_accel = ((vend**2 - vstart**2) / (2 * dist))
-    print("lin_accel %r" % lin_accel)
     lin_accel = min(lin_accel, accel_rate)
     lin_accel = max(lin_accel, -accel_rate)
-    print("cropped lin_accel %r" % lin_accel)
     lin_time = (vend - vstart) / lin_accel
-    print("lin_time %r" %  lin_time)
 
     vavg = (vend + vstart) / 2
-    print("vavg %r" % vavg)
     lin_time = vavg / dist
-    print("vavg based lin_time %r" % lin_time)
 
     x = 0
     v = vstart
@@ -308,12 +293,9 @@ def interpolate_distance_linear(dist, vstart, vend, accel_rate, timeslice):
     slices = int(math.floor(lin_time / timeslice))
     if not slices:
         return [(dist, dist / vavg)]
-    print("slices %r" % slices)
     if slices:
         lin_timeslice = lin_time / slices
-        print("lin_timeslice %r" % lin_timeslice)
         vstep = (vend - vstart) / slices
-        print("vstep %r" % vstep)
         for n in range(slices):
             x += v * lin_timeslice
             v += vstep
@@ -345,7 +327,6 @@ def interpolate_distance_triangular(dist, vstart, vend, accel_rate, timeslice):
 
     if (accel_slices + decel_slices) > 4:
         # Triangular
-        print("triangular")
         if accel_slices:
             accel_timeslice = accel_time / accel_slices
             vstep = (vmax - vstart) / (accel_slices + 1.0)
@@ -362,7 +343,6 @@ def interpolate_distance_triangular(dist, vstart, vend, accel_rate, timeslice):
                 v += vstep
                 dtarray.append((x, decel_timeslice))
     elif vend == vstart:
-        print("constant")
         if vstart:
             # Constant velocity that is non-zero
             return [(dist, dist / vstart)]
@@ -373,11 +353,9 @@ def interpolate_distance_triangular(dist, vstart, vend, accel_rate, timeslice):
             # which can be accelerated to instantaneously.
             return [(dist, 0.1)]
     else:
-        print("linear")
         dtarray = interpolate_distance_linear(dist, vstart, vend, accel_rate,
                                               timeslice)
 
-    pprint(dtarray)
     # assert end_dist == dist, "%r must == %r" % (dtarray[-1][0], dist)
     return dtarray
 
@@ -393,31 +371,18 @@ def interpolate_distance(dist, vstart, vend, vmax, accel_max, timeslice):
     Acceleration units are steps/second^2.
     Timeslice provided is in seconds.
     """
-    print("vstart %r" % vstart)
-    print("vend %r" % vend)
-    print("vmax %r" % vmax)
-    print("accel_max %r" % accel_max)
-
     accel_time = (vmax - vstart) / accel_max
     decel_time = (vmax - vend) / accel_max
     accel_dist = (vstart * accel_time) + (0.5 * accel_max * (accel_time**2))
     decel_dist = (vend * decel_time) + (0.5 * accel_max * (decel_time**2))
 
-    print("dist %r" % dist)
-    print("accel_time %r" % accel_time)
-    print("decel_time %r" % decel_time)
-    print("accel_dist %r" % accel_dist)
-    print("decel_dist %r" % decel_dist)
-
     if dist > (accel_dist + decel_dist + timeslice * vmax):
-        print("trapezoidal")
         # Trapezoidal
         return interpolate_distance_trapezoidal(
             vstart, accel_time, accel_dist,
             vend, decel_time, decel_dist,
             vmax, dist, timeslice)
     else:
-        print("triangular or linear")
         # Triangular or linear
         return interpolate_distance_triangular(dist, vstart, vend, accel_max,
                                                timeslice)
