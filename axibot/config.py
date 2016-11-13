@@ -13,14 +13,14 @@ SERVO_SPEED = 150
 EXTRA_PEN_UP_DELAY = 0
 EXTRA_PEN_DOWN_DELAY = 0
 
-SPEED_SCALE = 24950  # ticks per second
+SPEED_SCALE = 24.950  # ticks per millisecond
 
-# Seconds of acceleration to reach full speed with pen down.
-ACCEL_TIME_PEN_DOWN = 0.25
+# Milliseconds of acceleration to reach full speed with pen down.
+ACCEL_TIME_PEN_DOWN = 250
 SPEED_PEN_DOWN = 0.25 * SPEED_SCALE
 
-# Seconds of acceleration to reach full speed with pen up.
-ACCEL_TIME_PEN_UP = 1.0
+# Milliseconds of acceleration to reach full speed with pen up.
+ACCEL_TIME_PEN_UP = 1000
 SPEED_PEN_UP = 0.75 * SPEED_SCALE
 
 # Short-move pen-up distance threshold in inches, below which we use the faster
@@ -30,8 +30,8 @@ SHORT_THRESHOLD = 1.0
 # Motor steps per inch in 16X microstepping mode.
 DPI_16X = 2032
 
-# Time interval in seconds to update motor control.
-TIME_SLICE = 0.030
+# Time interval in milliseconds to update motor control.
+TIME_SLICE = 30
 
 # Smoothness of curves. Unitless?
 SMOOTHNESS = 1.0

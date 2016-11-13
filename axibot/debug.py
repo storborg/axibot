@@ -158,16 +158,16 @@ def debug_actions(opts):
             if not pen_up:
                 # plot the pen down stuff
                 plt.plot(xdata, ydata, 'g-')
-                xdata = []
-                ydata = []
+                xdata = [x]
+                ydata = [y]
             pen_up = True
         elif isinstance(action, moves.PenDownMove):
             print("pen down")
             if pen_up:
                 # plot the pen up stuff
                 plt.plot(xdata, ydata, 'r-')
-                xdata = []
-                ydata = []
+                xdata = [x]
+                ydata = [y]
             pen_up = False
         elif isinstance(action, moves.XYMove):
             dx = action.m1 + action.m2

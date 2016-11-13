@@ -164,42 +164,88 @@ def plan_velocity(transits):
     return out
 
 
-def dtarray_to_moves(start, end, dt_array):
+def check_limits(dots):
+    xend, yend, duration = dots[-1]
+    return xend, yend
+
+
+def mess_with_dots(start, end, dots):
+    print("mess_with_dots %r" % dots)
+    if not dots:
+        return []
+    x_desired = end[0] - start[0]
+    y_desired = end[1] - start[1]
+    x_got, y_got = check_limits(dots)
+
+    print("x_desired %r" % x_desired)
+    print("y_desired %r" % y_desired)
+    print("x_got %r" % x_got)
+    print("y_got %r" % y_got)
+    print("dots %r" % dots)
+
+    if x_got:
+        x_adjust = x_desired / x_got
+    else:
+        assert x_desired == 0
+        x_adjust = 0
+    if y_got:
+        y_adjust = y_desired / y_got
+    else:
+        assert y_desired == 0
+        y_adjust = 0
+
+    new_dots = [(round(x * x_adjust), round(y * y_adjust), duration)
+                for x, y, duration
+                in dots]
+    assert check_limits(new_dots) == (x_desired, y_desired)
+    return new_dots
+
+
+def dtarray_to_moves(start, end, dtarray):
     """
     Given a start point, an end point, and an array of linear distances/times,
     return the actions to move between the two points, with one move per point
     in the array.
     """
     assert end != start
-    print("dtarray_to_moves %r -> %r" % (start, end))
+    print("dtarray_to_moves %r -> %r / %r" % (start, end, dtarray))
 
     dist = distance(end, start)
-    # assert end_dist == dist, "expected %r == %r" % (dt_array[-1][0], dist)
+    # assert end_dist == dist, "expected %r == %r" % (dtarray[-1][0], dist)
     xratio = (end[0] - start[0]) / dist
     yratio = (end[1] - start[1]) / dist
 
     dots = []
-    for d, duration in dt_array:
+    for d, duration in dtarray:
         x = round(xratio * d)
         y = round(yratio * d)
+        duration = round(duration)
         dots.append((x, y, duration))
+
+    dots = mess_with_dots(start, end, dots)
 
     actions = []
     prev_x, prev_y = 0, 0
+    check_x, check_y = start
     for x, y, duration in dots:
         dx = x - prev_x
         dy = y - prev_y
         prev_x = x
         prev_y = y
+        check_x += dx
+        check_y += dy
 
         # Convert to AxiDraw coordinate space.
         m1 = dx + dy
         m2 = dx - dy
 
-        duration = round(duration * 1000)
         actions.append(moves.XYMove(m1=m1, m2=m2, duration=duration))
 
         print("  pos %d, %d" % (x, y))
+
+    check = check_x, check_y
+    assert check == end, \
+        "actually ended at %r, wanted to end at %r" % (check, end)
 
     return actions
 
@@ -251,7 +297,7 @@ def interpolate_distance_linear(dist, vstart, vend, accel_rate, timeslice):
     lin_time = (vend - vstart) / lin_accel
     print("lin_time %r" %  lin_time)
 
-    vavg = (vend - vstart) / 2
+    vavg = (vend + vstart) / 2
     print("vavg %r" % vavg)
     lin_time = vavg / dist
     print("vavg based lin_time %r" % lin_time)
