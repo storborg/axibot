@@ -159,7 +159,7 @@ def debug_actions(opts):
                 # plot the pen down stuff
                 plt.plot(xdata, ydata, 'g-')
                 xdata = [x]
-                ydata = [y]
+                ydata = [-y]
             pen_up = True
         elif isinstance(action, moves.PenDownMove):
             print("pen down")
@@ -167,7 +167,7 @@ def debug_actions(opts):
                 # plot the pen up stuff
                 plt.plot(xdata, ydata, 'r-')
                 xdata = [x]
-                ydata = [y]
+                ydata = [-y]
             pen_up = False
         elif isinstance(action, moves.XYMove):
             dx = action.m1 + action.m2
@@ -177,7 +177,7 @@ def debug_actions(opts):
             y += dy
 
             xdata.append(x)
-            ydata.append(y)
+            ydata.append(-y)
         else:
             raise ValueError("Not expecting %r" % action)
 
