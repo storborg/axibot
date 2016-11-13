@@ -35,6 +35,9 @@ class XYMove(Move):
         assert isinstance(m1, int), "got %r, wanted an int" % m1
         assert isinstance(m2, int), "got %r, wanted an int" % m2
         assert isinstance(duration, int), "got %r, wanted an int" % duration
+        assert m1 > 0, "m1: %r not greater than zero" % m1
+        assert m2 > 0, "m1: %r not greater than zero" % m2
+        assert duration > 0, "duration: %r not greater than zero" % duration
         self.m1 = m1
         self.m2 = m2
         self.duration = duration
