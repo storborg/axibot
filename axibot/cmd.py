@@ -5,7 +5,7 @@ import logging
 import sys
 import argparse
 
-from . import svg, planning
+from . import svg, planning, moves
 from .ebb import EiBotBoard
 
 
@@ -43,7 +43,10 @@ def plot(opts):
     pen_up_position = 75
     pen_down_position = 45
     # XXX better parameter config
-    smoothness = 10
+    smoothness = 1.0
+
+    pen_up_delay, pen_down_delay = \
+        moves.calculate_pen_delays(pen_up_position, pen_down_position)
 
     paths = svg.extract_paths(opts.filename)
     segments = svg.plan_segments(paths, smoothness=smoothness)
@@ -51,8 +54,8 @@ def plot(opts):
     step_transits = planning.convert_inches_to_steps(transits)
     segments_limits = planning.plan_velocity(step_transits)
     actions = planning.plan_actions(segments_limits,
-                                    pen_up_position=pen_up_position,
-                                    pen_down_position=pen_down_position)
+                                    pen_up_delay=pen_up_delay,
+                                    pen_down_delay=pen_down_delay)
 
     count = len(actions)
     print("Calculated %d actions." % count)
