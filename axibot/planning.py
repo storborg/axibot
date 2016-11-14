@@ -83,7 +83,7 @@ def cornering_velocity(angle, vmax):
     if angle < (math.pi / 2):
         return 0
     else:
-        return 1.0 + math.sin(angle - math.pi)
+        return (1.0 + math.sin(angle - math.pi)) * vmax
 
 
 def segment_corner_limits(segment, pen_up):
