@@ -1,8 +1,6 @@
 AxiBot
 ======
 
-Author: `Scott Torborg <http://www.scotttorborg.com>`_
-
 AxiBot is an alternative control interface for the `AxiDraw pen plotting robot
 <http://shop.evilmadscientist.com/productsmenu/846>`_ from Evil Mad Scientist
 Labs.
