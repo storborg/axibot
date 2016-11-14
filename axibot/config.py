@@ -40,21 +40,5 @@ TIME_SLICE = 30
 # Smoothness of curves. Units are inches.
 CURVE_RESOLUTION = 0.02
 
-# Corner rounding/tolerance factor. Unitless?
-CORNERING = 0.01
-
 # Skip pen-up moves shorter than this distance when possible. Units in inches.
 MIN_GAP = 0.010
-
-"""
-InkScape settings:
-
-    writing/drawing (pen down) speed: 25%
-    pen up speed: 75%
-    pen servo moving up speed: 150%
-    pen up delay: 0
-    pen servo moving down speed: 150%
-    pen down delay: 0
-    smoothing: 10
-    cornering: 10
-"""
