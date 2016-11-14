@@ -87,7 +87,7 @@ def info(opts):
 
     # XXX find pen positions with user interaction?
     pen_up_position = 75
-    pen_down_position = 45
+    pen_down_position = 60
     # XXX better parameter config
     smoothness = 100
 
@@ -105,7 +105,7 @@ def plot(opts):
 
     # XXX find pen positions with user interaction?
     pen_up_position = 75
-    pen_down_position = 45
+    pen_down_position = 60
     # XXX better parameter config
     smoothness = 100
 
