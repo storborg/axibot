@@ -2,6 +2,7 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import logging
 
+import time
 import sys
 import argparse
 from datetime import timedelta
@@ -77,6 +78,11 @@ def human_friendly_timedelta(td):
     return ", ".join(pieces)
 
 
+def calculate_duration(actions):
+    duration_ms = sum(action.time() for action in actions)
+    return timedelta(seconds=(duration_ms / 1000))
+
+
 def info(opts):
 
     # XXX find pen positions with user interaction?
@@ -89,8 +95,7 @@ def info(opts):
         moves.calculate_pen_delays(pen_up_position, pen_down_position)
 
     actions = file_to_actions(opts.filename, pen_up_delay, pen_down_delay)
-    duration_ms = sum(action.time() for action in actions)
-    td = timedelta(seconds=(duration_ms / 1000))
+    td = calculate_duration(actions)
     print("Number of moves: %s" % len(actions))
     print("Expected time: %s" % human_friendly_timedelta(td))
 
@@ -121,6 +126,7 @@ def plot(opts):
         print("Pen up and motors off. Move carriage to top left corner.")
         input("Press enter to begin.")
 
+        start_time = time.time()
         bot.enable_motors(1)
 
         for ii, move in enumerate(actions):
@@ -128,7 +134,12 @@ def plot(opts):
             bot.do(move)
 
         bot.pen_up(1000)
+        end_time = time.time()
+        estimated_td = calculate_duration(actions)
+        actual_td = timedelta(seconds=(end_time - start_time))
         print("Finished!")
+        print("Expected time: %s" % human_friendly_timedelta(estimated_td))
+        print("Actual time: %s" % human_friendly_timedelta(actual_td))
     finally:
         bot.close()
 
