@@ -40,7 +40,3 @@ API Reference
 .. automodule:: axibot.transform
     :members:
     :undoc-members:
-
-.. automodule:: axibot.utils
-    :members:
-    :undoc-members:
