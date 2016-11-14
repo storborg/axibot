@@ -27,8 +27,8 @@ def manual_command(bot, cmd):
 def manual(opts):
     bot = EiBotBoard.find()
     try:
-        pen_down_position = 45
-        pen_up_position = 75
+        pen_down_position = 50
+        pen_up_position = 60
         bot.servo_setup(pen_down_position, pen_up_position,
                         config.SERVO_SPEED, config.SERVO_SPEED)
         if opts.cmd:
@@ -86,8 +86,8 @@ def calculate_duration(actions):
 def info(opts):
 
     # XXX find pen positions with user interaction?
-    pen_up_position = 75
-    pen_down_position = 60
+    pen_up_position = 60
+    pen_down_position = 50
     # XXX better parameter config
     smoothness = 100
 
@@ -104,8 +104,8 @@ def plot(opts):
     print("Loading %s..." % opts.filename)
 
     # XXX find pen positions with user interaction?
-    pen_up_position = 75
-    pen_down_position = 60
+    pen_up_position = 60
+    pen_down_position = 50
     # XXX better parameter config
     smoothness = 100
 
