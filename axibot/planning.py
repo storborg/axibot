@@ -435,9 +435,6 @@ def interpolate_pair(start, vstart, end, vend, pen_up):
     We want to always be accelerating at a constant rate, decelerating at a
     constant rate, or moving at the maximum velocity for this pen state.
     """
-    #print("interpolate_pair: %r, %r, %r, %r, %r" % (start, vstart,
-    #                                                end, vend,
-    #                                                pen_up))
     if pen_up:
         vmax = config.SPEED_PEN_UP
         accel_max = vmax / config.ACCEL_TIME_PEN_UP

@@ -37,8 +37,8 @@ DPI_16X = 2032
 # Time interval in milliseconds to update motor control.
 TIME_SLICE = 30
 
-# Smoothness of curves. Unitless?
-SMOOTHNESS = 1.0
+# Smoothness of curves. Units are inches.
+CURVE_RESOLUTION = 0.02
 
 # Corner rounding/tolerance factor. Unitless?
 CORNERING = 0.01

@@ -42,10 +42,9 @@ def debug_segments(opts):
     Render an SVG file into linear segments, and then plot them with
     matplotlib.
     """
-    smoothness = 100
     paths = svg.extract_paths(opts.filename)
     paths = svg.preprocess_paths(paths)
-    segments = svg.plan_segments(paths, smoothness=smoothness)
+    segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
 
     xdata = []
     ydata = []
@@ -60,10 +59,9 @@ def debug_segments(opts):
 
 
 def debug_transits(opts):
-    smoothness = 100
     paths = svg.extract_paths(opts.filename)
     paths = svg.preprocess_paths(paths)
-    segments = svg.plan_segments(paths, smoothness=smoothness)
+    segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
     transits = svg.add_pen_transits(segments)
 
     for segment, pen_up in transits:
@@ -78,10 +76,9 @@ def debug_transits(opts):
 
 
 def debug_corners(opts):
-    smoothness = 10
     paths = svg.extract_paths(opts.filename)
     paths = svg.preprocess_paths(paths)
-    segments = svg.plan_segments(paths, smoothness=smoothness)
+    segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
     transits = svg.add_pen_transits(segments)
     step_transits = planning.convert_inches_to_steps(transits)
     segments_limits = planning.plan_velocity(step_transits)
@@ -138,10 +135,9 @@ def debug_corners(opts):
 
 
 def generate_actions(opts):
-    smoothness = 100
     paths = svg.extract_paths(opts.filename)
     paths = svg.preprocess_paths(paths)
-    segments = svg.plan_segments(paths, smoothness=smoothness)
+    segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
     transits = svg.add_pen_transits(segments)
     step_transits = planning.convert_inches_to_steps(transits)
     segments_limits = planning.plan_velocity(step_transits)

@@ -94,17 +94,14 @@ def convert_to_path(node, matrix):
                          node.tag)
 
 
-def subdivide_path(path, smoothness):
+def subdivide_path(path, resolution):
     """
     Given a svg.path.Path instance, output a list of points to traverse. The
     ``smoothness`` parameter specifies how smooth the curve approximation
     should be.
 
     Note that typical "full speed" distance per timeslice is around 0.37".
-
-    XXX the 'smoothness' parameter sucks right now and should be made better.
     """
-    resolution = 0.02
     points = []
     for piece in path:
         if isinstance(piece, Line):
@@ -120,11 +117,11 @@ def subdivide_path(path, smoothness):
     return points
 
 
-def plan_segments(paths, smoothness):
+def plan_segments(paths, resolution):
     """
     Takes a list of Path instances, returns a list of lists of points.
     """
-    return [subdivide_path(path, smoothness) for path in paths]
+    return [subdivide_path(path, resolution) for path in paths]
 
 
 def join_segments(segments, min_gap):

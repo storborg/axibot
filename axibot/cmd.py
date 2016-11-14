@@ -48,7 +48,7 @@ def file_to_actions(filename, pen_up_delay, pen_down_delay):
     paths = svg.extract_paths(filename)
     paths = svg.preprocess_paths(paths)
     print("Planning segments...")
-    segments = svg.plan_segments(paths, smoothness=100)
+    segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
     print("Adding pen-up moves...")
     transits = svg.add_pen_transits(segments)
     print("Converting inches to steps...")
@@ -88,8 +88,6 @@ def info(opts):
     # XXX find pen positions with user interaction?
     pen_up_position = 60
     pen_down_position = 50
-    # XXX better parameter config
-    smoothness = 100
 
     pen_up_delay, pen_down_delay = \
         moves.calculate_pen_delays(pen_up_position, pen_down_position)
@@ -106,8 +104,6 @@ def plot(opts):
     # XXX find pen positions with user interaction?
     pen_up_position = 60
     pen_down_position = 50
-    # XXX better parameter config
-    smoothness = 100
 
     pen_up_delay, pen_down_delay = \
         moves.calculate_pen_delays(pen_up_position, pen_down_position)
