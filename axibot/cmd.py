@@ -45,6 +45,7 @@ def file_to_actions(filename, pen_up_delay, pen_down_delay):
     print("Loading %s..." % filename)
     print("Extracting paths...")
     paths = svg.extract_paths(filename)
+    paths = svg.preprocess_paths(paths)
     print("Planning segments...")
     segments = svg.plan_segments(paths, smoothness=100)
     print("Adding pen-up moves...")

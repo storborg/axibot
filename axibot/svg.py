@@ -6,7 +6,7 @@ import logging
 import math
 
 from xml.etree import ElementTree
-from svg.path import parse_path, Line
+from svg.path import parse_path, Path, Line
 
 from . import transform
 
@@ -248,4 +248,30 @@ def extract_paths(filename):
 
     paths = []
     recurse_tree(paths, root, matrix)
+    return paths
+
+
+def split_disconnected_paths(paths):
+    """
+    Accepts a list of Path instances. Iterates over paths to determine if
+    adjacent sections are actually connected. If they are not, the paths are
+    split into multiple Path instances so that each instance contains only
+    connected paths.
+    """
+    out_paths = []
+    for path in paths:
+        new_path = Path()
+        last_point = path[0].start
+        for section in path:
+            if section.start != last_point:
+                out_paths.append(new_path)
+                new_path = Path()
+            last_point = section.end
+            new_path.append(section)
+        out_paths.append(new_path)
+    return out_paths
+
+
+def preprocess_paths(paths):
+    paths = split_disconnected_paths(paths)
     return paths
