@@ -272,15 +272,34 @@ def split_disconnected_paths(paths):
     return out_paths
 
 
+def distance_squared(a, b):
+    return ((b.real - a.real)**2) + ((b.imag - a.imag)**2)
+
+
+def find_closest_path(current_point, paths):
+    best_score = None
+    best_path = None
+    for path in paths:
+        score = distance_squared(current_point, path[0].start)
+        if (not best_score) or (score < best_score):
+            best_score = score
+            best_path = path
+    return best_path
+
+
 def sort_paths(paths):
     """
     Sort list of paths by start point. This is a crude heuristic to try to
     avoid spending as much time moving around with the pen up.
     """
-    def distance_from_origin(path):
-        pt = path[0].start
-        return math.sqrt(pt.real**2 + pt.imag**2)
-    return sorted(paths, key=distance_from_origin)
+    out_paths = []
+    current_point = complex(0, 0)
+    while paths:
+        next_path = find_closest_path(current_point, paths)
+        current_point = next_path[-1].end
+        paths.remove(next_path)
+        out_paths.append(next_path)
+    return out_paths
 
 
 def preprocess_paths(paths):
