@@ -186,8 +186,8 @@ class EiBotBoard:
 
     def ab_move(self, da, db, duration):
         """
-        Issue command to move A/B axes as:
-            "XM,<move_duration>,<axisA>,<axisB><CR>"
+        Issue command to move A/B axes
+        as: "XM,<move_duration>,<axisA>,<axisB><CR>"
         Then, <Axis1> moves by <AxisA> + <AxisB>,
         and <Axis2> as <AxisA> - <AxisB>
 

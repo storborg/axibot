@@ -146,9 +146,9 @@ def plan_velocity(transits):
     Given a list of (segment, pen_up) tuples, tag each segment with a target
     velocity for that corner. This combines two limits:
 
-    - The max speed at which we can plot through a given corner, based on how
+    1. The max speed at which we can plot through a given corner, based on how
     tight that corner is and the pen state.
-    - The acceleration/deceleration limit.
+    2. The acceleration/deceleration limit.
 
     Both of these limits serve to avoid the pen carriage oscillating and thus
     making the pen line squiggly, or just slamming the motors around and
