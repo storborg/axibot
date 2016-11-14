@@ -272,6 +272,18 @@ def split_disconnected_paths(paths):
     return out_paths
 
 
+def sort_paths(paths):
+    """
+    Sort list of paths by start point. This is a crude heuristic to try to
+    avoid spending as much time moving around with the pen up.
+    """
+    def distance_from_origin(path):
+        pt = path[0].start
+        return math.sqrt(pt.real**2 + pt.imag**2)
+    return sorted(paths, key=distance_from_origin)
+
+
 def preprocess_paths(paths):
     paths = split_disconnected_paths(paths)
+    paths = sort_paths(paths)
     return paths
