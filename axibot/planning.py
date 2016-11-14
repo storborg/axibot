@@ -28,8 +28,8 @@ def convert_inches_to_steps(transits):
         last_point = None
         for inches_point in segment:
             assert len(inches_point) == 2
-            steps_point = (round(spi * inches_point[0]),
-                           round(spi * inches_point[1]))
+            steps_point = (int(round(spi * inches_point[0])),
+                           int(round(spi * inches_point[1])))
             if (last_point is None) or (steps_point != last_point):
                 points.append(steps_point)
             last_point = steps_point
@@ -193,7 +193,7 @@ def mess_with_dots(start, end, dots):
         assert y_desired == 0
         y_adjust = 0
 
-    new_dots = [(round(x * x_adjust), round(y * y_adjust), duration)
+    new_dots = [(int(round(x * x_adjust)), int(round(y * y_adjust)), duration)
                 for x, y, duration
                 in dots]
     assert check_limits(new_dots) == (x_desired, y_desired)
@@ -216,9 +216,9 @@ def dtarray_to_moves(start, end, dtarray):
     dots = []
     for d, duration in dtarray:
         assert duration < 3000, "tried to set duration:%r" % duration
-        x = round(xratio * d)
-        y = round(yratio * d)
-        duration = round(duration)
+        x = int(round(xratio * d))
+        y = int(round(yratio * d))
+        duration = int(round(duration))
         dots.append((x, y, duration))
 
     dots = mess_with_dots(start, end, dots)
