@@ -1,7 +1,7 @@
-import aiohttp_mako
+import aiohttp_themes
 
 
-@aiohttp_mako.template('index.html')
+@aiohttp_themes.template('index.html')
 async def index(request):
     return {'text': 'Hello World!'}
 
