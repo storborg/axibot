@@ -43,6 +43,11 @@ button.neutral {
     background-color: #666;
 }
 
+button:disabled {
+    cursor:not-allowed;
+    opacity: .7;
+}
+
 div.manual_controls {
     display: flex;
     justify-content: center;

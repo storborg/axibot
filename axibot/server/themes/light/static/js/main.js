@@ -4,6 +4,19 @@ require([
   'utils'
 ], function ($, Dropzone, utils) {
 
+    // Extended disable function
+    jQuery.fn.extend({
+        disable: function(state) {
+            return this.each(function() {
+                var $this = $(this);
+                if($this.is('input, button, textarea, select'))
+                    this.disabled = state;
+                else
+                    $this.toggleClass('disabled', state);
+            });
+        }
+    });
+
   function initDropZone() {
       Dropzone.options.dropper = {
           init: function() {
@@ -34,6 +47,15 @@ require([
           console.log("removing hover");
           this.className = ''; return false;
       });
+      dropper.on("addedfile", function() {
+          console.log("Enabling start");
+          $("#start").disable(false);
+      });
+      dropper.on("removedfile", function() {
+          console.log("Disabling start");
+          $("#start").disable(true);
+      });
+      return dropper;
   }
 
   function bindButtons() {
@@ -49,8 +71,8 @@ require([
   $(function () {
     console.log('Loaded light: main.');
 
-    initDropZone();
-    bindButtons();
+    var dropper = initDropZone();
+    bindButtons(dropper);
 
   });
 });
