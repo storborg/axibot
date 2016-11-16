@@ -6,6 +6,7 @@ from aiohttp import web
 import aiohttp_themes
 
 from . import views
+from .ebb import EiBotBoard, MockEiBotBoard
 from .themes.light import LightTheme
 
 log = logging.getLogger(__name__)
@@ -34,5 +35,13 @@ def make_app():
 
 
 def serve(opts):
-    app = make_app()
-    web.run_app(app, port=opts.port)
+    if opts.mock:
+        bot = MockEiBotBoard()
+    else:
+        bot = EiBotBoard.find()
+
+    try:
+        app = make_app(bot)
+        web.run_app(app, port=opts.port)
+    finally:
+        bot.close()

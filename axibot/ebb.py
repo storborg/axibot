@@ -1,6 +1,7 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import logging
+import time
 
 import serial
 from serial.tools.list_ports import comports
@@ -14,7 +15,21 @@ class EiBotException(Exception):
     pass
 
 
-class EiBotBoard:
+class EiBotBase:
+    def do(self, move):
+        kw = move.__dict__.copy()
+        name = move.name
+        if name in ('pen_up', 'pen_down',
+                    'xy_accel_move', 'xy_move',
+                    'ab_move'):
+            method = getattr(self, name)
+            return method(**kw)
+        else:
+            raise EiBotException("Don't know how to do move %r / %s" %
+                                 (move, move))
+
+
+class EiBotBoard(EiBotBase):
     def __init__(self, ser):
         self.serial = ser
 
@@ -75,17 +90,6 @@ class EiBotBoard:
                     "Unexpected response from EBB:\n"
                     "Command: %s\n"
                     "Response: %s" % (cmd.strip(), resp.strip()))
-
-    def timed_pause(self, n):
-        while n:
-            if n > 750:
-                td = int(750)
-            else:
-                td = n
-                if td < 1:
-                    td = int(1)
-            self.command('SM,%s,0,0\r' % td)
-            n -= td
 
     def enable_motors(self, res):
         """
@@ -195,14 +199,59 @@ class EiBotBoard:
         """
         self.command('XM,%s,%s,%s\r' % (duration, da, db))
 
-    def do(self, move):
-        kw = move.__dict__.copy()
-        name = move.name
-        if name in ('pen_up', 'pen_down',
-                    'xy_accel_move', 'xy_move',
-                    'ab_move'):
-            method = getattr(self, name)
-            return method(**kw)
-        else:
-            raise EiBotException("Don't know how to do move %r / %s" %
-                                 (move, move))
+
+class MockEiBotBoard(EiBotBase):
+    def close(self):
+        pass
+
+    def query(self, cmd):
+        raise NotImplementedError(
+            "Mock EBB doesn't know how to handle queries.")
+
+    def command(self, cmd):
+        cmd = cmd.encode('ascii')
+        log.debug("Sending command: %s", cmd)
+        self.serial.write(cmd)
+        resp = self.robust_readline()
+        if not resp.strip().startswith(b'OK'):
+            if resp:
+                raise EiBotException(
+                    "Unexpected response from EBB:\n"
+                    "Command: %s\n"
+                    "Response: %s" % (cmd.strip(), resp.strip()))
+
+    def enable_motors(self, res):
+        log.debug("Mock EBB: Enabling motors.")
+
+    def disable_motors(self):
+        log.debug("Mock EBB: Disabling motors.")
+
+    def query_prg_button(self):
+        log.debug("Mock EBB: Query PRG button.")
+
+    def toggle_pen(self):
+        log.debug("Mock EBB: Toggle pen.")
+
+    def servo_setup(self,
+                    pen_down_position, pen_up_position,
+                    servo_up_speed, servo_down_speed):
+        log.debug("Mock EBB: Servo setup.")
+
+    def pen_up(self, delay):
+        log.debug("Mock EBB: Pen up with delay %s.", delay)
+        time.sleep(delay / 1000.)
+
+    def pen_down(self, delay):
+        log.debug("Mock EBB: Pen down with delay %s.", delay)
+        time.sleep(delay / 1000.)
+
+    def xy_accel_move(self, dx, dy, v_initial, v_final):
+        log.debug("Mock EBB: XY accel move. Cannot simulate delay.")
+
+    def xy_move(self, m1, m2, duration):
+        log.debug("Mock EBB: XY move.")
+        time.sleep(duration / 1000.)
+
+    def ab_move(self, da, db, duration):
+        log.debug("Mock EBB: AB move.")
+        time.sleep(duration / 1000.)
