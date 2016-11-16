@@ -8,7 +8,7 @@ import argparse
 from datetime import timedelta
 
 from . import svg, planning, moves, config
-from .ebb import EiBotBoard
+from .ebb import EiBotBoard, MockEiBotBoard
 
 
 def manual_command(bot, cmd):
@@ -25,7 +25,10 @@ def manual_command(bot, cmd):
 
 
 def manual(opts):
-    bot = EiBotBoard.find()
+    if opts.mock:
+        bot = MockEiBotBoard()
+    else:
+        bot = EiBotBoard.find()
     try:
         pen_down_position = 50
         pen_up_position = 60
@@ -112,7 +115,10 @@ def plot(opts):
     count = len(actions)
     print("Calculated %d actions." % count)
 
-    bot = EiBotBoard.find()
+    if opts.mock:
+        bot = MockEiBotBoard()
+    else:
+        bot = EiBotBoard.find()
     try:
         bot.pen_up(1000)
         print("Configuring servos.")
@@ -148,6 +154,7 @@ def server(opts):
 def main(args=sys.argv):
     p = argparse.ArgumentParser(description='Print with the AxiDraw.')
     p.add_argument('--verbose', action='store_true')
+    p.add_argument('--mock', action='store_true')
     p.set_defaults(function=None)
 
     subparsers = p.add_subparsers(help='sub-command help')
