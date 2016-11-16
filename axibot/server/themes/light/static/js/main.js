@@ -23,7 +23,8 @@ require([
 
       var dropper = $("div#dropper");
       // Set the url to something random to avoid dropzone doing stupid things
-      dropper.dropzone({ url: "blahblah" });
+      dropper.dropzone({ url: "blahblah",
+                         addRemoveLinks: true});
       // Make the dropper green when a file is over it
       dropper.on("dragover", function () {
           console.log("setting hover class");
