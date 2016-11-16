@@ -28,16 +28,18 @@ require([
           },
           paramName: "file", // The name that will be used to transfer the file
           autoProcessQueue: false, // Don't auto upload files
+          autoDiscover: "false",
           accept: function(file, done) {
+              console.log("dropzone accepted file");
               console.log(file);
               done();
           }
       };
 
-      var dropper = $("div#dropper");
-      // Set the url to something random to avoid dropzone doing stupid things
-      dropper.dropzone({ url: "blahblah",
-                         addRemoveLinks: true});
+      var dropper = new Dropzone("div#dropper",
+          { url: "./start", // Set url to something random to avoid auto uploads
+            addRemoveLinks: true} // Show remove button
+      );
       // Make the dropper green when a file is over it
       dropper.on("dragover", function () {
           console.log("setting hover class");
@@ -58,14 +60,10 @@ require([
       return dropper;
   }
 
-  function bindButtons() {
-      var buttons = ["up", "down", "left", "right"];
-      for(const dir of buttons) {
-          $(`button#${dir}`).on("click", function() {
-              $.post(`move/${dir}`, function(data) {
-              });
-          });
-      }
+  function bindButtons(dropper) {
+      $("#start").on("click", function() {
+          dropper.processQueue();
+      })
   }
 
   $(function () {
