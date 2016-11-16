@@ -24,8 +24,8 @@ def make_app():
                          compiled_asset_dir='/tmp/compiled')
 
     app.router.add_route('GET', '/', views.index)
-    app.router.add_route('POST', '/move/{dir}', views.move)
     app.router.add_route('POST', '/start', views.start)
+    app.router.add_route('POST', '/toggle', views.toggle_pen)
 
     static_dir = os.path.join(__here__, 'themes', 'light', 'static')
     app.router.add_static('/_light', static_dir)

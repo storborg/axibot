@@ -5,12 +5,8 @@ import aiohttp_themes
 async def index(request):
     return {'text': 'Hello World!'}
 
-
-# XXX: Figure out how to handle these
-async def move(request):
-    move_direction = request.match_info['dir']
-    return "moved %s" % move_direction
-
-
 async def start(request):
+    return ""
+
+async def toggle_pen(request):
     return ""
