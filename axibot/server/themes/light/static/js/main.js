@@ -72,6 +72,19 @@ require([
     var dropper = initDropZone();
     bindButtons(dropper);
 
+    var sock = new WebSocket(utils.qualifyWebsocketURL("/api"));
+    sock.onopen = function () {
+      console.log("websocket: opened");
+    }
+
+    sock.onerror = function (error) {
+      console.log("websocket: error", error);
+    }
+
+    sock.onmessage = function (e) {
+      console.log("websocket: message", e.data);
+    }
+
   });
 });
 
