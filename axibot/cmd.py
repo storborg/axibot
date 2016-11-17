@@ -30,9 +30,7 @@ def manual(opts):
     else:
         bot = EiBotBoard.find()
     try:
-        pen_down_position = 50
-        pen_up_position = 60
-        bot.servo_setup(pen_down_position, pen_up_position,
+        bot.servo_setup(config.PEN_DOWN_POSITION, config.PEN_UP_POSITION,
                         config.SERVO_SPEED, config.SERVO_SPEED)
         if opts.cmd:
             cmd = ' '.join(opts.cmd)
@@ -87,13 +85,9 @@ def calculate_duration(actions):
 
 
 def info(opts):
-
-    # XXX find pen positions with user interaction?
-    pen_up_position = 60
-    pen_down_position = 50
-
     pen_up_delay, pen_down_delay = \
-        moves.calculate_pen_delays(pen_up_position, pen_down_position)
+        moves.calculate_pen_delays(config.PEN_UP_POSITION,
+                                   config.PEN_DOWN_POSITION)
 
     actions = file_to_actions(opts.filename, pen_up_delay, pen_down_delay)
     td = calculate_duration(actions)
@@ -102,14 +96,9 @@ def info(opts):
 
 
 def plot(opts):
-    print("Loading %s..." % opts.filename)
-
-    # XXX find pen positions with user interaction?
-    pen_up_position = 60
-    pen_down_position = 50
-
     pen_up_delay, pen_down_delay = \
-        moves.calculate_pen_delays(pen_up_position, pen_down_position)
+        moves.calculate_pen_delays(config.PEN_UP_POSITION,
+                                   config.PEN_DOWN_POSITION)
 
     actions = file_to_actions(opts.filename, pen_up_delay, pen_down_delay)
     count = len(actions)
@@ -123,7 +112,7 @@ def plot(opts):
         bot.pen_up(1000)
         print("Configuring servos.")
         bot.disable_motors()
-        bot.servo_setup(pen_down_position, pen_up_position,
+        bot.servo_setup(config.PEN_DOWN_POSITION, config.PEN_UP_POSITION,
                         config.SERVO_SPEED, config.SERVO_SPEED)
         print("Pen up and motors off. Move carriage to top left corner.")
         input("Press enter to begin.")

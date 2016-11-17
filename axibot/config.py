@@ -42,3 +42,7 @@ CURVE_RESOLUTION = 0.02
 
 # Skip pen-up moves shorter than this distance when possible. Units in inches.
 MIN_GAP = 0.010
+
+# Positions in arbitrary servo range units, from 0 to 100.
+PEN_UP_POSITION = 60
+PEN_DOWN_POSITION = 50
