@@ -18,6 +18,11 @@ body {
     color: #222;
 }
 
+#state {
+    text-align: center;
+    font-family: monospace;
+}
+
 button {
     border-radius:8px;
     border: none;
@@ -42,6 +47,9 @@ button.positive {
 button.neutral {
     background-color: #666;
 }
+button.negative {
+    background-color: #cc0000;
+}
 
 button:disabled {
     cursor:not-allowed;
@@ -49,15 +57,14 @@ button:disabled {
 }
 
 div.manual_controls {
-    display: flex;
     justify-content: center;
     margin-bottom: 1em;
 }
 div.manual_controls button {
-    flex: 1;
+    box-sizing: border-box;
+    width: 100%;
     padding: 8px 16px;
-    margin-left: 1em;
-    margin-right: 1em;
+    margin: 8px 0;
 }
 
 #dropper {

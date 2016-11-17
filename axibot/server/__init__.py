@@ -8,6 +8,7 @@ import aiohttp_themes
 from ..ebb import EiBotBoard, MockEiBotBoard
 
 from . import views, handlers
+from .state import State
 from .themes.light import LightTheme
 
 log = logging.getLogger(__name__)
@@ -18,7 +19,12 @@ __here__ = os.path.dirname(os.path.realpath(__file__))
 
 def make_app(bot):
     app = web.Application()
-    app['state'] = 'idle'
+
+    app['state'] = State.idle_empty
+    app['document'] = None
+    app['actions'] = []
+    app['action_index'] = 0
+
     app['clients'] = set()
     app['bot'] = bot
 
@@ -29,6 +35,7 @@ def make_app(bot):
                          compiled_asset_dir='/tmp/compiled')
 
     app.router.add_route('GET', '/', views.index)
+    app.router.add_route('GET', '/document.svg', views.document)
     app.router.add_route('GET', '/api', handlers.client_handler)
 
     static_dir = os.path.join(__here__, 'themes', 'light', 'static')

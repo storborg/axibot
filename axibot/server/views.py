@@ -1,3 +1,4 @@
+from aiohttp import web
 import aiohttp_themes
 
 
@@ -5,8 +6,11 @@ import aiohttp_themes
 async def index(request):
     return {'text': 'Hello World!'}
 
-async def start(request):
-    return ""
 
-async def toggle_pen(request):
-    return ""
+async def document(request):
+    app = request.app
+    if app['document']:
+        return web.Response(text=app['document'],
+                            content_type='image/svg+xml')
+    else:
+        return web.Response(status=404)
