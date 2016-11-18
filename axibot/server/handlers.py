@@ -28,17 +28,15 @@ def update_all_client_state(app):
 
 async def handle_user_message(app, ws, msg):
     if isinstance(msg, api.SetDocumentMessage):
-        assert app['state'] in (State.idle_empty, State.idle_doc)
+        assert app['state'] == State.idle
         # XXX set new active document
 
     elif isinstance(msg, api.ManualPenUpMessage):
-        assert app['state'] in (State.idle_empty, State.idle_doc,
-                                State.processing, State.paused)
+        assert app['state'] in (State.idle, State.processing, State.paused)
         app['bot'].pen_up(1000)
 
     elif isinstance(msg, api.ManualPenDownMessage):
-        assert app['state'] in (State.idle_empty, State.idle_doc,
-                                State.processing, State.paused)
+        assert app['state'] in (State.idle, State.processing, State.paused)
         app['bot'].pen_down(1000)
 
     elif isinstance(msg, api.PausePlottingMessage):

@@ -6,20 +6,28 @@
   <body>
     <div id="wrapper">
       <div id="nav">
-        <h4 id="state">Disconnected</h4>
+        <h3 id="state">Disconnected</h4>
+        <p id="progress">
+          <span id="action_index">-</span> / <span id="num_actions">-</span>
+        </p>
 
         <div class="manual_controls">
           <button id="pen_up" class="neutral">Pen Up</button>
           <button id="pen_down" class="neutral">Pen Down</button>
         </div>
         <div class="manual_controls">
-          <button id="start" class="positive" disabled>Start Plotting</button>
-          <button id="pause" class="neutral" disabled>Pause Plotting</button>
-          <button id="cancel" class="negative" disabled>Cancel Plotting</button>
+          <button id="start" class="positive">Start Plotting</button>
+          <button id="pause" class="neutral">Pause Plotting</button>
+          <button id="cancel" class="negative">Cancel Plotting</button>
         </div>
       </div>
       <div id="main">
-        <div id="dropper"></div>
+        <img id="document" src="/document.svg" alt="" title="">
+
+        <form action="/upload" method="post" enctype="multipart/form-data">
+          <input type="file" name="file">
+          <button type="submit">Upload</button>
+        </form>
       </div>
     </div>
   </body>

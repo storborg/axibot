@@ -1,7 +1,11 @@
+import logging
+
 from .. import moves, svg, planning, config
 
 from . import handlers
 from .state import State
+
+log = logging.getLogger(__name__)
 
 
 def process_upload(svgdoc):
@@ -22,19 +26,22 @@ def process_upload(svgdoc):
 
 
 def set_document(app, f):
+    assert app['state'] == State.idle
     app['state'] = State.processing
     # Notify all clients we are now processing
     handlers.update_all_client_state(app)
 
     try:
-        app['document'] = svgdoc = f.read()
-        app['actions'] = process_upload(svgdoc)
+        svgdoc = f.read()
+        actions = process_upload(svgdoc)
 
     except Exception as e:
-        app['state'] = State.idle_empty
+        app['state'] = State.idle
         handlers.update_all_client_state(app)
         raise
 
-    app['state'] = State.idle_doc
+    app['document'] = svgdoc
+    app['actions'] = actions
+    app['state'] = State.idle
     # Notify all clients we are now idle and ready to plot
     handlers.update_all_client_state(app)

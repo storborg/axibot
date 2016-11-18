@@ -22,12 +22,15 @@ examples_dir = os.path.join(base_dir, 'examples')
 def make_app(bot):
     app = web.Application()
 
+    app['state'] = State.idle
+    app['document'] = ''
+    app['actions'] = []
     app['action_index'] = 0
     app['clients'] = set()
     app['bot'] = bot
 
     # This will initialize the server state.
-    with open(os.path.join(examples_dir, 'rectangles.svg')) as f:
+    with open(os.path.join(examples_dir, 'rectangles.svg'), 'rb') as f:
         plotting.set_document(app, f)
 
     aiohttp_themes.setup(app,

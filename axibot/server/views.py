@@ -20,7 +20,7 @@ async def index(request):
 
 async def upload(request):
     app = request.app
-    assert app['state'] in (State.idle_doc, State.idle_empty)
+    assert app['state'] == State.idle
 
     data = await request.post()
     upload = data['file']
@@ -37,7 +37,7 @@ async def upload(request):
 async def document(request):
     app = request.app
     if app['document']:
-        return web.Response(text=app['document'],
+        return web.Response(body=app['document'],
                             content_type='image/svg+xml')
     else:
         return web.Response(status=404)

@@ -21,6 +21,8 @@ require([
 
       if (msg.type === 'state') {
         $('#state').text(msg.state);
+        $('#num_actions').text(msg.num_actions);
+        $('#action_index').text(msg.action_index);
       }
 
     }

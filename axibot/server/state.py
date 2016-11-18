@@ -37,8 +37,7 @@ from enum import Enum
 
 
 class State(Enum):
-    idle_empty = 1
-    processing = 2
-    idle_doc = 3
-    plotting = 4
-    paused = 5
+    processing = 1
+    idle = 2
+    plotting = 3
+    paused = 4
