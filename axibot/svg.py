@@ -227,12 +227,7 @@ def recurse_tree(paths, tree, transform_matrix, parent_visibility='visible'):
             log.debug("Ignoring <%s> tag.", node.tag)
 
 
-def extract_paths(filename):
-    """
-    Load an SVG file and convert it to a list of Path instances.
-    """
-    doc = ElementTree.parse(filename)
-    root = doc.getroot()
+def extract_paths_root(root):
 
     svg_width, svg_height = get_document_properties(root)
     viewbox = root.get('viewBox')
@@ -246,6 +241,20 @@ def extract_paths(filename):
     paths = []
     recurse_tree(paths, root, matrix)
     return paths
+
+
+def extract_paths(filename):
+    """
+    Load an SVG file and convert it to a list of Path instances.
+    """
+    doc = ElementTree.parse(filename)
+    root = doc.getroot()
+    return extract_paths_root(root)
+
+
+def extract_paths_string(s):
+    root = ElementTree.fromstring(s)
+    return extract_paths_root(root)
 
 
 def split_disconnected_paths(paths):

@@ -36,6 +36,7 @@ def make_app(bot):
 
     app.router.add_route('GET', '/', views.index)
     app.router.add_route('GET', '/document.svg', views.document)
+    app.router.add_route('POST', '/upload', views.upload)
     app.router.add_route('GET', '/api', handlers.client_handler)
 
     static_dir = os.path.join(__here__, 'themes', 'light', 'static')

@@ -17,7 +17,7 @@ require([
         }
     });
 
-  function initDropZone() {
+    function initDropZone() {
       Dropzone.options.dropper = {
           init: function() {
               this.on("thumbnail", function () {
@@ -37,7 +37,7 @@ require([
       };
 
       var dropper = new Dropzone("div#dropper",
-          { url: "./start", // Set url to something random to avoid auto uploads
+          { url: "/upload", // Set url to something random to avoid auto uploads
             addRemoveLinks: true} // Show remove button
       );
       // Make the dropper green when a file is over it
@@ -82,7 +82,13 @@ require([
     }
 
     sock.onmessage = function (e) {
-      console.log("websocket: message", e.data);
+      var msg = JSON.parse(e.data);
+      console.log("websocket: message", msg);
+
+      if (msg.type === 'state') {
+        $('#state').text(msg.state);
+      }
+
     }
 
   });

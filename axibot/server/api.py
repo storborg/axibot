@@ -22,7 +22,14 @@ import json
 
 class Message:
     def serialize(self):
-        return json.dumps(self.__dict__)
+        d = self.__dict__.copy()
+        d['type'] = self.reverse_types[self.__class__]
+        return json.dumps(d)
+
+    @classmethod
+    def deserialize(cls, raw):
+        msg_class = cls.types[raw.pop('type')]
+        return msg_class(**raw)
 
 
 class StateMessage(Message):
@@ -105,6 +112,7 @@ class CancelPlottingMessage(Message):
 
 
 Message.types = {
+    'state': StateMessage,
     'new-document': NewDocumentMessage,
     'error': ErrorMessage,
     'completed-job': CompletedJobMessage,
