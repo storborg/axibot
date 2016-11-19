@@ -8,20 +8,25 @@
   <body>
     <div id="app">
       <div class="controls">
-        <h3>{{ state | capitalize }}</h4>
-        <p id="progress">{{ actionIndex }} / {{ numActions }}</p>
+        <div class="control-group">
+          <h3>{{ state }}</h4>
+          <p id="progress">{{ actionIndex }} / {{ numActions }}</p>
+        </div>
 
-        <button :disabled="disableManualMove" @click="penUp">Pen Up</button>
-        <button :disabled="disableManualMove" @click="penDown">Pen Down</button>
+        <div class="control-group">
+          <button :disabled="disableManualMove" @click="penUp">Pen Up</button>
+          <button :disabled="disableManualMove" @click="penDown">Pen Down</button>
+        </div>
 
-        <button :disabled="disableResumePlotting" @click="resumePlotting" class="positive">Plot</button>
-        <button :disabled="disablePausePlotting" @click="pausePlotting">Pause</button>
-        <button :disabled="disableCancelPlotting" @click="cancelPlotting" class="negative">Cancel</button>
+        <div class="control-group">
+          <button :disabled="disableResumePlotting" @click="resumePlotting" class="positive">Plot</button>
+          <button :disabled="disablePausePlotting" @click="pausePlotting">Pause</button>
+          <button :disabled="disableCancelPlotting" @click="cancelPlotting" class="negative">Cancel</button>
+        </div>
 
-        <form action="/upload" method="post" enctype="multipart/form-data">
-          <input type="file" name="file">
-          <button type="submit">Upload</button>
-        </form>
+        <div class="control-group">
+          <input type="file" accept=".svg" @change="fileSelected">
+        </div>
       </div>
 
       <div class="preview">

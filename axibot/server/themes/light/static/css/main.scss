@@ -28,6 +28,10 @@ body {
     }
 }
 
+.control-group {
+    margin-bottom: $gutter * 2;
+}
+
 .preview {
     flex: 1;
     color: $dark-color;

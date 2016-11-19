@@ -6,26 +6,46 @@ require([
   var sock = new WebSocket(utils.qualifyWebsocketURL("/api"));
 
   sock.onerror = function (error) {
-    console.log("websocket: error", error);
     alert("websocket error: " + error);
   }
 
   sock.onmessage = function (e) {
     var msg = JSON.parse(e.data);
-    console.log("websocket: message", msg);
-    handleMessage(msg);
+    if (msg.type === 'state') {
+      vm.state = msg.state;
+      vm.numActions = msg.num_actions;
+      vm.actionIndex = msg.action_index;
+    }
   }
 
   function sendMessage(msg) {
     sock.send(JSON.stringify(msg));
   }
 
-  function handleMessage(msg) {
-    if (msg.type === 'state') {
-      vm.state = msg.state;
-      vm.numActions = msg.num_actions;
-      vm.actionIndex = msg.action_index;
-    }
+  function uploadFile(file) {
+      var uploadPath = "/upload";
+
+      // Upload the file via ajax, get back an ID reference to it
+      var formData = new FormData();
+      formData.append("file", file);
+
+      // XXX set the contents of the preview image to this doc
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', uploadPath, true);
+      xhr.upload.onprogress = function (e) {
+        if (e.lengthComputable) {
+          if (e.loaded === e.total) {
+            // Complete
+          } else{
+            var progress = (e.loaded / e.total * 100).toFixed(0);
+          }
+        }
+      };
+
+      console.log("uploading");
+      xhr.send(formData);
+      // Note: we could use onreadystatechange here to get notified of the completion.
   }
 
   var vm = new Vue({
@@ -51,24 +71,25 @@ require([
     },
     methods: {
       penUp: function () {
-        console.log("pen up pressed");
         sendMessage({type: "manual-pen-up"});
       },
       penDown: function () {
-        console.log("pen down pressed");
         sendMessage({type: "manual-pen-down"});
       },
       resumePlotting: function () {
-        console.log("resume plotting");
         sendMessage({type: "resume-plotting"});
       },
       pausePlotting: function () {
-        console.log("pause plotting");
         sendMessage({type: "pause-plotting"});
       },
       cancelPlotting: function () {
-        console.log("cancel plotting");
         sendMessage({type: "cancel-plotting"});
+      },
+      fileSelected: function (e) {
+        if (e.target.files.length > 0) {
+          console.log("file selected", e.target.files[0]);
+          uploadFile(e.target.files[0]);
+        }
       }
     }
   });
