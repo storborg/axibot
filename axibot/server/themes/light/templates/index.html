@@ -6,19 +6,17 @@
     ${theme.asset_tag('main.js')}
   </head>
   <body>
-    <section>
+    <div id="app">
       <div class="controls">
-        <h3 id="state">Disconnected</h4>
-        <p id="progress">
-          <span id="action_index">-</span> / <span id="num_actions">-</span>
-        </p>
+        <h3>{{ state | capitalize }}</h4>
+        <p id="progress">{{ actionIndex }} / {{ numActions }}</p>
 
-        <button id="pen_up" class="neutral">Pen Up</button>
-        <button id="pen_down" class="neutral">Pen Down</button>
+        <button @click="penUp">Pen Up</button>
+        <button @click="penDown">Pen Down</button>
 
-        <button id="start" class="positive">Start Plotting</button>
-        <button id="pause" class="neutral">Pause Plotting</button>
-        <button id="cancel" class="negative">Cancel Plotting</button>
+        <button @click="startPlotting" class="positive">Start Plotting</button>
+        <button @click="pausePlotting">Pause Plotting</button>
+        <button @click="cancelPlotting" class="negative">Cancel Plotting</button>
 
         <form action="/upload" method="post" enctype="multipart/form-data">
           <input type="file" name="file">
@@ -30,5 +28,5 @@
         <img id="document" src="/document.svg" alt="" title="">
       </div>
     </div>
-  </section>
+  </div>
 </html>
