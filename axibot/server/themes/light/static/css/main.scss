@@ -1,29 +1,38 @@
+@import "normalize.css";
+
+$gutter: 12px;
+$dark-color: #222;
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Open Sans", "Helvetica Neue", Arial, sans-serif;
 }
 
-#wrapper {
+section {
     display: flex;
 }
-#nav {
+
+.controls {
     width: 200px;
     color: #eee;
-    background-color:#222;
-    padding: 1em;
-}
-#main {
-    flex: 1;
-    background-color:white;
-    height:100%;
-    color: #222;
+    background-color: $dark-color;
+    padding: $gutter;
+    text-align: center;
+
+    button {
+        box-sizing: border-box;
+        width: 100%;
+        padding: 8px 16px;
+        margin: 8px 0;
+    }
 }
 
-#state, #progress {
-    text-align: center;
+.preview {
+    flex: 1;
+    color: $dark-color;
 }
 
 button {
-    border-radius:8px;
+    border-radius: 8px;
     border: none;
     color: white;
     padding: 15px 32px;
@@ -31,45 +40,28 @@ button {
     text-decoration: none;
     display: inline-block;
     font-size: 16px;
-}
 
-button:active {
-    filter: brightness(1.2);
-}
+    &:active {
+        filter: brightness(1.2);
+    }
 
-/*Don't put stupid blue outlines around buttons*/
-button:focus {outline:0;}
+    /*Don't put stupid blue outlines around buttons*/
+    &:focus {
+        outline:0;
+    }
 
-button.positive {
-    background-color: #22cc88;
-}
-button.neutral {
-    background-color: #666;
-}
-button.negative {
-    background-color: #cc0000;
-}
+    &.positive {
+        background-color: #22cc88;
+    }
+    &.neutral {
+        background-color: #666;
+    }
+    &.negative {
+        background-color: #cc0000;
+    }
 
-button:disabled {
-    cursor:not-allowed;
-    opacity: .7;
+    &:disabled {
+        cursor: not-allowed;
+        opacity: .7;
+    }
 }
-
-div.manual_controls {
-    justify-content: center;
-    margin-bottom: 1em;
-}
-div.manual_controls button {
-    box-sizing: border-box;
-    width: 100%;
-    padding: 8px 16px;
-    margin: 8px 0;
-}
-
-#dropper {
-    flex: 1;
-}
-#dropper { border: 10px dashed #ccc; width: 300px; min-height: 300px; margin: 20px auto;}
-#dropper.hover { border: 10px dashed #22cc88; }
-#dropper img { display: block; margin: 10px auto; }
-#dropper p { margin: 10px; font-size: 14px; }
