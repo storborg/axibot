@@ -35,6 +35,20 @@ require([
       'actionIndex': 0,
       'numActions': 0
     },
+    computed: {
+      disableManualMove: function () {
+        return (this.state != 'idle') && (this.state != 'paused');
+      },
+      disableResumePlotting: function () {
+        return (this.state != 'idle') && (this.state != 'paused');
+      },
+      disablePausePlotting: function () {
+        return (this.state != 'plotting');
+      },
+      disableCancelPlotting: function () {
+        return (this.state != 'plotting') && (this.state != 'paused');
+      }
+    },
     methods: {
       penUp: function () {
         console.log("pen up pressed");

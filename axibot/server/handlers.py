@@ -54,11 +54,11 @@ async def handle_user_message(app, ws, msg):
         # XXX set new active document
 
     elif isinstance(msg, api.ManualPenUpMessage):
-        assert app['state'] in (State.idle, State.processing, State.paused)
+        assert app['state'] in (State.idle, State.paused)
         plotting.manual_pen_up(app)
 
     elif isinstance(msg, api.ManualPenDownMessage):
-        assert app['state'] in (State.idle, State.processing, State.paused)
+        assert app['state'] in (State.idle, State.paused)
         plotting.manual_pen_down(app)
 
     elif isinstance(msg, api.PausePlottingMessage):
