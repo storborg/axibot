@@ -221,37 +221,37 @@ class MockEiBotBoard(EiBotBase):
                     "Response: %s" % (cmd.strip(), resp.strip()))
 
     def enable_motors(self, res):
-        log.debug("Mock EBB: Enabling motors.")
+        log.warn("Mock EBB: enable_motors")
 
     def disable_motors(self):
-        log.debug("Mock EBB: Disabling motors.")
+        log.warn("Mock EBB: disable_motors")
 
     def query_prg_button(self):
-        log.debug("Mock EBB: Query PRG button.")
+        log.warn("Mock EBB: query_prg_button")
 
     def toggle_pen(self):
-        log.debug("Mock EBB: Toggle pen.")
+        log.warn("Mock EBB: toggle_pen")
 
     def servo_setup(self,
                     pen_down_position, pen_up_position,
                     servo_up_speed, servo_down_speed):
-        log.debug("Mock EBB: Servo setup.")
+        log.warn("Mock EBB: servo_setup")
 
     def pen_up(self, delay):
-        log.debug("Mock EBB: Pen up with delay %s.", delay)
+        log.warn("Mock EBB: pen_up delay %s", delay)
         time.sleep(delay / 1000.)
 
     def pen_down(self, delay):
-        log.debug("Mock EBB: Pen down with delay %s.", delay)
+        log.warn("Mock EBB: pen_down delay:%s", delay)
         time.sleep(delay / 1000.)
 
     def xy_accel_move(self, dx, dy, v_initial, v_final):
-        log.debug("Mock EBB: XY accel move. Cannot simulate delay.")
+        log.warn("Mock EBB: xy_accel_move / Cannot simulate delay.")
 
     def xy_move(self, m1, m2, duration):
-        log.debug("Mock EBB: XY move.")
+        log.warn("Mock EBB: xy_move m1:%s m2:%s duration:%s", m1, m2, duration)
         time.sleep(duration / 1000.)
 
     def ab_move(self, da, db, duration):
-        log.debug("Mock EBB: AB move.")
+        log.warn("Mock EBB: ab_move")
         time.sleep(duration / 1000.)
