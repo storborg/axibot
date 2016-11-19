@@ -28,8 +28,9 @@ class Message:
 
     @classmethod
     def deserialize(cls, raw):
-        msg_class = cls.types[raw.pop('type')]
-        return msg_class(**raw)
+        obj = json.loads(raw)
+        msg_class = cls.types[obj.pop('type')]
+        return msg_class(**obj)
 
 
 class StateMessage(Message):

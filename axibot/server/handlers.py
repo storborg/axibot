@@ -3,7 +3,7 @@ import logging
 import aiohttp
 from aiohttp import web
 
-from . import api
+from . import api, plotting
 from .state import State
 
 log = logging.getLogger(__name__)
@@ -26,6 +26,28 @@ def update_all_client_state(app):
         update_client_state(app, ws)
 
 
+def set_document(app, f):
+    assert app['state'] == State.idle
+    app['state'] = State.processing
+    # Notify all clients we are now processing
+    update_all_client_state(app)
+
+    try:
+        svgdoc = f.read()
+        actions = plotting.process_upload(svgdoc)
+
+    except Exception as e:
+        app['state'] = State.idle
+        update_all_client_state(app)
+        raise
+
+    app['document'] = svgdoc
+    app['actions'] = actions
+    app['state'] = State.idle
+    # Notify all clients we are now idle and ready to plot
+    update_all_client_state(app)
+
+
 async def handle_user_message(app, ws, msg):
     if isinstance(msg, api.SetDocumentMessage):
         assert app['state'] == State.idle
@@ -33,23 +55,26 @@ async def handle_user_message(app, ws, msg):
 
     elif isinstance(msg, api.ManualPenUpMessage):
         assert app['state'] in (State.idle, State.processing, State.paused)
-        app['bot'].pen_up(1000)
+        plotting.manual_pen_up(app)
 
     elif isinstance(msg, api.ManualPenDownMessage):
         assert app['state'] in (State.idle, State.processing, State.paused)
-        app['bot'].pen_down(1000)
+        plotting.manual_pen_down(app)
 
     elif isinstance(msg, api.PausePlottingMessage):
         assert app['state'] == State.plotting
-        # XXX pause the plotter
+        plotting.pause(app)
+        update_all_client_state(app)
 
     elif isinstance(msg, api.ResumePlottingMessage):
-        assert app['state'] == State.paused
-        # XXX resume the plotter
+        assert app['state'] in (State.idle, State.paused)
+        plotting.resume(app)
+        update_all_client_state(app)
 
     elif isinstance(msg, api.CancelPlottingMessage):
         assert app['state'] in (State.plotting, State.paused)
-        # XXX cancel the plotter
+        plotting.cancel(app)
+        update_all_client_state(app)
 
     else:
         log.error("Unknown user message: %s, ignoring.", msg)

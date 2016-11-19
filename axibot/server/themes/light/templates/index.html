@@ -14,9 +14,9 @@
         <button @click="penUp">Pen Up</button>
         <button @click="penDown">Pen Down</button>
 
-        <button @click="startPlotting" class="positive">Start Plotting</button>
-        <button @click="pausePlotting">Pause Plotting</button>
-        <button @click="cancelPlotting" class="negative">Cancel Plotting</button>
+        <button @click="resumePlotting" class="positive">Plot</button>
+        <button @click="pausePlotting">Pause</button>
+        <button @click="cancelPlotting" class="negative">Cancel</button>
 
         <form action="/upload" method="post" enctype="multipart/form-data">
           <input type="file" name="file">

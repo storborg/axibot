@@ -1,5 +1,7 @@
 import logging
 
+import asyncio
+
 from .. import moves, svg, planning, config
 
 from . import handlers
@@ -25,23 +27,81 @@ def process_upload(svgdoc):
     return actions
 
 
-def set_document(app, f):
-    assert app['state'] == State.idle
-    app['state'] = State.processing
-    # Notify all clients we are now processing
-    handlers.update_all_client_state(app)
+async def plot_task(app):
+    app['state'] = State.plotting
 
-    try:
-        svgdoc = f.read()
-        actions = process_upload(svgdoc)
+    # XXX need to handle the servo setup, etc here.
 
-    except Exception as e:
-        app['state'] = State.idle
+    while True:
+        actions = app['actions']
+        action_index = app['action_index']
+        action = actions[action_index]
+        bot = app['bot']
+
+        # XXX need to keep track of the robot position here to support
+        # returning to origin
+
+        def run_action():
+            bot.do(action)
+
+        await app.loop.run_in_executor(None, run_action)
+        action_index += 1
+        if action_index == len(actions):
+            break
+        app['action_index'] = action_index
+        # notify clients of state change
         handlers.update_all_client_state(app)
-        raise
 
-    app['document'] = svgdoc
-    app['actions'] = actions
+    # XXX pen up and return to origin
+
     app['state'] = State.idle
-    # Notify all clients we are now idle and ready to plot
+    app['action_index'] = 0
+
+    # send job complete message
+    # notify clients of state change
     handlers.update_all_client_state(app)
+
+
+async def manual_task(app, action):
+    orig_state = app['state']
+    log.error("manual task: set state to plotting")
+    app['state'] = State.plotting
+    handlers.update_all_client_state(app)
+    bot = app['bot']
+
+    def run():
+        bot.do(action)
+
+    await app.loop.run_in_executor(None, run)
+    app['state'] = orig_state
+    log.error("manual task: returned state to %s", orig_state)
+    handlers.update_all_client_state(app)
+
+
+def manual_pen_up(app):
+    # XXX get the correct pen delay here
+    app.loop.create_task(manual_task(app, moves.PenUpMove(1000)))
+
+
+def manual_pen_down(app):
+    # XXX get the correct pen delay here
+    app.loop.create_task(manual_task(app, moves.PenDownMove(1000)))
+
+
+def pause(app):
+    app['state'] = State.paused
+    app['plot_task'].cancel()
+
+    # XXX pen up and return to origin
+
+
+def resume(app):
+    app['plot_task'] = app.loop.create_task(plot_task(app))
+
+
+def cancel(app):
+    app['state'] = State.idle
+    app['action_index'] = 0
+    app['plot_task'].cancel()
+
+    # XXX pen up and return to origin

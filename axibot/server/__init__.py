@@ -31,7 +31,7 @@ def make_app(bot):
 
     # This will initialize the server state.
     with open(os.path.join(examples_dir, 'rectangles.svg'), 'rb') as f:
-        plotting.set_document(app, f)
+        handlers.set_document(app, f)
 
     aiohttp_themes.setup(app,
                          themes=[LightTheme],

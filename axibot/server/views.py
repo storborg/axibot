@@ -27,7 +27,7 @@ async def upload(request):
     log.info("Received uploaded file: %s", upload.filename)
 
     try:
-        plotting.set_document(app, upload.file)
+        handlers.set_document(app, upload.file)
     except Exception as e:
         return web.Response(text='failure: %s' % e, status=500)
 
