@@ -15,6 +15,9 @@ require([
       vm.state = msg.state;
       vm.numActions = msg.num_actions;
       vm.actionIndex = msg.action_index;
+    } else if (msg.type == 'new-document') {
+      var imgtag = document.getElementById('document');
+      imgtag.src = '/document.svg#' + new Date().getTime();
     }
   }
 
@@ -29,7 +32,13 @@ require([
       var formData = new FormData();
       formData.append("file", file);
 
-      // XXX set the contents of the preview image to this doc
+      // Set the contents of the preview image to this doc
+      var reader = new FileReader();
+      var imgtag = document.getElementById('document');
+      reader.onload = function (e) {
+        imgtag.src = e.target.result;
+      }
+      reader.readAsDataURL(file);
 
       var xhr = new XMLHttpRequest();
       xhr.open('POST', uploadPath, true);

@@ -31,6 +31,7 @@ async def upload(request):
     except Exception as e:
         return web.Response(text='failure: %s' % e, status=500)
 
+    handlers.notify_of_new_document(app)
     return web.Response(text='ok')
 
 
@@ -38,6 +39,7 @@ async def document(request):
     app = request.app
     if app['document']:
         return web.Response(body=app['document'],
+                            headers={'Cache-Control': 'no-store'},
                             content_type='image/svg+xml')
     else:
         return web.Response(status=404)

@@ -26,9 +26,18 @@ def update_all_client_state(app):
         update_client_state(app, ws)
 
 
+def notify_of_new_document(app):
+    for ws in app['clients']:
+        msg = api.NewDocumentMessage()
+        ws.send_str(msg.serialize())
+
+
 def set_document(app, f):
     assert app['state'] == State.idle
     app['state'] = State.processing
+    orig_actions = app['actions']
+    app['actions'] = []
+
     # Notify all clients we are now processing
     update_all_client_state(app)
 
@@ -38,6 +47,7 @@ def set_document(app, f):
 
     except Exception as e:
         app['state'] = State.idle
+        app['actions'] = orig_actions
         update_all_client_state(app)
         raise
 
