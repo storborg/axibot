@@ -201,6 +201,10 @@ class EiBotBoard(EiBotBase):
 
 
 class MockEiBotBoard(EiBotBase):
+    def __init__(self):
+        self.x = 0
+        self.y = 0
+
     def close(self):
         pass
 
@@ -249,7 +253,12 @@ class MockEiBotBoard(EiBotBase):
         log.warn("Mock EBB: xy_accel_move / Cannot simulate delay.")
 
     def xy_move(self, m1, m2, duration):
-        log.warn("Mock EBB: xy_move m1:%s m2:%s duration:%s", m1, m2, duration)
+        dx = m1 + m2
+        dy = m1 - m2
+        self.x += dx
+        self.y += dy
+        log.warn("Mock EBB: xy_move m1:%s m2:%s duration:%s -> %s, %s",
+                 m1, m2, duration, self.x, self.y)
         time.sleep(duration / 1000.)
 
     def ab_move(self, da, db, duration):
