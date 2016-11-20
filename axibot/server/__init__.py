@@ -7,7 +7,7 @@ import aiohttp_themes
 
 from ..ebb import EiBotBoard, MockEiBotBoard
 
-from . import views, handlers, plotting
+from . import views, handlers
 from .state import State
 from .themes.light import LightTheme
 

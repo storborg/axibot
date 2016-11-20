@@ -1,13 +1,9 @@
 import logging
 
-import io
-
 from aiohttp import web
 import aiohttp_themes
 
-from .. import svg, planning, config, moves
-
-from . import handlers, plotting
+from . import handlers
 from .state import State
 
 log = logging.getLogger(__name__)

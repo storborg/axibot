@@ -1,7 +1,5 @@
 import logging
 
-import asyncio
-
 from .. import moves, svg, planning, config
 
 from . import handlers
