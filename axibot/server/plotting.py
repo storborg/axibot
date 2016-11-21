@@ -48,7 +48,7 @@ async def plot_task(app):
             break
         app['action_index'] = action_index
         # notify clients of state change
-        handlers.update_all_client_state(app)
+        handlers.notify_state(app)
 
     # XXX pen up and return to origin
 
@@ -57,14 +57,14 @@ async def plot_task(app):
 
     # send job complete message
     # notify clients of state change
-    handlers.update_all_client_state(app)
+    handlers.notify_state(app)
 
 
 async def manual_task(app, action):
     orig_state = app['state']
     log.error("manual task: set state to plotting")
     app['state'] = State.plotting
-    handlers.update_all_client_state(app)
+    handlers.notify_state(app)
     bot = app['bot']
 
     def run():
@@ -73,7 +73,7 @@ async def manual_task(app, action):
     await app.loop.run_in_executor(None, run)
     app['state'] = orig_state
     log.error("manual task: returned state to %s", orig_state)
-    handlers.update_all_client_state(app)
+    handlers.notify_state(app)
 
 
 def manual_pen_up(app):

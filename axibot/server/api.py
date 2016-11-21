@@ -72,9 +72,9 @@ class CompletedJobMessage(Message):
 class SetDocumentMessage(Message):
     """
     Instruct the server to set a new active document.
-    XXX
     """
-    pass
+    def __init__(self, document):
+        self.document = document
 
 
 class ManualPenUpMessage(Message):

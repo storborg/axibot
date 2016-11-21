@@ -30,8 +30,8 @@ def make_app(bot):
     app['bot'] = bot
 
     # This will initialize the server state.
-    with open(os.path.join(examples_dir, 'rectangles.svg'), 'rb') as f:
-        handlers.set_document(app, f)
+    with open(os.path.join(examples_dir, 'rectangles.svg')) as f:
+        handlers.set_document(app, f.read())
 
     aiohttp_themes.setup(app,
                          themes=[LightTheme],
@@ -41,7 +41,6 @@ def make_app(bot):
 
     app.router.add_route('GET', '/', views.index)
     app.router.add_route('GET', '/document.svg', views.document)
-    app.router.add_route('POST', '/upload', views.upload)
     app.router.add_route('GET', '/api', handlers.client_handler)
 
     static_dir = os.path.join(__here__, 'themes', 'light', 'static')

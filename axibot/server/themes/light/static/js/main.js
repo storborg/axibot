@@ -11,13 +11,19 @@ require([
 
   sock.onmessage = function (e) {
     var msg = JSON.parse(e.data);
+
     if (msg.type === 'state') {
       vm.state = msg.state;
       vm.numActions = msg.num_actions;
       vm.actionIndex = msg.action_index;
+
     } else if (msg.type == 'new-document') {
       var imgtag = document.getElementById('document');
       imgtag.src = '/document.svg#' + new Date().getTime();
+
+    } else if (msg.type == 'error') {
+      alert("Server Error: " + msg.text);
+
     }
   }
 
@@ -25,14 +31,16 @@ require([
     sock.send(JSON.stringify(msg));
   }
 
-  function uploadFile(file) {
-      var uploadPath = "/upload";
+  function sendFile(doc) {
+    var msg = {
+      type: 'set-document',
+      document: doc
+    };
+    sendMessage(msg);
+  }
 
-      // Upload the file via ajax, get back an ID reference to it
-      var formData = new FormData();
-      formData.append("file", file);
-
-      // Set the contents of the preview image to this doc
+  function handleFile(file) {
+      // Set the contents of the preview image to this doc and send msg
       var reader = new FileReader();
       var imgtag = document.getElementById('document');
       reader.onload = function (e) {
@@ -40,21 +48,11 @@ require([
       }
       reader.readAsDataURL(file);
 
-      var xhr = new XMLHttpRequest();
-      xhr.open('POST', uploadPath, true);
-      xhr.upload.onprogress = function (e) {
-        if (e.lengthComputable) {
-          if (e.loaded === e.total) {
-            // Complete
-          } else{
-            var progress = (e.loaded / e.total * 100).toFixed(0);
-          }
-        }
-      };
-
-      console.log("uploading");
-      xhr.send(formData);
-      // Note: we could use onreadystatechange here to get notified of the completion.
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        sendFile(e.target.result);
+      }
+      reader.readAsText(file);
   }
 
   var vm = new Vue({
@@ -97,7 +95,7 @@ require([
       fileSelected: function (e) {
         if (e.target.files.length > 0) {
           console.log("file selected", e.target.files[0]);
-          uploadFile(e.target.files[0]);
+          handleFile(e.target.files[0]);
         }
       }
     }
