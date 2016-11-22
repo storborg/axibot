@@ -109,7 +109,7 @@ def plot(opts):
     else:
         bot = EiBotBoard.find()
     try:
-        bot.pen_up(1000)
+        bot.pen_up(pen_up_delay)
         print("Configuring servos.")
         bot.disable_motors()
         bot.servo_setup(config.PEN_DOWN_POSITION, config.PEN_UP_POSITION,
@@ -124,13 +124,18 @@ def plot(opts):
             print("Move %d/%d: %s" % (ii, count, move))
             bot.do(move)
 
-        bot.pen_up(1000)
+        bot.pen_up(pen_down_delay)
         end_time = time.time()
         estimated_td = calculate_duration(actions)
         actual_td = timedelta(seconds=(end_time - start_time))
         print("Finished!")
         print("Expected time: %s" % human_friendly_timedelta(estimated_td))
         print("Actual time: %s" % human_friendly_timedelta(actual_td))
+        if opts.mock:
+            print("---")
+            print("Mock EiBotBoard recorded:")
+            print("Max speed: %0.3f steps/ms" % bot.max_speed)
+            print("Max acceleration: %0.3f steps/ms delta" % bot.max_acceleration)
     finally:
         bot.close()
 

@@ -2,6 +2,7 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 import logging
 import time
+import math
 
 import serial
 from serial.tools.list_ports import comports
@@ -204,6 +205,9 @@ class MockEiBotBoard(EiBotBase):
     def __init__(self):
         self.x = 0
         self.y = 0
+        self.last_speed = 0
+        self.max_speed = 0
+        self.max_acceleration = 0
 
     def close(self):
         pass
@@ -255,6 +259,14 @@ class MockEiBotBoard(EiBotBase):
     def xy_move(self, m1, m2, duration):
         dx = m1 + m2
         dy = m1 - m2
+        dist = math.sqrt((dx**2) + (dy**2))
+        speed = dist / duration
+        if speed > self.max_speed:
+            self.max_speed = speed
+        accel = speed - self.last_speed
+        if accel > self.max_acceleration:
+            self.max_acceleration = accel
+        self.last_speed = speed
         self.x += dx
         self.y += dy
         log.warn("Mock EBB: xy_move m1:%s m2:%s duration:%s -> %s, %s",
