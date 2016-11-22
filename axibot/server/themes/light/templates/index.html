@@ -30,7 +30,7 @@
       </div>
 
       <div id="preview">
-        <div id="pen" :class="{'pen': true, 'pen-up': penUp}" :style="{left: previewX + 'in', top: previewY + 'in'}"></div>
+        <div id="pen" :class="{'pen': true, 'pen-up': penUp, 'pen-plotting': (state != 'idle')}" :style="{left: previewX + 'in', top: previewY + 'in'}"></div>
         <div id="document">${document}</div>
       </div>
     </div>
