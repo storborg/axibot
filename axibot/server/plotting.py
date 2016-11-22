@@ -31,8 +31,9 @@ def plan_deceleration(app, position, v):
     Given an initial position in steps, and an initial velocity vector in steps
     per millisecond, create a series of actions which will decelerate as
     quickly as possible, moving in the same direction.
+
+    Return a tuple of (end point, actions)
     """
-    # get config
     if app['pen_up']:
         vmax = config.SPEED_PEN_UP
         accel_time = config.ACCEL_TIME_PEN_UP
@@ -40,7 +41,7 @@ def plan_deceleration(app, position, v):
         vmax = config.SPEED_PEN_DOWN
         accel_time = config.ACCEL_TIME_PEN_DOWN
 
-    # calculate distance required for deceleration
+    # Calculate distance required for deceleration.
     vx, vy = v
     vmag = math.sqrt((vx**2) + (vy**2))
     x_accel_time = (abs(vx) / vmax) * accel_time
@@ -48,18 +49,26 @@ def plan_deceleration(app, position, v):
     y_accel_time = (abs(vy) / vmax) * accel_time
     y_accel_dist = y_accel_time * (vy / 2)
 
-    # make a line extending from this position along that distance
+    # Ugh
+    if vmag > vmax:
+        vmag = vmax
+
+    if not (x_accel_dist or y_accel_dist):
+        # Don't need to decelerate.
+        return position, []
+
+    # Make a line extending from this position along that distance.
     end = (int(round(position[0] + x_accel_dist)),
            int(round(position[1] + y_accel_dist)))
 
-    # assert that it doesn't exceed the bounds of the machine
+    # Assert that it doesn't exceed the bounds of the machine.
     # XXX
 
-    # plan actions for this segment
+    # Plan the actions for this deceleration segment.
     log.error("plan_deceleration: %s @ %s -> %s @ %s", position, vmag, end, 0)
     dtarray = planning.interpolate_pair(position, vmag,
                                         end, 0, app['pen_up'])
-    return planning.dtarray_to_moves(position, end, dtarray)
+    return end, planning.dtarray_to_moves(position, end, dtarray)
 
 
 def process_upload(app, svgdoc):
@@ -96,18 +105,17 @@ async def cancel_to_origin(app, action):
     else:
         raise ValueError("don't understand action: %r" % action)
 
-    log.error("cancel_to_origin: generating deceleration trajectory")
-    actions = []
     # plan trajectory from this v to zero
-    # XXX enable this! and then make the pen up move go from the end of
-    # deceleration
-    # actions.extend(plan_deceleration(app, app['position'], v))
-    # pen up if not already up
+    log.error("cancel_to_origin: generating deceleration trajectory")
+    decel_end, actions = plan_deceleration(app, app['position'], v)
+
+    # lift pen up if not already up
     if not app['pen_up']:
         actions.append(PenUpMove(app['pen_up_delay']))
+
     # plan move back to origin
     log.error("cancel_to_origin: generating move back to origin")
-    actions.extend(plan_pen_up_move(app, app['position'], (0, 0)))
+    actions.extend(plan_pen_up_move(app, decel_end, (0, 0)))
     bot = app['bot']
 
     log.error("cancel_to_origin: running actions")
@@ -193,7 +201,7 @@ def manual_pen_down(app):
 
 
 def resume(app):
-    app['plot_task'] = app.loop.create_task(plot_task(app))
+    app.loop.create_task(plot_task(app))
 
 
 def pause(app):
