@@ -7,6 +7,11 @@ import sys
 import argparse
 from datetime import timedelta
 
+try:
+    import coloredlogs
+except ImportError:
+    coloredlogs = None
+
 from . import svg, planning, config
 from .ebb import EiBotBoard, MockEiBotBoard
 
@@ -176,7 +181,11 @@ def main(args=sys.argv):
 
     opts, args = p.parse_known_args(args[1:])
 
-    logging.basicConfig(level=logging.DEBUG if opts.verbose else logging.INFO)
+    if coloredlogs:
+        coloredlogs.install(level='DEBUG' if opts.verbose else 'INFO')
+    else:
+        logging.basicConfig(level=logging.DEBUG if opts.verbose else
+                            logging.INFO)
 
     if opts.function:
         return opts.function(opts)
