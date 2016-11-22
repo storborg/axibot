@@ -18,12 +18,12 @@ def broadcast(app, msg, exclude_client=None):
 
 def notify_state(app, specific_client=None, exclude_client=None):
     state = app['state']
-    num_actions = len(app['actions'])
-    action_index = app['action_index']
+    num_paths = len(app['grouped_actions'])
+    path_index = app['path_index']
     msg = api.StateMessage(
         state=state.name,
-        num_actions=num_actions,
-        action_index=action_index,
+        num_paths=num_paths,
+        path_index=path_index,
     )
     if specific_client:
         specific_client.send_str(msg.serialize())
@@ -43,26 +43,9 @@ def notify_error(app, to_client, s):
 
 def set_document(app, svgdoc):
     assert app['state'] == State.idle
-    app['state'] = State.processing
-    orig_actions = app['actions']
-    app['actions'] = []
-
-    # Notify all clients we are now processing
-    notify_state(app)
-
-    try:
-        actions = plotting.process_upload(svgdoc)
-    except Exception as e:
-        app['state'] = State.idle
-        app['actions'] = orig_actions
-        notify_state(app)
-        raise
-
+    grouped_actions = plotting.process_upload(svgdoc)
     app['document'] = svgdoc
-    app['actions'] = actions
-    app['state'] = State.idle
-    # Notify all clients we are now idle and ready to plot
-    notify_state(app)
+    app['grouped_actions'] = grouped_actions
 
 
 async def handle_user_message(app, ws, msg):
@@ -74,6 +57,7 @@ async def handle_user_message(app, ws, msg):
             notify_error(app, ws, str(e))
         else:
             notify_new_document(app, exclude_client=ws)
+
     elif isinstance(msg, api.ManualPenUpMessage):
         assert app['state'] in (State.idle, State.paused)
         plotting.manual_pen_up(app)

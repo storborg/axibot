@@ -24,8 +24,8 @@ def make_app(bot):
 
     app['state'] = State.idle
     app['document'] = ''
-    app['actions'] = []
-    app['action_index'] = 0
+    app['grouped_actions'] = []
+    app['path_index'] = 0
     app['clients'] = set()
     app['bot'] = bot
 

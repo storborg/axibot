@@ -14,8 +14,8 @@ require([
 
     if (msg.type === 'state') {
       vm.state = msg.state;
-      vm.numActions = msg.num_actions;
-      vm.actionIndex = msg.action_index;
+      vm.numPaths = msg.num_paths;
+      vm.pathIndex = msg.path_index;
 
     } else if (msg.type == 'new-document') {
       var imgtag = document.getElementById('document');
@@ -59,8 +59,8 @@ require([
     el: '#app',
     data: {
       'state': 'error',
-      'actionIndex': 0,
-      'numActions': 0
+      'pathIndex': 0,
+      'numPaths': 0
     },
     computed: {
       disableManualMove: function () {

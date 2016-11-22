@@ -3,33 +3,32 @@ Manages the state of the axibot.
 
 Possible system states:
 
-    idle, no active document    (idle-empty)
-    processing document         (processing)
-    idle, active document       (idle-doc)
+    idle, ready to plot         (idle)
     plotting document           (plotting)
+    pausing plotting            (pausing)
     paused plotting             (paused)
+    canceling plotting          (canceling)
 
 Possible state transitions are:
 
-    idle-empty -> processing    (initial upload)
+    idle -> plotting            (begin plotting)
 
-    processing -> idle-doc      (completed processing)
-    processing -> idle-empty    (failed to process)
+    plotting -> pausing         (pause)
+    plotting -> canceling       (cancel)
 
-    idle-doc -> plotting        (begin plotting)
-    idle-doc -> processing      (new upload)
+    pausing -> paused           (paused)
 
-    plotting -> idle-doc        (completed plotting or cancelled plotting)
-    plotting -> paused          (paused)
+    paused -> idle              (canceled)
+    paused -> plotting          (resume)
 
-    paused -> plotting          (resumed plotting)
-    paused -> idle-doc          (cancelled plotting)
+    canceling -> idle           (canceled)
 
 Additional state variables are:
 
     active document (SVG text)
-    list of actions
-    current action index
+    list of actions grouped by path
+    current path index
+    current progress?
 
 The app also holds a reference to the active EiBotBoard instance.
 """
@@ -37,7 +36,8 @@ from enum import Enum
 
 
 class State(Enum):
-    processing = 1
-    idle = 2
-    plotting = 3
+    idle = 1
+    plotting = 2
+    pausing = 3
     paused = 4
+    canceling = 5
