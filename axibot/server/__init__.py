@@ -8,7 +8,7 @@ import aiohttp_themes
 from ..ebb import EiBotBoard, MockEiBotBoard
 from .. import planning, config
 
-from . import views, handlers
+from . import views, handlers, plotting
 from .state import State
 from .themes.light import LightTheme
 
@@ -24,9 +24,7 @@ def make_app(bot):
     app = web.Application()
 
     app['state'] = State.idle
-    app['document'] = ''
-    app['grouped_actions'] = []
-    app['path_index'] = 0
+    app['action_index'] = 0
     app['clients'] = set()
     app['bot'] = bot
 
@@ -36,7 +34,9 @@ def make_app(bot):
 
     # This will initialize the server state.
     with open(os.path.join(examples_dir, 'rectangles.svg')) as f:
-        handlers.set_document(app, f.read())
+        svgdoc = f.read()
+        app['document'] = svgdoc
+        app['actions'] = plotting.process_upload(app, svgdoc)
 
     aiohttp_themes.setup(app,
                          themes=[LightTheme],

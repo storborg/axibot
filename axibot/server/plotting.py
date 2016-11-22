@@ -9,10 +9,6 @@ from .state import State
 log = logging.getLogger(__name__)
 
 
-def add_connecting_moves(segments):
-    pass
-
-
 def process_upload(app, svgdoc):
     pen_up_delay = app['pen_up_delay']
     pen_down_delay = app['pen_down_delay']
@@ -20,21 +16,14 @@ def process_upload(app, svgdoc):
     paths = svg.extract_paths_string(svgdoc)
     paths = svg.preprocess_paths(paths)
 
-    # XXX this needs to be reworked to actually correctly do direct pen-up
-    # moves from one path to the next, instead of always back to the origin,
-    # but it's a functional placeholder for now
-    grouped_actions = []
-    for path in paths:
-        segments = svg.plan_segments([path],
-                                     resolution=config.CURVE_RESOLUTION)
-        segments = svg.add_pen_up_moves(segments)
-        step_segments = planning.convert_inches_to_steps(segments)
-        segments_limits = planning.plan_speed(step_segments)
-        actions = planning.plan_actions(segments_limits,
-                                        pen_up_delay=pen_up_delay,
-                                        pen_down_delay=pen_down_delay)
-        grouped_actions.append((path, actions))
-    return grouped_actions
+    segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
+    segments = svg.add_pen_up_moves(segments)
+    step_segments = planning.convert_inches_to_steps(segments)
+    segments_limits = planning.plan_speed(step_segments)
+    actions = planning.plan_actions(segments_limits,
+                                    pen_up_delay=pen_up_delay,
+                                    pen_down_delay=pen_down_delay)
+    return actions
 
 
 async def plot_task(app):
@@ -44,31 +33,30 @@ async def plot_task(app):
     # XXX need to handle the servo setup, etc here.
 
     while True:
-        grouped_actions = app['grouped_actions']
-        path_index = app['path_index']
-        path, actions = grouped_actions[path_index]
-        log.warn("plot_task: path %s", path)
+        actions = app['actions']
+        action_index = app['action_index']
+        action = actions[action_index]
+        log.warn("plot_task: action %s", action)
         bot = app['bot']
 
         # XXX need to keep track of the robot position here to support
         # returning to origin
 
-        def run_path():
-            for action in actions:
-                bot.do(action)
+        def run_action():
+            bot.do(action)
 
-        await app.loop.run_in_executor(None, run_path)
-        path_index += 1
-        if path_index == len(grouped_actions):
+        await app.loop.run_in_executor(None, run_action)
+        action_index += 1
+        if action_index == len(actions):
             break
-        app['path_index'] = path_index
+        app['action_index'] = action_index
         # notify clients of state change
         handlers.notify_state(app)
 
     # XXX pen up and return to origin
 
     app['state'] = State.idle
-    app['path_index'] = 0
+    app['action_index'] = 0
 
     # send job complete message
     # notify clients of state change
@@ -122,6 +110,6 @@ def resume(app):
 
 def cancel(app):
     app['state'] = State.idle
-    app['path_index'] = 0
+    app['action_index'] = 0
     app['plot_task'].cancel()
     app.loop.create_task(cancel_task(app))

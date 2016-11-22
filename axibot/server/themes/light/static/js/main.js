@@ -14,8 +14,8 @@ require([
 
     if (msg.type === 'state') {
       vm.state = msg.state;
-      vm.numPaths = msg.num_paths;
-      vm.pathIndex = msg.path_index;
+      vm.numActions = msg.num_actions;
+      vm.actionIndex = msg.action_index;
 
     } else if (msg.type == 'new-document') {
       var preview = document.getElementById('preview');
@@ -54,8 +54,8 @@ require([
     el: '#app',
     data: {
       'state': 'error',
-      'pathIndex': 0,
-      'numPaths': 0
+      'actionIndex': 0,
+      'numActions': 0
     },
     computed: {
       disableManualMove: function () {

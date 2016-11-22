@@ -18,12 +18,12 @@ def broadcast(app, msg, exclude_client=None):
 
 def notify_state(app, specific_client=None, exclude_client=None):
     state = app['state']
-    num_paths = len(app['grouped_actions'])
-    path_index = app['path_index']
+    num_actions = len(app['actions'])
+    action_index = app['action_index']
     msg = api.StateMessage(
         state=state.name,
-        num_paths=num_paths,
-        path_index=path_index,
+        num_actions=num_actions,
+        action_index=action_index,
     )
     if specific_client:
         specific_client.send_str(msg.serialize())
@@ -41,21 +41,17 @@ def notify_error(app, to_client, s):
     to_client.send_str(msg.serialize())
 
 
-def set_document(app, svgdoc):
-    assert app['state'] == State.idle
-    grouped_actions = plotting.process_upload(app, svgdoc)
-    app['document'] = svgdoc
-    app['grouped_actions'] = grouped_actions
-
-
 async def handle_user_message(app, ws, msg):
     if isinstance(msg, api.SetDocumentMessage):
         assert app['state'] == State.idle
         try:
-            set_document(app, msg.document)
+            actions = plotting.process_upload(app, msg.document)
         except Exception as e:
             notify_error(app, ws, str(e))
         else:
+            app['document'] = msg.document
+            app['actions'] = actions
+
             notify_new_document(app, exclude_client=ws)
             notify_state(app)
 
