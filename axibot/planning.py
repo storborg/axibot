@@ -359,7 +359,8 @@ def interpolate_distance_triangular(dist, vstart, vend, accel_rate, timeslice):
                    (2 * vstart)) /
                   (2 * accel_rate))
     accel_slices = int(math.floor(accel_time / timeslice))
-    if accel_slices == 0:
+    if accel_slices <= 0:
+        accel_slices = 0
         accel_time = 0
 
     vmax = vstart + (accel_time * accel_rate)
