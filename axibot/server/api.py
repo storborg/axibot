@@ -37,10 +37,12 @@ class StateMessage(Message):
     """
     Inform a connected client that the server's state has changed.
     """
-    def __init__(self, state, num_actions, action_index):
+    def __init__(self, state, num_actions, action_index, x, y):
         self.state = state
         self.num_actions = num_actions
         self.action_index = action_index
+        self.x = x
+        self.y = y
 
 
 class NewDocumentMessage(Message):

@@ -16,15 +16,26 @@ require([
       vm.state = msg.state;
       vm.numActions = msg.num_actions;
       vm.actionIndex = msg.action_index;
+      vm.penX = msg.x;
+      vm.penY = msg.y;
+      // XXX This should be done with bound attributes and scaled properly
+      setPen(vm.penX / 20, vm.penY / 20);
 
     } else if (msg.type == 'new-document') {
-      var preview = document.getElementById('preview');
-      preview.innerHTML = msg.document;
+      var doc = document.getElementById('document');
+      doc.innerHTML = msg.document;
 
     } else if (msg.type == 'error') {
       alert("Server Error: " + msg.text);
 
     }
+  }
+
+  function setPen(x, y) {
+    console.log("setpen", x, y);
+    var pen = document.getElementById('pen');
+    pen.style.left = x + 'px';
+    pen.style.top = y + 'px';
   }
 
   function sendMessage(msg) {
@@ -42,9 +53,9 @@ require([
   function handleFile(file) {
       // Set the contents of the preview image to this doc and send msg
       var reader = new FileReader();
-      var preview = document.getElementById('preview');
+      var doc = document.getElementById('document');
       reader.onload = function (e) {
-        preview.innerHTML = e.target.result;
+        doc.innerHTML = e.target.result;
         sendFile(e.target.result);
       }
       reader.readAsText(file);
@@ -54,6 +65,8 @@ require([
     el: '#app',
     data: {
       'state': 'error',
+      'penX': 0,
+      'penY': 0,
       'actionIndex': 0,
       'numActions': 0
     },
