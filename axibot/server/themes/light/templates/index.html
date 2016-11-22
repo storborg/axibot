@@ -11,7 +11,7 @@
         <div class="control-group">
           <h3>{{ state }}</h4>
           <p id="progress">{{ actionIndex }} / {{ numActions }}</p>
-          <p id="position">( {{ penX }} / {{ penY }} )</p>
+          <p id="position">( {{ penX }}, {{ penY }} )</p>
         </div>
 
         <div class="control-group">
@@ -31,7 +31,7 @@
       </div>
 
       <div id="preview">
-        <div id="pen"></div>
+        <div id="pen" :style="{left: previewX + 'in', top: previewY + 'in'}"></div>
         <div id="document">${document}</div>
       </div>
     </div>
