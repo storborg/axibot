@@ -16,15 +16,16 @@ def process_upload(svgdoc):
     paths = svg.extract_paths_string(svgdoc)
     paths = svg.preprocess_paths(paths)
 
-    # XXX this needs to be reworked to actually correctly do transits from one
-    # path to the next, but it's a functional placeholder for now
+    # XXX this needs to be reworked to actually correctly do direct pen-up
+    # moves from one path to the next, instead of always back to the origin,
+    # but it's a functional placeholder for now
     grouped_actions = []
     for path in paths:
         segments = svg.plan_segments([path],
                                      resolution=config.CURVE_RESOLUTION)
-        transits = svg.add_pen_transits(segments)
-        step_transits = planning.convert_inches_to_steps(transits)
-        segments_limits = planning.plan_velocity(step_transits)
+        segments = svg.add_pen_up_moves(segments)
+        step_segments = planning.convert_inches_to_steps(segments)
+        segments_limits = planning.plan_velocity(step_segments)
         actions = planning.plan_actions(segments_limits,
                                         pen_up_delay=pen_up_delay,
                                         pen_down_delay=pen_down_delay)

@@ -16,5 +16,5 @@ def test_smoke():
     segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
     assert segments
 
-    transits = svg.add_pen_transits(segments)
-    assert transits
+    segments = svg.add_pen_up_moves(segments)
+    assert segments

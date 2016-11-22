@@ -147,12 +147,12 @@ def join_segments(segments, min_gap):
     return new_segments
 
 
-def add_pen_transits(segments):
+def add_pen_up_moves(segments):
     """
     Takes a list of pen-down segments. Returns a list of (segment, pen_up)
-    tuples, with additional segments added that pen-up transit between
-    segments. Also add segments at the beginning and end to transit the pen
-    from and to the origin location.
+    tuples, with additional segments added that pen-up move between segments.
+    Also add segments at the beginning and end to do pen-up moves from and to
+    the origin location.
 
     The output list should thus always have 2n+1 elements, where n is the
     length of the input list.
@@ -174,8 +174,8 @@ def add_pen_transits(segments):
             next_seg_start = origin
         else:
             next_seg_start = segments[n][0]
-        transit_seg = [seg[-1], next_seg_start]
-        out_segments.append((transit_seg, True))
+        inter_seg = [seg[-1], next_seg_start]
+        out_segments.append((inter_seg, True))
 
     return out_segments
 

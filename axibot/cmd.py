@@ -51,11 +51,11 @@ def file_to_actions(filename, pen_up_delay, pen_down_delay):
     print("Planning segments...")
     segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
     print("Adding pen-up moves...")
-    transits = svg.add_pen_transits(segments)
+    segments = svg.add_pen_up_moves(segments)
     print("Converting inches to steps...")
-    step_transits = planning.convert_inches_to_steps(transits)
+    step_segments = planning.convert_inches_to_steps(segments)
     print("Planning velocity limits...")
-    segments_limits = planning.plan_velocity(step_transits)
+    segments_limits = planning.plan_velocity(step_segments)
     print("Planning actions...")
     actions = planning.plan_actions(segments_limits,
                                     pen_up_delay=pen_up_delay,

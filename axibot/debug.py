@@ -58,13 +58,13 @@ def debug_segments(opts):
     show(opts)
 
 
-def debug_transits(opts):
+def debug_connected_segments(opts):
     paths = svg.extract_paths(opts.filename)
     paths = svg.preprocess_paths(paths)
     segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
-    transits = svg.add_pen_transits(segments)
+    segments = svg.add_pen_up_moves(segments)
 
-    for segment, pen_up in transits:
+    for segment, pen_up in segments:
         xdata = []
         ydata = []
         for (x, y) in segment:
@@ -79,9 +79,9 @@ def debug_corners(opts):
     paths = svg.extract_paths(opts.filename)
     paths = svg.preprocess_paths(paths)
     segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
-    transits = svg.add_pen_transits(segments)
-    step_transits = planning.convert_inches_to_steps(transits)
-    segments_limits = planning.plan_velocity(step_transits)
+    segments = svg.add_pen_up_moves(segments)
+    step_segments = planning.convert_inches_to_steps(segments)
+    segments_limits = planning.plan_velocity(step_segments)
 
     up_xdata = []
     up_ydata = []
@@ -138,9 +138,9 @@ def generate_actions(opts):
     paths = svg.extract_paths(opts.filename)
     paths = svg.preprocess_paths(paths)
     segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
-    transits = svg.add_pen_transits(segments)
-    step_transits = planning.convert_inches_to_steps(transits)
-    segments_limits = planning.plan_velocity(step_transits)
+    segments = svg.add_pen_up_moves(segments)
+    step_segments = planning.convert_inches_to_steps(segments)
+    segments_limits = planning.plan_velocity(step_segments)
     return planning.plan_actions(segments_limits, 1000, 1000)
 
 
@@ -249,11 +249,11 @@ def main(argv=sys.argv):
     p_segments.add_argument('--out', help='Save rendering to file.')
     p_segments.set_defaults(function=debug_segments)
 
-    p_transits = subparsers.add_parser(
-        'transits', help='Render segments with pen transits.')
-    p_transits.add_argument('filename')
-    p_transits.add_argument('--out', help='Save rendering to file.')
-    p_transits.set_defaults(function=debug_transits)
+    p_connected_segments = subparsers.add_parser(
+        'connected', help='Render linear segments with pen-up moves.')
+    p_connected_segments.add_argument('filename')
+    p_connected_segments.add_argument('--out', help='Save rendering to file.')
+    p_connected_segments.set_defaults(function=debug_connected_segments)
 
     p_corners = subparsers.add_parser(
         'corners', help='Render points with speeds.')

@@ -13,9 +13,9 @@ def distance(a, b):
     return math.sqrt((b[0] - a[0])**2 + (b[1] - a[1])**2)
 
 
-def convert_inches_to_steps(transits):
+def convert_inches_to_steps(segments):
     """
-    Take the output from add_pen_transits() and convert all points from inches
+    Take the output from add_pen_up_moves() and convert all points from inches
     to steps.
 
     This also 'collapses points': that is, if there are two or more adjacent
@@ -23,7 +23,7 @@ def convert_inches_to_steps(transits):
     """
     spi = config.DPI_16X
     out = []
-    for segment, pen_up in transits:
+    for segment, pen_up in segments:
         points = []
         last_point = None
         for inches_point in segment:
@@ -141,7 +141,7 @@ def segment_acceleration_limits(segment, pen_up):
     return out
 
 
-def plan_velocity(transits):
+def plan_velocity(segments):
     """
     Given a list of (segment, pen_up) tuples, tag each segment with a target
     velocity for that corner. This combines two limits:
@@ -155,7 +155,7 @@ def plan_velocity(transits):
     causing wear on the machine.
     """
     out = []
-    for segment, pen_up in transits:
+    for segment, pen_up in segments:
         assert segment
         points = segment_corner_limits(segment, pen_up)
         # Calculate forward acceleration
