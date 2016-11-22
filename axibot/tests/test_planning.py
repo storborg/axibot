@@ -8,7 +8,7 @@ accel_max = vmax / config.ACCEL_TIME_PEN_DOWN
 timeslice = config.TIME_SLICE
 
 
-def find_peak_velocity(dtarray):
+def find_peak_speed(dtarray):
     vpeak = xlast = 0
     for x, duration in dtarray:
         xdiff = x - xlast
@@ -29,7 +29,7 @@ def test_trapezoidal_from_rest():
                                             vmax, accel_max, timeslice)
     total_dist = dtarray[-1][0]
     assert dist == total_dist
-    assert find_peak_velocity(dtarray) <= vmax
+    assert find_peak_speed(dtarray) <= vmax
 
 
 def test_triangular_from_rest():
@@ -38,16 +38,16 @@ def test_triangular_from_rest():
                                             vmax, accel_max, timeslice)
     total_dist = dtarray[-1][0]
     assert dist == total_dist
-    assert find_peak_velocity(dtarray) <= vmax
+    assert find_peak_speed(dtarray) <= vmax
 
 
-def test_linear_changing_velocity():
+def test_linear_changing_speed():
     dist = 150
     dtarray = planning.interpolate_distance(dist, 0.7, 0.75,
                                             vmax, accel_max, timeslice)
     total_dist = dtarray[-1][0]
     assert dist == total_dist
-    assert find_peak_velocity(dtarray) <= vmax
+    assert find_peak_speed(dtarray) <= vmax
 
 
 def test_cornering_angle_straight():
@@ -65,13 +65,13 @@ def test_cornering_angle_90():
     assert angle == math.pi / 2.0
 
 
-def test_cornering_velocity_straight():
+def test_cornering_speed_straight():
     vmax = config.SPEED_PEN_DOWN
-    vstraight = planning.cornering_velocity(math.pi, vmax)
+    vstraight = planning.cornering_speed(math.pi, vmax)
     assert vmax == vstraight
 
 
-def test_cornering_velocity_reverse():
+def test_cornering_speed_reverse():
     vmax = config.SPEED_PEN_DOWN
-    v = planning.cornering_velocity(0, vmax)
+    v = planning.cornering_speed(0, vmax)
     assert v == 0

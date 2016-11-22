@@ -81,7 +81,7 @@ def debug_corners(opts):
     segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
     segments = svg.add_pen_up_moves(segments)
     step_segments = planning.convert_inches_to_steps(segments)
-    segments_limits = planning.plan_velocity(step_segments)
+    segments_limits = planning.plan_speed(step_segments)
 
     up_xdata = []
     up_ydata = []
@@ -140,7 +140,7 @@ def generate_actions(opts):
     segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
     segments = svg.add_pen_up_moves(segments)
     step_segments = planning.convert_inches_to_steps(segments)
-    segments_limits = planning.plan_velocity(step_segments)
+    segments_limits = planning.plan_speed(step_segments)
     return planning.plan_actions(segments_limits, 1000, 1000)
 
 
@@ -187,7 +187,7 @@ def debug_actions(opts):
     show(opts)
 
 
-def debug_velocity(opts):
+def debug_speed(opts):
     actions = generate_actions(opts)
 
     x = y = t = 0
@@ -267,11 +267,11 @@ def main(argv=sys.argv):
     p_actions.add_argument('--out', help='Save rendering to file.')
     p_actions.set_defaults(function=debug_actions)
 
-    p_velocity = subparsers.add_parser(
-        'velocity', help='Render final computed velocity profile.')
-    p_velocity.add_argument('filename')
-    p_velocity.add_argument('--out', help='Save rendering to file.')
-    p_velocity.set_defaults(function=debug_velocity)
+    p_speed = subparsers.add_parser(
+        'speed', help='Render final computed speed profile.')
+    p_speed.add_argument('filename')
+    p_speed.add_argument('--out', help='Save rendering to file.')
+    p_speed.set_defaults(function=debug_speed)
 
     opts, args = p.parse_known_args(argv[1:])
 

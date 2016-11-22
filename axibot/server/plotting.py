@@ -25,7 +25,7 @@ def process_upload(svgdoc):
                                      resolution=config.CURVE_RESOLUTION)
         segments = svg.add_pen_up_moves(segments)
         step_segments = planning.convert_inches_to_steps(segments)
-        segments_limits = planning.plan_velocity(step_segments)
+        segments_limits = planning.plan_speed(step_segments)
         actions = planning.plan_actions(segments_limits,
                                         pen_up_delay=pen_up_delay,
                                         pen_down_delay=pen_down_delay)

@@ -67,14 +67,14 @@ def cornering_angle(a, b, c):
     return math.acos(arg)
 
 
-def cornering_velocity(angle, vmax):
+def cornering_speed(angle, vmax):
     """
-    Given a corner angle in radians, compute the desired cornering velocity.
+    Given a corner angle in radians, compute the desired cornering speed.
 
     An angle of pi can go full speed. An angle of zero needs to fully changeh
-    direction, so it needs to have zero velocity. Everywhere in between...?
+    direction, so it needs to have zero speed. Everywhere in between...?
 
-    0 < angle < pi/2 should be zero velocity
+    0 < angle < pi/2 should be zero speed
     pi / 2 < angle < pi should be linear interpolation?
 
     XXX figure this out
@@ -89,7 +89,7 @@ def cornering_velocity(angle, vmax):
 def segment_corner_limits(segment, pen_up):
     """
     Given a segment and pen state, tag each point with the 'speed limit' for
-    that corner. Ensure that the segment starts and ends at zero velocity.
+    that corner. Ensure that the segment starts and ends at zero speed.
     """
     out = []
     out.append((segment[0], 0.0))
@@ -98,7 +98,7 @@ def segment_corner_limits(segment, pen_up):
 
     for a, b, c in zip(segment[:-2], segment[1:-1], segment[2:]):
         angle = cornering_angle(a, b, c)
-        limit = cornering_velocity(angle, vmax)
+        limit = cornering_speed(angle, vmax)
         out.append((b, limit))
 
     out.append((segment[-1], 0.0))
@@ -141,10 +141,10 @@ def segment_acceleration_limits(segment, pen_up):
     return out
 
 
-def plan_velocity(segments):
+def plan_speed(segments):
     """
     Given a list of (segment, pen_up) tuples, tag each segment with a target
-    velocity for that corner. This combines two limits:
+    speed for that corner. This combines two limits:
 
     1. The max speed at which we can plot through a given corner, based on how
     tight that corner is and the pen state.
@@ -374,7 +374,7 @@ def interpolate_distance_triangular(dist, vstart, vend, accel_rate, timeslice):
                     dtarray.append((x, decel_timeslice))
     elif vend == vstart:
         if vstart:
-            # Constant velocity that is non-zero
+            # Constant speed that is non-zero
             duration = dist / vstart
             # XXX this should be set more intelligently
             if duration > 200:
@@ -383,7 +383,7 @@ def interpolate_distance_triangular(dist, vstart, vend, accel_rate, timeslice):
                 duration = 30
             return [(dist, duration)]
         else:
-            # Segment that has to start and end at zero velocity, but is really
+            # Segment that has to start and end at zero speed, but is really
             # short. This is a really obnoxious case, for now we're just going
             # to set it to do the move in 100ms. Need to figure out the 'vmin'
             # which can be accelerated to instantaneously.
@@ -399,7 +399,7 @@ def interpolate_distance_triangular(dist, vstart, vend, accel_rate, timeslice):
 def interpolate_distance(dist, vstart, vend, vmax, accel_max, timeslice):
     """
     Given a distance to traverse, start and end velocities in the direction of
-    movement, a maximum velocity, an acceleration rate, and a minimum
+    movement, a maximum speed, an acceleration rate, and a minimum
     timeslice, generated an array of (distance, time) points.
 
     Distancec units are motor steps.
@@ -433,7 +433,7 @@ def interpolate_pair(start, vstart, end, vend, pen_up):
     point/move has been made.
 
     We want to always be accelerating at a constant rate, decelerating at a
-    constant rate, or moving at the maximum velocity for this pen state.
+    constant rate, or moving at the maximum speed for this pen state.
     """
     if pen_up:
         vmax = config.SPEED_PEN_UP
@@ -472,14 +472,14 @@ def interpolate_segment(segment, pen_up):
     return actions
 
 
-def plan_actions(segments_with_velocity, pen_up_delay, pen_down_delay):
+def plan_actions(segments_with_speed, pen_up_delay, pen_down_delay):
     """
-    Given a list of (segment, pen_up) tuples as returned by plan_velocity(),
+    Given a list of (segment, pen_up) tuples as returned by plan_speed(),
     return a list of moves. Also add any pen state changes.
     """
     actions = []
     last_pen_up = True
-    for segment, pen_up in segments_with_velocity:
+    for segment, pen_up in segments_with_speed:
         if pen_up != last_pen_up:
             if pen_up:
                 actions.append(moves.PenUpMove(pen_up_delay))
