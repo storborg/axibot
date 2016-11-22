@@ -65,7 +65,6 @@ def plan_deceleration(app, position, v):
     # XXX
 
     # Plan the actions for this deceleration segment.
-    log.error("plan_deceleration: %s @ %s -> %s @ %s", position, vmag, end, 0)
     dtarray = planning.interpolate_pair(position, vmag,
                                         end, 0, app['pen_up'])
     return end, planning.dtarray_to_moves(position, end, dtarray)
@@ -93,7 +92,6 @@ def process_pen_state(app, action):
 
 
 async def cancel_to_origin(app, action):
-    log.error("cancel_to_origin: start")
     if isinstance(action, PenUpMove):
         v = 0, 0
     elif isinstance(action, PenDownMove):
@@ -106,7 +104,6 @@ async def cancel_to_origin(app, action):
         raise ValueError("don't understand action: %r" % action)
 
     # plan trajectory from this v to zero
-    log.error("cancel_to_origin: generating deceleration trajectory")
     decel_end, actions = plan_deceleration(app, app['position'], v)
 
     # lift pen up if not already up
@@ -114,11 +111,9 @@ async def cancel_to_origin(app, action):
         actions.append(PenUpMove(app['pen_up_delay']))
 
     # plan move back to origin
-    log.error("cancel_to_origin: generating move back to origin")
     actions.extend(plan_pen_up_move(app, decel_end, (0, 0)))
     bot = app['bot']
 
-    log.error("cancel_to_origin: running actions")
     for action in actions:
         def run_action():
             bot.do(action)
@@ -126,11 +121,10 @@ async def cancel_to_origin(app, action):
         await app.loop.run_in_executor(None, run_action)
         handlers.notify_state(app)
 
-    log.error("cancel_to_origin: done")
 
 
 async def plot_task(app):
-    log.warn("plot_task: begin")
+    log.debug("plot_task: begin")
     app['state'] = State.plotting
     bot = app['bot']
 
@@ -151,14 +145,14 @@ async def plot_task(app):
         action_index += 1
         if action_index == len(actions):
             # Finished
-            log.warn("plot_task: plotting complete")
+            log.debug("plot_task: plotting complete")
             handlers.notify_job_complete(app)
             break
 
         app['action_index'] = action_index
 
         if app['state'] == State.canceling:
-            log.warn("plot_task: canceling")
+            log.debug("plot_task: canceling")
             # Decelerate, pen up, fastest move back to origin
             await cancel_to_origin(app, action)
             break
@@ -176,7 +170,7 @@ async def plot_task(app):
 
 async def manual_task(app, action):
     orig_state = app['state']
-    log.error("manual task: set state to plotting")
+    log.debug("manual task: set state to plotting")
     app['state'] = State.plotting
     handlers.notify_state(app)
     bot = app['bot']
@@ -186,7 +180,7 @@ async def manual_task(app, action):
 
     await app.loop.run_in_executor(None, run)
     app['state'] = orig_state
-    log.error("manual task: returned state to %s", orig_state)
+    log.debug("manual task: returned state to %s", orig_state)
     handlers.notify_state(app)
 
 
