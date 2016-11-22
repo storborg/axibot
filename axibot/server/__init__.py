@@ -6,6 +6,7 @@ from aiohttp import web
 import aiohttp_themes
 
 from ..ebb import EiBotBoard, MockEiBotBoard
+from .. import planning, config
 
 from . import views, handlers
 from .state import State
@@ -28,6 +29,10 @@ def make_app(bot):
     app['path_index'] = 0
     app['clients'] = set()
     app['bot'] = bot
+
+    app['pen_up_delay'], app['pen_down_delay'] = \
+        planning.calculate_pen_delays(config.PEN_UP_POSITION,
+                                      config.PEN_DOWN_POSITION)
 
     # This will initialize the server state.
     with open(os.path.join(examples_dir, 'rectangles.svg')) as f:

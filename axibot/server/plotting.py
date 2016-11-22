@@ -9,10 +9,13 @@ from .state import State
 log = logging.getLogger(__name__)
 
 
-def process_upload(svgdoc):
-    pen_up_delay, pen_down_delay = \
-        planning.calculate_pen_delays(config.PEN_UP_POSITION,
-                                      config.PEN_DOWN_POSITION)
+def add_connecting_moves(segments):
+    pass
+
+
+def process_upload(app, svgdoc):
+    pen_up_delay = app['pen_up_delay']
+    pen_down_delay = app['pen_down_delay']
 
     paths = svg.extract_paths_string(svgdoc)
     paths = svg.preprocess_paths(paths)
@@ -98,13 +101,13 @@ async def manual_task(app, action):
 
 
 def manual_pen_up(app):
-    # XXX get the correct pen delay here
-    app.loop.create_task(manual_task(app, PenUpMove(1000)))
+    pen_up_delay = app['pen_up_delay']
+    app.loop.create_task(manual_task(app, PenUpMove(pen_up_delay)))
 
 
 def manual_pen_down(app):
-    # XXX get the correct pen delay here
-    app.loop.create_task(manual_task(app, PenDownMove(1000)))
+    pen_down_delay = app['pen_down_delay']
+    app.loop.create_task(manual_task(app, PenDownMove(pen_down_delay)))
 
 
 def pause(app):
