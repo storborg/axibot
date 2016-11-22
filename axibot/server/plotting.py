@@ -204,10 +204,6 @@ def resume(app):
     app.loop.create_task(plot_task(app))
 
 
-def pause(app):
-    raise NotImplementedError
-
-
 def cancel(app):
     app['state'] = State.canceling
     handlers.notify_state(app)

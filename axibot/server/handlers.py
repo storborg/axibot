@@ -64,25 +64,20 @@ async def handle_user_message(app, ws, msg):
             notify_state(app)
 
     elif isinstance(msg, api.ManualPenUpMessage):
-        assert app['state'] in (State.idle, State.paused)
+        assert app['state'] == State.idle
         plotting.manual_pen_up(app)
 
     elif isinstance(msg, api.ManualPenDownMessage):
-        assert app['state'] in (State.idle, State.paused)
+        assert app['state'] == State.idle
         plotting.manual_pen_down(app)
 
-    elif isinstance(msg, api.PausePlottingMessage):
-        assert app['state'] == State.plotting
-        plotting.pause(app)
-        notify_state(app)
-
     elif isinstance(msg, api.ResumePlottingMessage):
-        assert app['state'] in (State.idle, State.paused)
+        assert app['state'] == State.idle
         plotting.resume(app)
         notify_state(app)
 
     elif isinstance(msg, api.CancelPlottingMessage):
-        assert app['state'] in (State.plotting, State.paused)
+        assert app['state'] == State.plotting
         plotting.cancel(app)
         notify_state(app)
 

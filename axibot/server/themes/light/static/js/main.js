@@ -15,16 +15,16 @@ require([
     },
     computed: {
       disableManualMove: function () {
-        return (this.state != 'idle') && (this.state != 'paused');
+        return this.state != 'idle';
       },
       disableResumePlotting: function () {
-        return (this.state != 'idle') && (this.state != 'paused');
+        return this.state != 'idle';
       },
       disablePausePlotting: function () {
-        return (this.state != 'plotting');
+        return this.state != 'plotting';
       },
       disableCancelPlotting: function () {
-        return (this.state != 'plotting') && (this.state != 'paused');
+        return this.state != 'plotting';
       },
       previewX: function () {
         return this.penX / 2032;
@@ -42,9 +42,6 @@ require([
       },
       resumePlotting: function () {
         this.sendMessage({type: "resume-plotting"});
-      },
-      pausePlotting: function () {
-        this.sendMessage({type: "pause-plotting"});
       },
       cancelPlotting: function () {
         this.sendMessage({type: "cancel-plotting"});

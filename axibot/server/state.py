@@ -5,22 +5,12 @@ Possible system states:
 
     idle, ready to plot         (idle)
     plotting document           (plotting)
-    pausing plotting            (pausing)
-    paused plotting             (paused)
     canceling plotting          (canceling)
 
 Possible state transitions are:
 
     idle -> plotting            (begin plotting)
-
-    plotting -> pausing         (pause)
-    plotting -> canceling       (cancel)
-
-    pausing -> paused           (paused)
-
-    paused -> idle              (canceled)
-    paused -> plotting          (resume)
-
+    plotting -> canceling       (cancel requested)
     canceling -> idle           (canceled)
 
 Additional state variables are:
@@ -38,6 +28,4 @@ from enum import Enum
 class State(Enum):
     idle = 1
     plotting = 2
-    pausing = 3
-    paused = 4
-    canceling = 5
+    canceling = 3

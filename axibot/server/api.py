@@ -13,7 +13,6 @@ Client to server messages:
     set document
     manual pen up
     manual pen down
-    pause plotting
     resume plotting
     cancel plotting
 """
@@ -95,13 +94,6 @@ class ManualPenDownMessage(Message):
     pass
 
 
-class PausePlottingMessage(Message):
-    """
-    Instruct the server to pause plotting.
-    """
-    pass
-
-
 class ResumePlottingMessage(Message):
     """
     Instruct the server to resume plotting.
@@ -124,7 +116,6 @@ Message.types = {
     'set-document': SetDocumentMessage,
     'manual-pen-up': ManualPenUpMessage,
     'manual-pen-down': ManualPenDownMessage,
-    'pause-plotting': PausePlottingMessage,
     'resume-plotting': ResumePlottingMessage,
     'cancel-plotting': CancelPlottingMessage,
 }
