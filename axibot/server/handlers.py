@@ -43,7 +43,7 @@ def notify_error(app, to_client, s):
 
 def set_document(app, svgdoc):
     assert app['state'] == State.idle
-    grouped_actions = plotting.process_upload(svgdoc)
+    grouped_actions = plotting.process_upload(app, svgdoc)
     app['document'] = svgdoc
     app['grouped_actions'] = grouped_actions
 
