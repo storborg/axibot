@@ -34,10 +34,10 @@ require([
       }
     },
     methods: {
-      penUp: function () {
+      manualPenUp: function () {
         this.sendMessage({type: "manual-pen-up"});
       },
-      penDown: function () {
+      manualPenDown: function () {
         this.sendMessage({type: "manual-pen-down"});
       },
       resumePlotting: function () {
@@ -50,6 +50,7 @@ require([
         this.sendMessage({type: "cancel-plotting"});
       },
       fileSelected: function (e) {
+        console.log("fileSelected, this", this);
         if (e.target.files.length > 0) {
           console.log("file selected", e.target.files[0]);
           this.handleFile(e.target.files[0]);
@@ -66,12 +67,14 @@ require([
         this.sendMessage(msg);
       },
       handleFile: function (file) {
+        console.log("handleFile, this", this);
           // Set the contents of the preview image to this doc and send msg
           var reader = new FileReader();
           var doc = document.getElementById('document');
+          var that = this;
           reader.onload = function (e) {
             doc.innerHTML = e.target.result;
-            this.sendFile(e.target.result);
+            that.sendFile(e.target.result);
           }
           reader.readAsText(file);
       }
