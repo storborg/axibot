@@ -3,7 +3,8 @@ from __future__ import (absolute_import, division, print_function,
 
 import math
 
-from . import config, moves
+from . import config
+from .action import XYMove, PenUpMove, PenDownMove
 
 
 def calculate_pen_delays(up_position, down_position):
@@ -258,7 +259,7 @@ def dtarray_to_moves(start, end, dtarray):
             # Convert to AxiDraw coordinate space.
             m1 = dx + dy
             m2 = dx - dy
-            actions.append(moves.XYMove(m1=m1, m2=m2, duration=duration))
+            actions.append(XYMove(m1=m1, m2=m2, duration=duration))
 
     check = check_x, check_y
     assert check == end, \
@@ -503,9 +504,9 @@ def plan_actions(segments_with_speed, pen_up_delay, pen_down_delay):
     for segment, pen_up in segments_with_speed:
         if pen_up != last_pen_up:
             if pen_up:
-                actions.append(moves.PenUpMove(pen_up_delay))
+                actions.append(PenUpMove(pen_up_delay))
             else:
-                actions.append(moves.PenDownMove(pen_down_delay))
+                actions.append(PenDownMove(pen_down_delay))
             last_pen_up = pen_up
         actions.extend(interpolate_segment(segment, pen_up))
     return actions

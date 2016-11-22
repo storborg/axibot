@@ -8,7 +8,8 @@ import math
 
 import matplotlib.pyplot as plt
 
-from axibot import svg, planning, config, moves
+from axibot import svg, planning, config
+from axibot.action import PenUpMove, PenDownMove, XYMove
 
 
 def show(opts):
@@ -154,7 +155,7 @@ def debug_actions(opts):
     ydata = []
 
     for action in actions:
-        if isinstance(action, moves.PenUpMove):
+        if isinstance(action, PenUpMove):
             print("pen up")
             if not pen_up:
                 # plot the pen down stuff
@@ -162,7 +163,7 @@ def debug_actions(opts):
                 xdata = [x]
                 ydata = [-y]
             pen_up = True
-        elif isinstance(action, moves.PenDownMove):
+        elif isinstance(action, PenDownMove):
             print("pen down")
             if pen_up:
                 # plot the pen up stuff
@@ -170,7 +171,7 @@ def debug_actions(opts):
                 xdata = [x]
                 ydata = [-y]
             pen_up = False
-        elif isinstance(action, moves.XYMove):
+        elif isinstance(action, XYMove):
             dx = action.m1 + action.m2
             dy = action.m1 - action.m2
             print("%s move %d, %d" % ('up' if pen_up else 'down', dx, dy))
@@ -199,11 +200,11 @@ def debug_speed(opts):
     down_vdata = []
 
     for action in actions:
-        if isinstance(action, moves.PenUpMove):
+        if isinstance(action, PenUpMove):
             pen_up = True
-        elif isinstance(action, moves.PenDownMove):
+        elif isinstance(action, PenDownMove):
             pen_up = False
-        elif isinstance(action, moves.XYMove):
+        elif isinstance(action, XYMove):
             dx = action.m1 + action.m2
             dy = action.m1 - action.m2
             x += dx

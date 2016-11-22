@@ -21,7 +21,7 @@ API Reference
     :members:
     :undoc-members:
 
-.. automodule:: axibot.moves
+.. automodule:: axibot.action
     :members:
     :undoc-members:
 

@@ -1,6 +1,7 @@
 import logging
 
-from .. import moves, svg, planning, config
+from .. import svg, planning, config
+from ..action import PenUpMove, PenDownMove
 
 from . import handlers
 from .state import State
@@ -98,12 +99,12 @@ async def manual_task(app, action):
 
 def manual_pen_up(app):
     # XXX get the correct pen delay here
-    app.loop.create_task(manual_task(app, moves.PenUpMove(1000)))
+    app.loop.create_task(manual_task(app, PenUpMove(1000)))
 
 
 def manual_pen_down(app):
     # XXX get the correct pen delay here
-    app.loop.create_task(manual_task(app, moves.PenDownMove(1000)))
+    app.loop.create_task(manual_task(app, PenDownMove(1000)))
 
 
 def pause(app):
