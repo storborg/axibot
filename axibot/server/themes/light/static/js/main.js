@@ -18,8 +18,8 @@ require([
       vm.pathIndex = msg.path_index;
 
     } else if (msg.type == 'new-document') {
-      var imgtag = document.getElementById('document');
-      imgtag.src = '/document.svg#' + new Date().getTime();
+      var preview = document.getElementById('preview');
+      preview.innerHTML = msg.document;
 
     } else if (msg.type == 'error') {
       alert("Server Error: " + msg.text);
@@ -42,14 +42,9 @@ require([
   function handleFile(file) {
       // Set the contents of the preview image to this doc and send msg
       var reader = new FileReader();
-      var imgtag = document.getElementById('document');
+      var preview = document.getElementById('preview');
       reader.onload = function (e) {
-        imgtag.src = e.target.result;
-      }
-      reader.readAsDataURL(file);
-
-      var reader = new FileReader();
-      reader.onload = function (e) {
+        preview.innerHTML = e.target.result;
         sendFile(e.target.result);
       }
       reader.readAsText(file);

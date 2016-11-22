@@ -32,7 +32,7 @@ def notify_state(app, specific_client=None, exclude_client=None):
 
 
 def notify_new_document(app, exclude_client=None):
-    msg = api.NewDocumentMessage()
+    msg = api.NewDocumentMessage(document=app['document'])
     broadcast(app, msg, exclude_client=exclude_client)
 
 
@@ -57,6 +57,7 @@ async def handle_user_message(app, ws, msg):
             notify_error(app, ws, str(e))
         else:
             notify_new_document(app, exclude_client=ws)
+            notify_state(app)
 
     elif isinstance(msg, api.ManualPenUpMessage):
         assert app['state'] in (State.idle, State.paused)

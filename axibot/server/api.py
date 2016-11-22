@@ -48,7 +48,8 @@ class NewDocumentMessage(Message):
     Inform a connected client that there is a new active document. The client
     should then request it.
     """
-    pass
+    def __init__(self, document):
+        self.document = document
 
 
 class ErrorMessage(Message):
