@@ -26,6 +26,7 @@ def notify_state(app, specific_client=None, exclude_client=None):
         action_index=action_index,
         x=app['position'][0],
         y=app['position'][1],
+        pen_up=app['pen_up'],
     )
     if specific_client:
         specific_client.send_str(msg.serialize())

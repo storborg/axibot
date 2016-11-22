@@ -38,7 +38,7 @@ body {
     position: relative;
 }
 
-#pen {
+.pen {
     position: absolute;
     border-radius: 5px;
     width: 10px;
@@ -48,6 +48,10 @@ body {
     background-color: $positive-color;
     top: 0;
     left: 0;
+
+    &.pen-up {
+        background-color: $negative-color;
+    }
 }
 
 button {

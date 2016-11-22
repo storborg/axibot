@@ -9,6 +9,7 @@ require([
       'state': 'error',
       'penX': 0,
       'penY': 0,
+      'penUp': true,
       'actionIndex': 0,
       'numActions': 0
     },
@@ -87,9 +88,9 @@ require([
           vm.state = msg.state;
           vm.numActions = msg.num_actions;
           vm.actionIndex = msg.action_index;
-          // XXX properly scale this to document preview scale
           vm.penX = msg.x;
           vm.penY = msg.y;
+          vm.penUp = msg.pen_up;
 
         } else if (msg.type == 'new-document') {
           var doc = document.getElementById('document');
