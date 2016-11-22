@@ -135,7 +135,8 @@ def plot(opts):
             print("---")
             print("Mock EiBotBoard recorded:")
             print("Max speed: %0.3f steps/ms" % bot.max_speed)
-            print("Max acceleration: %0.3f steps/ms delta" % bot.max_acceleration)
+            print("Max acceleration: %0.3f steps/ms delta" %
+                  bot.max_acceleration)
     finally:
         bot.close()
 
