@@ -27,6 +27,12 @@ def make_app(bot):
     app['action_index'] = 0
     app['clients'] = set()
     app['bot'] = bot
+    app['position'] = 0, 0
+    app['pen_up'] = None
+
+    bot.enable_motors(1)
+    bot.servo_setup(config.PEN_DOWN_POSITION, config.PEN_UP_POSITION,
+                    config.SERVO_SPEED, config.SERVO_SPEED)
 
     app['pen_up_delay'], app['pen_down_delay'] = \
         planning.calculate_pen_delays(config.PEN_UP_POSITION,

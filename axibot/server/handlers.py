@@ -43,6 +43,11 @@ def notify_error(app, to_client, s):
     to_client.send_str(msg.serialize())
 
 
+def notify_job_complete(app):
+    msg = api.CompletedJobMessage()
+    broadcast(app, msg)
+
+
 async def handle_user_message(app, ws, msg):
     if isinstance(msg, api.SetDocumentMessage):
         assert app['state'] == State.idle
