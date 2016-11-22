@@ -10,8 +10,8 @@ log = logging.getLogger(__name__)
 
 def process_upload(svgdoc):
     pen_up_delay, pen_down_delay = \
-        moves.calculate_pen_delays(config.PEN_UP_POSITION,
-                                   config.PEN_DOWN_POSITION)
+        planning.calculate_pen_delays(config.PEN_UP_POSITION,
+                                      config.PEN_DOWN_POSITION)
 
     paths = svg.extract_paths_string(svgdoc)
     paths = svg.preprocess_paths(paths)

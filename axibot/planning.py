@@ -6,6 +6,27 @@ import math
 from . import config, moves
 
 
+def calculate_pen_delays(up_position, down_position):
+    """
+    The AxiDraw motion controller must know how long to wait after giving a
+    'pen up' or 'pen down' command. This requires calculating the speed that
+    the servo can move to or from the two respective states. This function
+    performs that calculation and returns a tuple of (pen_up_delay,
+    pen_down_delay). All delays are in milliseconds.
+    """
+    assert up_position > down_position
+
+    # Math initially taken from axidraw inkscape driver, but I think this can
+    # be sped up a bit. We might also want to use different speeds for up/down,
+    # due to the added weight of the pen slowing down the servo in the 'up'
+    # direction.
+    dist = up_position - down_position
+    time = int((1000. * dist) / config.SERVO_SPEED)
+
+    return ((time + config.EXTRA_PEN_UP_DELAY),
+            (time + config.EXTRA_PEN_DOWN_DELAY))
+
+
 def distance(a, b):
     """
     Distance between two points.

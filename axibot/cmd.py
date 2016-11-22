@@ -7,7 +7,7 @@ import sys
 import argparse
 from datetime import timedelta
 
-from . import svg, planning, moves, config
+from . import svg, planning, config
 from .ebb import EiBotBoard, MockEiBotBoard
 
 
@@ -86,8 +86,8 @@ def calculate_duration(actions):
 
 def info(opts):
     pen_up_delay, pen_down_delay = \
-        moves.calculate_pen_delays(config.PEN_UP_POSITION,
-                                   config.PEN_DOWN_POSITION)
+        planning.calculate_pen_delays(config.PEN_UP_POSITION,
+                                      config.PEN_DOWN_POSITION)
 
     actions = file_to_actions(opts.filename, pen_up_delay, pen_down_delay)
     td = calculate_duration(actions)
@@ -97,8 +97,8 @@ def info(opts):
 
 def plot(opts):
     pen_up_delay, pen_down_delay = \
-        moves.calculate_pen_delays(config.PEN_UP_POSITION,
-                                   config.PEN_DOWN_POSITION)
+        planning.calculate_pen_delays(config.PEN_UP_POSITION,
+                                      config.PEN_DOWN_POSITION)
 
     actions = file_to_actions(opts.filename, pen_up_delay, pen_down_delay)
     count = len(actions)
