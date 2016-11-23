@@ -28,9 +28,15 @@
         </div>
       </div>
 
-      <div id="preview">
-        <div id="pen" :class="{'pen': true, 'pen-up': penUp, 'pen-plotting': (state != 'idle')}" :style="{left: previewX + 'in', top: previewY + 'in'}"></div>
-        <div id="document">${document}</div>
+      <div class="right">
+        <div id="preview">
+          <div id="pen" :class="{'pen': true, 'pen-up': penUp, 'pen-plotting': (state != 'idle')}" :style="{left: previewX + 'in', top: previewY + 'in'}"></div>
+          <div id="document">${document}</div>
+        </div>
+
+        <div class="progress">
+          <div class="progress-bar" :style="{width: progress + '%'}"></div>
+        </div>
       </div>
     </div>
   </div>

@@ -10,6 +10,8 @@ require([
       'penX': 0,
       'penY': 0,
       'penUp': true,
+      'consumedTime': 0,
+      'estimatedTime': 0,
       'actionIndex': 0,
       'numActions': 0
     },
@@ -31,6 +33,9 @@ require([
       },
       previewY: function () {
         return this.penY / 2032;
+      },
+      progress: function () {
+        return 100 * this.consumedTime / this.estimatedTime;
       }
     },
     methods: {
@@ -88,6 +93,8 @@ require([
           vm.penX = msg.x;
           vm.penY = msg.y;
           vm.penUp = msg.pen_up;
+          vm.consumedTime = msg.consumed_time;
+          vm.estimatedTime = msg.estimated_time;
 
         } else if (msg.type == 'new-document') {
           var doc = document.getElementById('document');

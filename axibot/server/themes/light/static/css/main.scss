@@ -94,3 +94,22 @@ button {
         opacity: .7;
     }
 }
+
+.right {
+    position: relative;
+}
+
+.progress {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background-color: #ccc;
+    margin: $gutter;
+    border: 1px solid $dark-color;
+
+    .progress-bar {
+        display: block;
+        height: 24px;
+        background-color: $dark-color;
+    }
+}

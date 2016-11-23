@@ -11,6 +11,10 @@ from .state import State
 log = logging.getLogger(__name__)
 
 
+def estimate_time(actions):
+    return sum(action.time() for action in actions) / 1000.
+
+
 def step_segments_to_actions(app, step_segments):
     pen_up_delay = app['pen_up_delay']
     pen_down_delay = app['pen_down_delay']
@@ -79,16 +83,19 @@ def process_upload(app, svgdoc):
     return step_segments_to_actions(app, step_segments)
 
 
-def process_pen_state(app, action):
+def update_bot_state(app, action):
     if isinstance(action, XYMove):
         dx = (action.m1 + action.m2) / 2
         dy = (action.m1 - action.m2) / 2
         lastx, lasty = app['position']
         app['position'] = lastx + dx, lasty + dy
+        app['consumed_time'] += (action.duration / 1000.)
     elif isinstance(action, PenUpMove):
         app['pen_up'] = True
+        app['consumed_time'] += (action.delay / 1000.)
     elif isinstance(action, PenDownMove):
         app['pen_up'] = False
+        app['consumed_time'] += (action.delay / 1000.)
 
 
 async def cancel_to_origin(app, action):
@@ -112,21 +119,27 @@ async def cancel_to_origin(app, action):
 
     # plan move back to origin
     actions.extend(plan_pen_up_move(app, decel_end, (0, 0)))
+    orig_estimated = app['estimated_time']
+    app['estimated_time'] = estimate_time(actions)
+    app['consumed_time'] = 0
     bot = app['bot']
 
     for action in actions:
         def run_action():
             bot.do(action)
-        process_pen_state(app, action)
+        update_bot_state(app, action)
         await app.loop.run_in_executor(None, run_action)
         handlers.notify_state(app)
 
+    app['estimated_time'] = orig_estimated
+    app['consumed_time'] = 0
 
 
 async def plot_task(app):
     log.debug("plot_task: begin")
     app['state'] = State.plotting
     bot = app['bot']
+    app['consumed_time'] = 0
 
     if app['pen_up'] is not True:
         bot.pen_up(app['pen_up_delay'])
@@ -140,7 +153,7 @@ async def plot_task(app):
         def run_action():
             bot.do(action)
 
-        process_pen_state(app, action)
+        update_bot_state(app, action)
         await app.loop.run_in_executor(None, run_action)
         action_index += 1
         if action_index == len(actions):

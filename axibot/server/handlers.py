@@ -24,6 +24,8 @@ def notify_state(app, specific_client=None, exclude_client=None):
         state=state.name,
         num_actions=num_actions,
         action_index=action_index,
+        estimated_time=app['estimated_time'],
+        consumed_time=app['consumed_time'],
         x=app['position'][0],
         y=app['position'][1],
         pen_up=app['pen_up'],
@@ -45,7 +47,8 @@ def notify_error(app, to_client, s):
 
 
 def notify_job_complete(app):
-    msg = api.CompletedJobMessage()
+    msg = api.CompletedJobMessage(estimated_time=app['estimated_time'],
+                                  actual_time=0)
     broadcast(app, msg)
 
 
@@ -59,6 +62,8 @@ async def handle_user_message(app, ws, msg):
         else:
             app['document'] = msg.document
             app['actions'] = actions
+            app['estimated_time'] = \
+                sum(action.time() for action in actions) / 1000.
 
             notify_new_document(app, exclude_client=ws)
             notify_state(app)

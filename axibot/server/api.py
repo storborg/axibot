@@ -36,13 +36,16 @@ class StateMessage(Message):
     """
     Inform a connected client that the server's state has changed.
     """
-    def __init__(self, state, num_actions, action_index, x, y, pen_up):
+    def __init__(self, state, num_actions, action_index, x, y, pen_up,
+                 estimated_time, consumed_time):
         self.state = state
         self.num_actions = num_actions
         self.action_index = action_index
         self.x = x
         self.y = y
         self.pen_up = pen_up
+        self.estimated_time = estimated_time
+        self.consumed_time = consumed_time
 
 
 class NewDocumentMessage(Message):

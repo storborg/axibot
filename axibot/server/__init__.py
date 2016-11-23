@@ -43,6 +43,9 @@ def make_app(bot):
         svgdoc = f.read()
         app['document'] = svgdoc
         app['actions'] = plotting.process_upload(app, svgdoc)
+        app['estimated_time'] = \
+            sum(action.time() for action in app['actions']) / 1000.
+        app['consumed_time'] = 0
 
     aiohttp_themes.setup(app,
                          themes=[LightTheme],
