@@ -16,18 +16,6 @@ require([
       'numActions': 0
     },
     computed: {
-      disableManualMove: function () {
-        return this.state != 'idle';
-      },
-      disableResumePlotting: function () {
-        return this.state != 'idle';
-      },
-      disablePausePlotting: function () {
-        return this.state != 'plotting';
-      },
-      disableCancelPlotting: function () {
-        return this.state != 'plotting';
-      },
       previewX: function () {
         return this.penX / 2032;
       },
@@ -59,13 +47,6 @@ require([
       sendMessage: function (msg) {
         this.sock.send(JSON.stringify(msg));
       },
-      sendFile: function (doc) {
-        var msg = {
-          type: 'set-document',
-          document: doc
-        };
-        this.sendMessage(msg);
-      },
       handleFile: function (file) {
           // Set the contents of the preview image to this doc and send msg
           var reader = new FileReader();
@@ -73,7 +54,10 @@ require([
           var that = this;
           reader.onload = function (e) {
             doc.innerHTML = e.target.result;
-            that.sendFile(e.target.result);
+            that.sendMessage({
+              type: 'set-document',
+              document: e.target.result
+            });
           }
           reader.readAsText(file);
       }

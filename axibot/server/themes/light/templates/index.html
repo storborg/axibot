@@ -14,13 +14,13 @@
         </div>
 
         <div class="control-group">
-          <button :disabled="disableManualMove" @click="manualPenUp">Pen Up</button>
-          <button :disabled="disableManualMove" @click="manualPenDown">Pen Down</button>
+          <button :disabled="state != 'idle'" @click="manualPenUp">Pen Up</button>
+          <button :disabled="state != 'idle'" @click="manualPenDown">Pen Down</button>
         </div>
 
         <div class="control-group">
-          <button :disabled="disableResumePlotting" @click="resumePlotting" class="positive">Plot</button>
-          <button :disabled="disableCancelPlotting" @click="cancelPlotting" class="negative">Cancel</button>
+          <button :disabled="state != 'idle'" @click="resumePlotting" class="positive">Plot</button>
+          <button :disabled="state != 'plotting'" @click="cancelPlotting" class="negative">Cancel</button>
         </div>
 
         <div class="control-group">
