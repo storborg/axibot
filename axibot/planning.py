@@ -290,14 +290,21 @@ def interpolate_distance_trapezoidal(vstart, accel_time, accel_dist,
                 x += v * accel_timeslice
                 dtarray.append((x, accel_timeslice))
 
+    # This could just use a single action to move for the constant-speed
+    # section of the trapezoidal speed profile, but by slicing it up into
+    # timeslices, we can make the web interface visualization and such
+    # look smoother.
     coast_dist = dist - (accel_dist + decel_dist)
-    if coast_dist > (timeslice * vmax):
-        v = vmax
-        x += coast_dist
-        duration = coast_dist / v
-        assert duration > timeslice, \
-            "coast duration %r too small" % duration
-        dtarray.append((x, duration))
+    coast_time = coast_dist / vmax
+    coast_slices = int(math.floor(coast_time / timeslice))
+    if coast_slices:
+        coast_timeslice = coast_time / coast_slices
+        assert coast_timeslice > timeslice, \
+            "coast_timeslice %r too small" % coast_timeslice
+        for n in range(coast_slices):
+            v = vmax
+            x += v * coast_timeslice
+            dtarray.append((x, coast_timeslice))
 
     if decel_slices:
         decel_timeslice = decel_time / decel_slices
