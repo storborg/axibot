@@ -7,6 +7,8 @@ import sys
 import argparse
 from datetime import timedelta
 
+from six.moves import input
+
 try:
     import coloredlogs
 except ImportError:

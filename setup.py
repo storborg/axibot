@@ -28,6 +28,7 @@ setup(name='axibot',
       license='GPL',
       packages=find_packages(),
       install_requires=[
+          'six',
           'pyserial',
           'svg.path',
           'colormath',
