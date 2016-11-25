@@ -13,8 +13,11 @@ from . import transform
 log = logging.getLogger(__name__)
 
 
-def get_length_inches(tree, name):
-    s = tree.get(name)
+def convert_to_inches(s):
+    """
+    Convert an SVG unit string like '42.5mm' or '12in' to inches as a float. If
+    the unit string does not include physical units, return None.
+    """
     assert s
     s = s.strip()
     for unit in ('in', 'mm', 'cm'):
@@ -22,7 +25,7 @@ def get_length_inches(tree, name):
             v = s[:-2]
             break
     else:
-        raise ValueError("Couldn't understand units for %s" % tree)
+        return None
     v = float(v)
     if unit == 'in':
         return v
@@ -32,9 +35,44 @@ def get_length_inches(tree, name):
         return v / 2.54
 
 
-def get_document_properties(tree):
-    svg_width = get_length_inches(tree, 'width')
-    svg_height = get_length_inches(tree, 'height')
+def parse_pixels(s):
+    if s.endswith('px'):
+        s = s[:-2]
+    return float(s)
+
+
+def get_document_dimensions(tree, max_area=(11, 8.5)):
+    """
+    Return the dimensions of this document in inches as to be plotted. If the
+    document specifies physical units, they will be converted to inches, and
+    asserted to be less than the working area of the AxiDraw. If the document
+    does not specify physical units (e.g. the width and height are in pixels
+    only) it will be scaled to the working area.
+
+    Returns a tuple of (width, height) in inches.
+    """
+    max_width, max_height = max_area
+    raw_width = tree.get('width')
+    raw_height = tree.get('height')
+    svg_width = convert_to_inches(raw_width)
+    svg_height = convert_to_inches(raw_height)
+    if not (svg_width and svg_height):
+        log.warn("This document does not specify physical units. "
+                 "Auto-scaling it to fit the drawing area.")
+        width = parse_pixels(raw_width)
+        height = parse_pixels(raw_height)
+        aspect_ratio = width / height
+        max_ratio = max_width / max_height
+        if aspect_ratio > max_ratio:
+            # Wider than working area, constrained by width
+            scale = max_width / width
+        else:
+            # Taller than working area, constrained by height
+            scale = max_height / height
+        svg_width = scale * width
+        svg_height = scale * height
+    assert svg_width <= max_width
+    assert svg_height <= max_height
     return svg_width, svg_height
 
 
