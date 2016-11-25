@@ -266,15 +266,22 @@ def recurse_tree(paths, tree, transform_matrix, parent_visibility='visible'):
 
 
 def extract_paths_root(root):
-
-    svg_width, svg_height = get_document_properties(root)
+    svg_width, svg_height = get_document_dimensions(root)
     viewbox = root.get('viewBox')
-    info = viewbox.strip().replace(',', ' ').split(' ')
-    sx = svg_width / float(info[2])
-    sy = svg_height / float(info[3])
+
+    if viewbox:
+        info = viewbox.strip().replace(',', ' ').split(' ')
+        sx = svg_width / float(info[2])
+        sy = svg_height / float(info[3])
+        tx = -float(info[0])
+        ty = -float(info[1])
+    else:
+        sx = sy = 1
+        tx = ty = 0
+
     matrix = transform.parse(
         'scale(%f,%f) translate(%f,%f)' %
-        (sx, sy, -float(info[0]), -float(info[1])))
+        (sx, sy, tx, ty))
 
     paths = []
     recurse_tree(paths, root, matrix)
