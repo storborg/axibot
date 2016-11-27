@@ -47,8 +47,10 @@ def notify_error(app, to_client, s):
 
 
 def notify_job_complete(app):
+    log.info("Notifying clients of completed job. Est: %s, Actual: %s.",
+             app['estimated_time'], app['consumed_time'])
     msg = api.CompletedJobMessage(estimated_time=app['estimated_time'],
-                                  actual_time=0)
+                                  actual_time=app['consumed_time'])
     broadcast(app, msg)
 
 

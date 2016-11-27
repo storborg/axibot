@@ -39,7 +39,7 @@ def make_app(bot):
                                       config.PEN_DOWN_POSITION)
 
     # This will initialize the server state.
-    with open(os.path.join(examples_dir, 'rectangles.svg')) as f:
+    with open(os.path.join(examples_dir, 'line.svg')) as f:
         svgdoc = f.read()
         app['document'] = svgdoc
         app['actions'] = plotting.process_upload(app, svgdoc)

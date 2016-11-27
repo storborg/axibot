@@ -160,6 +160,7 @@ async def plot_task(app):
             # Finished
             log.debug("plot_task: plotting complete")
             handlers.notify_job_complete(app)
+            app['consumed_time'] = 0
             break
 
         app['action_index'] = action_index

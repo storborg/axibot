@@ -13,5 +13,10 @@ define(function () {
     return protocol + window.location.host + path;
   };
 
+  exports.secondsToString = function(secs) {
+    var d = new Date(secs * 1000);
+    return d.toISOString().substr(11, 8);
+  };
+
   return exports;
 });

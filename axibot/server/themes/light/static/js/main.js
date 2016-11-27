@@ -26,8 +26,7 @@ require([
         return 100 * this.consumedTime / this.estimatedTime;
       },
       timeRemaining: function () {
-        var d = new Date((this.estimatedTime - this.consumedTime) * 1000);
-        return d.toISOString().substr(11, 8);
+        return utils.secondsToString(this.estimatedTime - this.consumedTime);
       }
     },
     methods: {
@@ -88,8 +87,16 @@ require([
           var doc = document.getElementById('document');
           doc.innerHTML = msg.document;
 
+        } else if (msg.type == 'completed-job') {
+          var est = utils.secondsToString(msg.estimated_time);
+          var actual = utils.secondsToString(msg.actual_time);
+          alert("Job complete. Estimated time time was " + est + ", actual was " + actual);
+
         } else if (msg.type == 'error') {
           alert("Server Error: " + msg.text);
+
+        } else {
+          alert("Unknown message type: " + msg);
 
         }
       }
