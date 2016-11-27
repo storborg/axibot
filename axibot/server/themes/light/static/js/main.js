@@ -24,6 +24,10 @@ require([
       },
       progress: function () {
         return 100 * this.consumedTime / this.estimatedTime;
+      },
+      timeRemaining: function () {
+        var d = new Date((this.estimatedTime - this.consumedTime) * 1000);
+        return d.toISOString().substr(11, 8);
       }
     },
     methods: {
