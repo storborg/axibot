@@ -57,16 +57,16 @@ def plan_deceleration(app, position, v):
     if vmag > vmax:
         vmag = vmax
 
-    if not (x_accel_dist or y_accel_dist):
-        # Don't need to decelerate.
-        return position, []
-
     # Make a line extending from this position along that distance.
     end = (int(round(position[0] + x_accel_dist)),
            int(round(position[1] + y_accel_dist)))
 
     # Assert that it doesn't exceed the bounds of the machine.
     # XXX
+
+    if position == end:
+        # Don't need to decelerate.
+        return position, []
 
     # Plan the actions for this deceleration segment.
     dtarray = planning.interpolate_pair(position, vmag,
