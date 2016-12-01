@@ -6,10 +6,13 @@ Possible system states:
     idle, ready to plot         (idle)
     plotting document           (plotting)
     canceling plotting          (canceling)
+    processing document         (processing)
 
 Possible state transitions are:
 
     idle -> plotting            (begin plotting)
+    idle -> processing          (upload)
+    processing -> idle          (done)
     plotting -> canceling       (cancel requested)
     canceling -> idle           (canceled)
 
@@ -29,3 +32,4 @@ class State(Enum):
     idle = 1
     plotting = 2
     canceling = 3
+    processing = 4

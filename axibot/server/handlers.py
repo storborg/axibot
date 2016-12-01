@@ -58,6 +58,8 @@ async def handle_user_message(app, ws, msg):
     if isinstance(msg, api.SetDocumentMessage):
         assert app['state'] == State.idle
         try:
+            app['state'] = State.processing
+            notify_state(app)
             actions = plotting.process_upload(app, msg.document)
         except Exception as e:
             notify_error(app, ws, str(e))
@@ -66,8 +68,9 @@ async def handle_user_message(app, ws, msg):
             app['actions'] = actions
             app['estimated_time'] = \
                 sum(action.time() for action in actions) / 1000.
-
             notify_new_document(app, exclude_client=ws)
+        finally:
+            app['state'] = State.idle
             notify_state(app)
 
     elif isinstance(msg, api.ManualPenUpMessage):
