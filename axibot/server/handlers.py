@@ -60,7 +60,7 @@ async def handle_user_message(app, ws, msg):
         try:
             app['state'] = State.processing
             notify_state(app)
-            actions = plotting.process_upload(app, msg.document)
+            actions = await plotting.process_upload_background(app, msg.document)
         except Exception as e:
             notify_error(app, ws, str(e))
         else:

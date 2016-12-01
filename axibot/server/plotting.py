@@ -83,6 +83,10 @@ def process_upload(app, svgdoc):
     return step_segments_to_actions(app, step_segments)
 
 
+async def process_upload_background(app, svgdoc):
+    return await app.loop.run_in_executor(None, process_upload, app, svgdoc)
+
+
 def update_bot_state(app, action):
     if isinstance(action, XYMove):
         dx = (action.m1 + action.m2) / 2
