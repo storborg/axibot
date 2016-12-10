@@ -1,10 +1,15 @@
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 
+import logging
+
 import math
 
-from . import config
+from . import config, svg
 from .action import XYMove, PenUpMove, PenDownMove
+from .job import Job
+
+log = logging.getLogger(__name__)
 
 
 def calculate_pen_delays(up_position, down_position):
@@ -518,3 +523,23 @@ def plan_actions(segments_with_speed, pen_up_delay, pen_down_delay):
             last_pen_up = pen_up
         actions.extend(interpolate_segment(segment, pen_up))
     return actions
+
+
+def file_to_job(filename, pen_up_delay, pen_down_delay):
+    log.info("Loading %s...", filename)
+    log.info("Extracting paths...")
+    paths = svg.extract_paths(filename)
+    paths = svg.preprocess_paths(paths)
+    log.info("Planning segments...")
+    segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
+    log.info("Adding pen-up moves...")
+    segments = svg.add_pen_up_moves(segments)
+    log.info("Converting inches to steps...")
+    step_segments = convert_inches_to_steps(segments)
+    log.info("Planning speed limits...")
+    segments_limits = plan_speed(step_segments)
+    log.info("Planning actions...")
+    actions = plan_actions(segments_limits,
+                           pen_up_delay=pen_up_delay,
+                           pen_down_delay=pen_down_delay)
+    return Job(actions, filename=filename)

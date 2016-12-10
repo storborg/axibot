@@ -18,7 +18,7 @@ def broadcast(app, msg, exclude_client=None):
 
 def notify_state(app, specific_client=None, exclude_client=None):
     state = app['state']
-    num_actions = len(app['actions'])
+    num_actions = len(app['job'])
     action_index = app['action_index']
     msg = api.StateMessage(
         state=state.name,
@@ -60,14 +60,13 @@ async def handle_user_message(app, ws, msg):
         try:
             app['state'] = State.processing
             notify_state(app)
-            actions = await plotting.process_upload_background(app, msg.document)
+            job = await plotting.process_upload_background(app, msg.document)
         except Exception as e:
             notify_error(app, ws, str(e))
         else:
             app['document'] = msg.document
-            app['actions'] = actions
-            app['estimated_time'] = \
-                sum(action.time() for action in actions) / 1000.
+            app['job'] = job
+            app['estimated_time'] = job.duration().total_seconds()
             notify_new_document(app, exclude_client=ws)
         finally:
             app['state'] = State.idle

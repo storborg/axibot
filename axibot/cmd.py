@@ -14,8 +14,10 @@ try:
 except ImportError:
     coloredlogs = None
 
-from . import svg, planning, config
+from . import planning, config
 from .ebb import EiBotBoard, MockEiBotBoard
+
+log = logging.getLogger(__name__)
 
 
 def manual_command(bot, cmd):
@@ -26,9 +28,9 @@ def manual_command(bot, cmd):
     try:
         getattr(bot, method)(*arg)
     except AttributeError as e:
-        print("Command not found: %s" % method)
+        log.error("Command not found: %s", method)
     except (TypeError, ValueError) as e:
-        print("Error: %s" % e)
+        log.error("Error: %s", e)
 
 
 def manual(opts):
@@ -50,26 +52,6 @@ def manual(opts):
         bot.close()
 
 
-def file_to_actions(filename, pen_up_delay, pen_down_delay):
-    print("Loading %s..." % filename)
-    print("Extracting paths...")
-    paths = svg.extract_paths(filename)
-    paths = svg.preprocess_paths(paths)
-    print("Planning segments...")
-    segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
-    print("Adding pen-up moves...")
-    segments = svg.add_pen_up_moves(segments)
-    print("Converting inches to steps...")
-    step_segments = planning.convert_inches_to_steps(segments)
-    print("Planning speed limits...")
-    segments_limits = planning.plan_speed(step_segments)
-    print("Planning actions...")
-    actions = planning.plan_actions(segments_limits,
-                                    pen_up_delay=pen_up_delay,
-                                    pen_down_delay=pen_down_delay)
-    return actions
-
-
 def human_friendly_timedelta(td):
     days = td.days
     hours, remainder = divmod(td.seconds, 3600)
@@ -86,20 +68,15 @@ def human_friendly_timedelta(td):
     return ", ".join(pieces)
 
 
-def calculate_duration(actions):
-    duration_ms = sum(action.time() for action in actions)
-    return timedelta(seconds=(duration_ms / 1000))
-
-
 def info(opts):
     pen_up_delay, pen_down_delay = \
         planning.calculate_pen_delays(config.PEN_UP_POSITION,
                                       config.PEN_DOWN_POSITION)
 
-    actions = file_to_actions(opts.filename, pen_up_delay, pen_down_delay)
-    td = calculate_duration(actions)
-    print("Number of moves: %s" % len(actions))
-    print("Expected time: %s" % human_friendly_timedelta(td))
+    job = planning.file_to_job(opts.filename, pen_up_delay, pen_down_delay)
+    td = job.duration()
+    log.info("Number of moves: %s", len(job))
+    log.info("Expected time: %s", human_friendly_timedelta(td))
 
 
 def plot(opts):
@@ -107,9 +84,9 @@ def plot(opts):
         planning.calculate_pen_delays(config.PEN_UP_POSITION,
                                       config.PEN_DOWN_POSITION)
 
-    actions = file_to_actions(opts.filename, pen_up_delay, pen_down_delay)
-    count = len(actions)
-    print("Calculated %d actions." % count)
+    job = planning.file_to_job(opts.filename, pen_up_delay, pen_down_delay)
+    count = len(job)
+    log.info("Calculated %d actions.", count)
 
     if opts.mock:
         bot = MockEiBotBoard()
@@ -117,23 +94,23 @@ def plot(opts):
         bot = EiBotBoard.find()
     try:
         bot.pen_up(pen_up_delay)
-        print("Configuring servos.")
+        log.info("Configuring servos.")
         bot.disable_motors()
         bot.servo_setup(config.PEN_DOWN_POSITION, config.PEN_UP_POSITION,
                         config.SERVO_SPEED, config.SERVO_SPEED)
-        print("Pen up and motors off. Move carriage to top left corner.")
+        log.info("Pen up and motors off. Move carriage to top left corner.")
         input("Press enter to begin.")
 
         start_time = time.time()
         bot.enable_motors(1)
 
-        for ii, move in enumerate(actions):
-            print("Move %d/%d: %s" % (ii, count, move))
+        for ii, move in enumerate(job):
+            log.info("Move %d/%d: %s" % (ii, count, move))
             bot.do(move)
 
         bot.pen_up(pen_down_delay)
         end_time = time.time()
-        estimated_td = calculate_duration(actions)
+        estimated_td = job.duration()
         actual_td = timedelta(seconds=(end_time - start_time))
         print("Finished!")
         print("Expected time: %s" % human_friendly_timedelta(estimated_td))

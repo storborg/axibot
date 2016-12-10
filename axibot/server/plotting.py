@@ -3,6 +3,7 @@ import logging
 import math
 
 from .. import svg, planning, config
+from ..job import Job
 from ..action import PenUpMove, PenDownMove, XYMove
 
 from . import handlers
@@ -80,7 +81,8 @@ def process_upload(app, svgdoc):
     segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
     segments = svg.add_pen_up_moves(segments)
     step_segments = planning.convert_inches_to_steps(segments)
-    return step_segments_to_actions(app, step_segments)
+    actions = step_segments_to_actions(app, step_segments)
+    return Job(actions)
 
 
 async def process_upload_background(app, svgdoc):
@@ -150,9 +152,9 @@ async def plot_task(app):
         app['pen_up'] = True
 
     while True:
-        actions = app['actions']
+        job = app['job']
         action_index = app['action_index']
-        action = actions[action_index]
+        action = job[action_index]
 
         def run_action():
             bot.do(action)
@@ -160,7 +162,7 @@ async def plot_task(app):
         update_bot_state(app, action)
         await app.loop.run_in_executor(None, run_action)
         action_index += 1
-        if action_index == len(actions):
+        if action_index == len(job):
             # Finished
             log.debug("plot_task: plotting complete")
             handlers.notify_job_complete(app)

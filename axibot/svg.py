@@ -36,7 +36,8 @@ def convert_to_inches(s):
 
 
 def parse_pixels(s):
-    if s.endswith('px'):
+    # Both px and pt are effectively unitless?
+    if s.endswith('px') or s.endswith('pt'):
         s = s[:-2]
     return float(s)
 
