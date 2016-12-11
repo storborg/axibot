@@ -11,6 +11,9 @@ class Move:
         attrs = ['%s:%s' % (k, v) for k, v in self.__dict__.items()]
         return '%s %s' % (self.name, ' '.join(attrs))
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
 
 class PenUpMove(Move):
     name = 'pen_up'
