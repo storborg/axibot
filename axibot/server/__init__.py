@@ -36,13 +36,14 @@ def make_app(bot):
 
     app['pen_up_delay'], app['pen_down_delay'] = \
         planning.calculate_pen_delays(config.PEN_UP_POSITION,
-                                      config.PEN_DOWN_POSITION)
+                                      config.PEN_DOWN_POSITION,
+                                      config.SERVO_SPEED)
 
     # This will initialize the server state.
     with open(os.path.join(examples_dir, 'line.svg')) as f:
         svgdoc = f.read()
-        app['document'] = svgdoc
         app['job'] = job = plotting.process_upload(app, svgdoc)
+        app['document'] = job.document
         app['estimated_time'] = job.duration().total_seconds()
         app['consumed_time'] = 0
 

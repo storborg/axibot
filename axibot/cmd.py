@@ -5,6 +5,7 @@ import logging
 import time
 import sys
 import argparse
+import os.path
 from datetime import timedelta
 
 from six.moves import input
@@ -16,6 +17,7 @@ except ImportError:
 
 from . import planning, config
 from .ebb import EiBotBoard, MockEiBotBoard
+from .job import Job
 
 log = logging.getLogger(__name__)
 
@@ -68,31 +70,53 @@ def human_friendly_timedelta(td):
     return ", ".join(pieces)
 
 
-def info(opts):
-    pen_up_delay, pen_down_delay = \
-        planning.calculate_pen_delays(config.PEN_UP_POSITION,
-                                      config.PEN_DOWN_POSITION)
+def load_job(filename):
+    if filename.endswith('.svg'):
+        return planning.plan_job(filename)
+    elif filename.endswith('.axibot.json'):
+        with open(filename) as f:
+            return Job.deserialize(f)
+    else:
+        print("Only .svg and .axibot.json files are supported!")
+        raise SystemExit
 
-    job = planning.file_to_job(opts.filename, pen_up_delay, pen_down_delay)
+
+def plan(opts):
+    outfile = opts.out
+    if not outfile:
+        outfile = opts.filename.rsplit('.', 1)[0] + '.axibot.json'
+    if os.path.exists(outfile) and not opts.overwrite:
+        print("File '%s' exists, pass --overwrite or --out." % outfile)
+    else:
+        job = load_job(opts.filename)
+        with open(outfile, 'w') as f:
+            job.serialize(f)
+
+
+def info(opts):
+    job = load_job(opts.filename)
     td = job.duration()
     log.info("Number of moves: %s", len(job))
     log.info("Expected time: %s", human_friendly_timedelta(td))
 
 
 def plot(opts):
-    pen_up_delay, pen_down_delay = \
-        planning.calculate_pen_delays(config.PEN_UP_POSITION,
-                                      config.PEN_DOWN_POSITION)
-
-    job = planning.file_to_job(opts.filename, pen_up_delay, pen_down_delay)
+    job = load_job(opts.filename)
     count = len(job)
-    log.info("Calculated %d actions.", count)
+    log.info("Loaded %d actions.", count)
+
+    pen_up_delay, pen_down_delay = \
+        planning.calculate_pen_delays(job.pen_up_position,
+                                      job.pen_down_position,
+                                      job.servo_speed)
 
     if opts.mock:
         bot = MockEiBotBoard()
     else:
         bot = EiBotBoard.find()
     try:
+        # The initial pen up might need a fairly slow delay, because we don't
+        # know where the servo was before.
         bot.pen_up(pen_up_delay)
         log.info("Configuring servos.")
         bot.disable_motors()
@@ -108,7 +132,7 @@ def plot(opts):
             log.info("Move %d/%d: %s" % (ii, count, move))
             bot.do(move)
 
-        bot.pen_up(pen_down_delay)
+        bot.pen_up(pen_up_delay)
         end_time = time.time()
         estimated_td = job.duration()
         actual_td = timedelta(seconds=(end_time - start_time))
@@ -137,6 +161,13 @@ def main(args=sys.argv):
     p.set_defaults(function=None)
 
     subparsers = p.add_subparsers(help='sub-command help')
+
+    p_plan = subparsers.add_parser(
+        'plan', help='Plan the plotting actions for an SVG file.')
+    p_plan.add_argument('filename')
+    p_plan.add_argument('--out')
+    p_plan.add_argument('--overwrite', action='store_true')
+    p_plan.set_defaults(function=plan)
 
     p_plot = subparsers.add_parser(
         'plot', help='Plot an SVG file directly.')

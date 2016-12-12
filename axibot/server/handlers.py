@@ -64,7 +64,7 @@ async def handle_user_message(app, ws, msg):
         except Exception as e:
             notify_error(app, ws, str(e))
         else:
-            app['document'] = msg.document
+            app['document'] = job.document
             app['job'] = job
             app['estimated_time'] = job.duration().total_seconds()
             notify_new_document(app, exclude_client=ws)

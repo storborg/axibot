@@ -1,8 +1,9 @@
 import logging
 
 import math
+from six.moves import StringIO
 
-from .. import svg, planning, config
+from .. import planning, config
 from ..job import Job
 from ..action import PenUpMove, PenDownMove, XYMove
 
@@ -76,13 +77,11 @@ def plan_deceleration(app, position, v):
 
 
 def process_upload(app, svgdoc):
-    paths = svg.extract_paths_string(svgdoc)
-    paths = svg.preprocess_paths(paths)
-    segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
-    segments = svg.add_pen_up_moves(segments)
-    step_segments = planning.convert_inches_to_steps(segments)
-    actions = step_segments_to_actions(app, step_segments)
-    return Job(actions)
+    if svgdoc[0] == '{':
+        f = StringIO(svgdoc)
+        return Job.deserialize(f)
+    else:
+        return planning.plan_job_string(svgdoc)
 
 
 async def process_upload_background(app, svgdoc):

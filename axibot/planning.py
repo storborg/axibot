@@ -12,7 +12,7 @@ from .job import Job
 log = logging.getLogger(__name__)
 
 
-def calculate_pen_delays(up_position, down_position):
+def calculate_pen_delays(up_position, down_position, servo_speed):
     """
     The AxiDraw motion controller must know how long to wait after giving a
     'pen up' or 'pen down' command. This requires calculating the speed that
@@ -525,10 +525,12 @@ def plan_actions(segments_with_speed, pen_up_delay, pen_down_delay):
     return actions
 
 
-def file_to_job(filename, pen_up_delay, pen_down_delay):
-    log.info("Loading %s...", filename)
-    log.info("Extracting paths...")
-    paths = svg.extract_paths(filename)
+def plan_job_paths(paths, filename, document):
+    pen_up_position = config.PEN_UP_POSITION
+    pen_down_position = config.PEN_DOWN_POSITION
+    servo_speed = config.SERVO_SPEED
+    pen_up_delay, pen_down_delay = \
+        calculate_pen_delays(pen_up_position, pen_down_position, servo_speed)
     paths = svg.preprocess_paths(paths)
     log.info("Planning segments...")
     segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
@@ -542,4 +544,25 @@ def file_to_job(filename, pen_up_delay, pen_down_delay):
     actions = plan_actions(segments_limits,
                            pen_up_delay=pen_up_delay,
                            pen_down_delay=pen_down_delay)
-    return Job(actions, filename=filename)
+    return Job(actions,
+               pen_up_position=pen_up_position,
+               pen_down_position=pen_down_position,
+               servo_speed=servo_speed,
+               document=document,
+               filename=filename)
+
+
+def plan_job(filename):
+    log.info("Loading %s...", filename)
+    log.info("Extracting paths...")
+    paths = svg.extract_paths(filename)
+    # XXX this is kind of hacky, we should just combine these code paths.
+    with open(filename, 'r') as f:
+        s = f.read()
+    return plan_job_paths(paths, filename=filename, document=s)
+
+
+def plan_job_string(s):
+    log.info("Extracting paths...")
+    paths = svg.extract_paths_string(s)
+    return plan_job_paths(paths, filename=None, document=s)
