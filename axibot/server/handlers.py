@@ -37,7 +37,8 @@ def notify_state(app, specific_client=None, exclude_client=None):
 
 
 def notify_new_document(app, exclude_client=None):
-    msg = api.NewDocumentMessage(document=app['document'])
+    msg = api.NewDocumentMessage(document=app['job'].document,
+                                 filename=app['job'].filename)
     broadcast(app, msg, exclude_client=exclude_client)
 
 
@@ -60,11 +61,12 @@ async def handle_user_message(app, ws, msg):
         try:
             app['state'] = State.processing
             notify_state(app)
-            job = await plotting.process_upload_background(app, msg.document)
+            job = await plotting.process_upload_background(app,
+                                                           msg.document,
+                                                           msg.filename)
         except Exception as e:
             notify_error(app, ws, str(e))
         else:
-            app['document'] = job.document
             app['job'] = job
             app['estimated_time'] = job.duration().total_seconds()
             notify_new_document(app)

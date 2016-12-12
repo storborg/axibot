@@ -42,6 +42,12 @@ def parse_pixels(s):
     return float(s)
 
 
+def get_viewbox_dimensions(viewbox):
+    viewbox_fields = viewbox.strip().replace(',', ' ').split(' ')
+    sx, sy, w, h = viewbox_fields
+    return w, h
+
+
 def get_document_dimensions(tree, max_area=(11, 8.5)):
     """
     Return the dimensions of this document in inches as to be plotted. If the
@@ -55,8 +61,14 @@ def get_document_dimensions(tree, max_area=(11, 8.5)):
     max_width, max_height = max_area
     raw_width = tree.get('width')
     raw_height = tree.get('height')
-    svg_width = convert_to_inches(raw_width)
-    svg_height = convert_to_inches(raw_height)
+    if not (raw_width and raw_height):
+        log.warn("This document does not have width and height attributes. "
+                 "Extracting viewbox dimensions.")
+        svg_width = svg_height = None
+        raw_width, raw_height = get_viewbox_dimensions(tree.get('viewBox'))
+    else:
+        svg_width = convert_to_inches(raw_width)
+        svg_height = convert_to_inches(raw_height)
     if not (svg_width and svg_height):
         log.warn("This document does not specify physical units. "
                  "Auto-scaling it to fit the drawing area.")
@@ -266,7 +278,8 @@ def recurse_tree(paths, tree, transform_matrix, parent_visibility='visible'):
             log.debug("Ignoring <%s> tag.", node.tag)
 
 
-def extract_paths_root(root):
+def extract_paths(s):
+    root = ElementTree.fromstring(s)
     svg_width, svg_height = get_document_dimensions(root)
     viewbox = root.get('viewBox')
 
@@ -287,20 +300,6 @@ def extract_paths_root(root):
     paths = []
     recurse_tree(paths, root, matrix)
     return paths
-
-
-def extract_paths(filename):
-    """
-    Load an SVG file and convert it to a list of Path instances.
-    """
-    doc = ElementTree.parse(filename)
-    root = doc.getroot()
-    return extract_paths_root(root)
-
-
-def extract_paths_string(s):
-    root = ElementTree.fromstring(s)
-    return extract_paths_root(root)
 
 
 def split_disconnected_paths(paths):

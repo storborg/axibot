@@ -72,7 +72,8 @@ def human_friendly_timedelta(td):
 
 def load_job(filename):
     if filename.endswith('.svg'):
-        return planning.plan_job(filename)
+        with open(filename) as f:
+            return planning.plan_job(f.read(), filename)
     elif filename.endswith('.axibot.json'):
         with open(filename) as f:
             return Job.deserialize(f)

@@ -50,10 +50,10 @@ class StateMessage(Message):
 
 class NewDocumentMessage(Message):
     """
-    Inform a connected client that there is a new active document. The client
-    should then request it.
+    Feed a new active document to a connected client.
     """
-    def __init__(self, document):
+    def __init__(self, filename, document):
+        self.filename = filename
         self.document = document
 
 
@@ -79,7 +79,8 @@ class SetDocumentMessage(Message):
     """
     Instruct the server to set a new active document.
     """
-    def __init__(self, document):
+    def __init__(self, filename, document):
+        self.filename = filename
         self.document = document
 
 

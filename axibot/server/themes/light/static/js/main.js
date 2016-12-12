@@ -57,6 +57,7 @@ require([
           reader.onload = function (e) {
             that.sendMessage({
               type: 'set-document',
+              filename: file.name,
               document: e.target.result
             });
           }
@@ -83,6 +84,7 @@ require([
 
         } else if (msg.type == 'new-document') {
           var doc = document.getElementById('document');
+          console.log("received file", msg.filename);
           doc.innerHTML = msg.document;
 
         } else if (msg.type == 'completed-job') {

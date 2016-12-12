@@ -48,6 +48,5 @@ class Job(list):
             name = action_dict.pop('name')
             action_class = registry[name]
             action = action_class(**action_dict)
-            action.name = name
             actions.append(action)
         return cls(actions, **obj)

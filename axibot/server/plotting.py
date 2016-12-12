@@ -76,16 +76,17 @@ def plan_deceleration(app, position, v):
     return end, planning.dtarray_to_moves(position, end, dtarray)
 
 
-def process_upload(app, svgdoc):
-    if svgdoc[0] == '{':
-        f = StringIO(svgdoc)
+def process_upload(app, document, filename):
+    if document[0] == '{':
+        f = StringIO(document)
         return Job.deserialize(f)
     else:
-        return planning.plan_job_string(svgdoc)
+        return planning.plan_job(document, filename=filename)
 
 
-async def process_upload_background(app, svgdoc):
-    return await app.loop.run_in_executor(None, process_upload, app, svgdoc)
+async def process_upload_background(app, document, filename):
+    return await app.loop.run_in_executor(None, process_upload, app,
+                                          document, filename)
 
 
 def update_bot_state(app, action):

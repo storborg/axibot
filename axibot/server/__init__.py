@@ -40,10 +40,10 @@ def make_app(bot):
                                       config.SERVO_SPEED)
 
     # This will initialize the server state.
-    with open(os.path.join(examples_dir, 'line.svg')) as f:
-        svgdoc = f.read()
-        app['job'] = job = plotting.process_upload(app, svgdoc)
-        app['document'] = job.document
+    filename = 'line.svg'
+    with open(os.path.join(examples_dir, filename)) as f:
+        doc = f.read()
+        app['job'] = job = plotting.process_upload(app, doc, filename)
         app['estimated_time'] = job.duration().total_seconds()
         app['consumed_time'] = 0
 

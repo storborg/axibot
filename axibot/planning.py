@@ -525,12 +525,16 @@ def plan_actions(segments_with_speed, pen_up_delay, pen_down_delay):
     return actions
 
 
-def plan_job_paths(paths, filename, document):
+def plan_job(document, filename):
     pen_up_position = config.PEN_UP_POSITION
     pen_down_position = config.PEN_DOWN_POSITION
     servo_speed = config.SERVO_SPEED
     pen_up_delay, pen_down_delay = \
         calculate_pen_delays(pen_up_position, pen_down_position, servo_speed)
+
+    log.info("Loading %s...", filename)
+    log.info("Extracting paths...")
+    paths = svg.extract_paths(document)
     paths = svg.preprocess_paths(paths)
     log.info("Planning segments...")
     segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
@@ -550,19 +554,3 @@ def plan_job_paths(paths, filename, document):
                servo_speed=servo_speed,
                document=document,
                filename=filename)
-
-
-def plan_job(filename):
-    log.info("Loading %s...", filename)
-    log.info("Extracting paths...")
-    paths = svg.extract_paths(filename)
-    # XXX this is kind of hacky, we should just combine these code paths.
-    with open(filename, 'r') as f:
-        s = f.read()
-    return plan_job_paths(paths, filename=filename, document=s)
-
-
-def plan_job_string(s):
-    log.info("Extracting paths...")
-    paths = svg.extract_paths_string(s)
-    return plan_job_paths(paths, filename=None, document=s)
