@@ -53,10 +53,8 @@ require([
       handleFile: function (file) {
           // Set the contents of the preview image to this doc and send msg
           var reader = new FileReader();
-          var doc = document.getElementById('document');
           var that = this;
           reader.onload = function (e) {
-            doc.innerHTML = e.target.result;
             that.sendMessage({
               type: 'set-document',
               document: e.target.result

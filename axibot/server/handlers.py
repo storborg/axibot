@@ -67,7 +67,7 @@ async def handle_user_message(app, ws, msg):
             app['document'] = job.document
             app['job'] = job
             app['estimated_time'] = job.duration().total_seconds()
-            notify_new_document(app, exclude_client=ws)
+            notify_new_document(app)
         finally:
             app['state'] = State.idle
             notify_state(app)
