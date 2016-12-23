@@ -116,7 +116,7 @@ async def client_handler(request):
             elif raw_msg.tp == aiohttp.MsgType.closed:
                 break
             elif raw_msg.tp == aiohttp.MsgType.error:
-                log.info("User websocket error: %s", msg)
+                log.info("User websocket error: %s", raw_msg)
                 break
             else:
                 log.error("Unknown user message type: %s, ignoring.",
