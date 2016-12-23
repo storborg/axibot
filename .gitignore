@@ -30,3 +30,9 @@ docs/_build/
 
 .cache
 .eggs
+
+# NPM crap.
+node_modules
+
+# Built client-side static files.
+/axibot/server/dist/

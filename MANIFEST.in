@@ -2,6 +2,7 @@ include README.rst
 include CHANGES
 include LICENSE
 recursive-include examples *.svg
+recursive-include axibot/server/dist *.js *.css
 
 prune docs/_build
 recursive-exclude * __pycache__

@@ -37,7 +37,7 @@ setup(name='axibot',
       tests_require=['pytest'],
       extras_require={
           'server': ['aiohttp',
-                     'aiohttp_themes'],
+                     'aiohttp_mako'],
           'debug': ['matplotlib'],
       },
       include_package_data=True,

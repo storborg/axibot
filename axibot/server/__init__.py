@@ -3,19 +3,21 @@ import os
 import os.path
 
 from aiohttp import web
-import aiohttp_themes
+import aiohttp_mako
 
 from ..ebb import EiBotBoard, MockEiBotBoard
 from .. import planning, config
 
 from . import views, handlers, plotting
 from .state import State
-from .themes.light import LightTheme
 
 log = logging.getLogger(__name__)
 
 
 __here__ = os.path.dirname(os.path.realpath(__file__))
+template_dir = os.path.join(__here__, 'templates')
+static_dir = os.path.join(__here__, 'dist')
+
 base_dir = os.path.dirname(os.path.dirname(__here__))
 examples_dir = os.path.join(base_dir, 'examples')
 
@@ -47,17 +49,17 @@ def make_app(bot):
         app['estimated_time'] = job.duration().total_seconds()
         app['consumed_time'] = 0
 
-    aiohttp_themes.setup(app,
-                         themes=[LightTheme],
-                         debug=True,
-                         theme_strategy='light',
-                         compiled_asset_dir='/tmp/compiled')
+    aiohttp_mako.setup(app,
+                       directories=[template_dir],
+                       input_encoding='utf-8',
+                       output_encoding='utf-8',
+                       imports=['from markupsafe import escape'],
+                       default_filters=['escape'])
 
     app.router.add_route('GET', '/', views.index)
     app.router.add_route('GET', '/api', handlers.client_handler)
 
-    static_dir = os.path.join(__here__, 'themes', 'light', 'static')
-    app.router.add_static('/_light', static_dir)
+    app.router.add_static('/static', static_dir)
 
     return app
 

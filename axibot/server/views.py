@@ -1,10 +1,10 @@
 import logging
 
-import aiohttp_themes
+import aiohttp_mako
 
 log = logging.getLogger(__name__)
 
 
-@aiohttp_themes.template('index.html')
+@aiohttp_mako.template('index.html')
 async def index(request):
     return {'document': request.app['job'].document}
