@@ -14,6 +14,7 @@
     "clean": "rm -rf axibot/server/dist"
   },
   "dependencies": {
+    "normalize.css": "^5.0.0",
     "vue": "^2.1.6"
   },
   "devDependencies": {
