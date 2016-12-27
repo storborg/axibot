@@ -11,7 +11,8 @@
     "url": "https://github.com/storborg/axibot/issues"
   },
   "scripts": {
-    "clean": "rm -rf axibot/server/dist"
+    "clean": "rm -rf axibot/server/dist",
+    "build": "NODE_ENV=production webpack"
   },
   "dependencies": {
     "normalize.css": "^5.0.0",
