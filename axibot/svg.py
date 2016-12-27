@@ -280,6 +280,11 @@ def recurse_tree(paths, tree, transform_matrix, parent_visibility='visible'):
 
 def extract_paths(s):
     root = ElementTree.fromstring(s)
+    # Check if the svg element has the correct namespace
+    if not root.tag.startswith('{http://www.w3.org/2000/svg}'):
+        log.warn("File is invalid, missing svg namespace declaration")
+        raise RuntimeError("File is invalid, missing svg namespace declaration")
+
     svg_width, svg_height = get_document_dimensions(root)
     viewbox = root.get('viewBox')
 
