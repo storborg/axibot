@@ -24,7 +24,9 @@ def debug_paths(opts):
     Render an SVG file into paths, and then plot them with matplotlib.
     """
     subdivide = 100
-    paths = svg.extract_paths(opts.filename)
+    with open(opts.filename) as f:
+        svg_str = f.read()
+    paths = svg.extract_paths(svg_str)
     paths = svg.preprocess_paths(paths)
     for path in paths:
         xdata = []
@@ -43,7 +45,9 @@ def debug_segments(opts):
     Render an SVG file into linear segments, and then plot them with
     matplotlib.
     """
-    paths = svg.extract_paths(opts.filename)
+    with open(opts.filename) as f:
+        svg_str = f.read()
+    paths = svg.extract_paths(svg_str)
     paths = svg.preprocess_paths(paths)
     segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
 
@@ -60,7 +64,9 @@ def debug_segments(opts):
 
 
 def debug_connected_segments(opts):
-    paths = svg.extract_paths(opts.filename)
+    with open(opts.filename) as f:
+        svg_str = f.read()
+    paths = svg.extract_paths(svg_str)
     paths = svg.preprocess_paths(paths)
     segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
     segments = svg.add_pen_up_moves(segments)
@@ -77,7 +83,9 @@ def debug_connected_segments(opts):
 
 
 def debug_corners(opts):
-    paths = svg.extract_paths(opts.filename)
+    with open(opts.filename) as f:
+        svg_str = f.read()
+    paths = svg.extract_paths(svg_str)
     paths = svg.preprocess_paths(paths)
     segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
     segments = svg.add_pen_up_moves(segments)
@@ -136,7 +144,9 @@ def debug_corners(opts):
 
 
 def generate_actions(opts):
-    paths = svg.extract_paths(opts.filename)
+    with open(opts.filename) as f:
+        svg_str = f.read()
+    paths = svg.extract_paths(svg_str)
     paths = svg.preprocess_paths(paths)
     segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
     segments = svg.add_pen_up_moves(segments)
