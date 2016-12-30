@@ -1,20 +1,5 @@
 import Vue from 'vue';
-
-function qualifyWebsocketURL(path) {
-  var protocol;
-  if (window.location.protocol === "http:") {
-    protocol = "ws:";
-  } else {
-    protocol = "wss:";
-  }
-  return protocol + window.location.host + path;
-}
-
-
-function secondsToString(secs) {
-  var d = new Date(secs * 1000);
-  return d.toISOString().substr(11, 8);
-}
+import * as utils from './utils';
 
 var vm = new Vue({
   el: '#app',
@@ -39,7 +24,7 @@ var vm = new Vue({
       return 100 * this.consumedTime / this.estimatedTime;
     },
     timeRemaining: function () {
-      return secondsToString(this.estimatedTime - this.consumedTime);
+      return utils.secondsToString(this.estimatedTime - this.consumedTime);
     }
   },
   methods: {
@@ -78,7 +63,7 @@ var vm = new Vue({
     }
   },
   created: function () {
-    this.sock = new WebSocket(qualifyWebsocketURL("/api"));
+    this.sock = new WebSocket(utils.qualifyWebsocketURL("/api"));
     this.sock.onerror = function (error) {
       alert("websocket error: " + error);
     }
@@ -101,8 +86,8 @@ var vm = new Vue({
         doc.innerHTML = msg.document;
 
       } else if (msg.type == 'completed-job') {
-        var est = secondsToString(msg.estimated_time);
-        var actual = secondsToString(msg.actual_time);
+        var est = utils.secondsToString(msg.estimated_time);
+        var actual = utils.secondsToString(msg.actual_time);
         alert("Job complete. Estimated time time was " + est + ", actual was " + actual);
 
       } else if (msg.type == 'error') {
