@@ -38,6 +38,7 @@ def convert_to_inches(s):
     elif unit == 'pt':
         return v / 72.
 
+
 def parse_pixels(s):
     # Both px and pt are effectively unitless?
     if s.endswith('px') or s.endswith('pt'):
@@ -288,7 +289,8 @@ def extract_paths(s):
     # Check if the svg element has the correct namespace
     if not root.tag.startswith('{http://www.w3.org/2000/svg}'):
         log.warn("File is invalid, missing svg namespace declaration")
-        raise RuntimeError("File is invalid, missing svg namespace declaration")
+        raise RuntimeError(
+            "File is invalid, missing svg namespace declaration")
 
     svg_width, svg_height = get_document_dimensions(root)
     viewbox = root.get('viewBox')
