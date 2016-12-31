@@ -48,7 +48,7 @@ def get_viewbox_dimensions(viewbox):
     return w, h
 
 
-def get_document_dimensions(tree, max_area=(11, 8.5)):
+def get_document_dimensions(tree, max_area=(11.0, 8.5)):
     """
     Return the dimensions of this document in inches as to be plotted. If the
     document specifies physical units, they will be converted to inches, and
