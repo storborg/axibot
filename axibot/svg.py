@@ -275,8 +275,8 @@ def recurse_tree(
                 el_id = m.groups()[0]
                 xpath = ".//*[@id='%s']" % (el_id)
                 node_to_copy = tree_root.find(xpath)
-                # Modify the matrix
-                if not "transform" in node.attrib:
+                # Modify the matrix if x and y are specified
+                if "x" in node.attrib and "y" in node.attrib:
                     x_diff = float(node.attrib["x"])
                     y_diff = float(node.attrib["y"])
                     shift_matrix = [[1.0, 0.0, x_diff],
