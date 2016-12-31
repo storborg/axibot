@@ -20,7 +20,7 @@ def convert_to_inches(s):
     """
     assert s
     s = s.strip()
-    for unit in ('in', 'mm', 'cm', 'px'):
+    for unit in ('in', 'mm', 'cm', 'px', 'pt'):
         if s[-2:] == unit:
             v = s[:-2]
             break
@@ -35,6 +35,8 @@ def convert_to_inches(s):
         return v / 2.54
     elif unit == 'px':
         return v / 96.
+    elif unit == 'pt':
+        return v / 72.
 
 def parse_pixels(s):
     # Both px and pt are effectively unitless?
