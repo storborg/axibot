@@ -6,7 +6,7 @@ from ..action import XYMove, PenUpMove, PenDownMove
 
 
 def test_roundtrip():
-    job = Job()
+    job = Job(pen_up_position=60, pen_down_position=40, servo_speed=150)
     job.append(PenDownMove(400))
     job.append(XYMove(500, 300, 200))
     job.append(PenUpMove(400))
