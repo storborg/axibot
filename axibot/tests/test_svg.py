@@ -10,7 +10,8 @@ example_dir = os.path.join(__here__, '..', '..', 'examples')
 
 def test_smoke():
     filename = os.path.join(example_dir, 'mixed.svg')
-    paths = svg.extract_paths(filename)
+    with open(filename) as f:
+        paths = svg.extract_paths(f.read())
     assert paths
 
     segments = svg.plan_segments(paths, resolution=config.CURVE_RESOLUTION)
