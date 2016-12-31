@@ -292,7 +292,8 @@ def recurse_tree(
                     parent_visibility=v)
             else:
                 raise RuntimeError(
-                    "unrecognized specifier for href: " + referenced_name)
+                    "Unrecognized specifier for href ('%s'). "
+                    "Note that axibot only supports css id's in use tags" % referenced_name)
         elif node.tag == svgns('path'):
             paths.append(transform_path(node.get('d'), matrix_new))
         elif node.tag in (svgns('rect'), svgns('line'), svgns('polyline'),
