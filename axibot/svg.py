@@ -99,6 +99,25 @@ def svgns(tag):
     return '{http://www.w3.org/2000/svg}' + tag
 
 
+def points_to_path_string(points_string, closed):
+    points = []
+    for point_string in points_string.split():
+        xs, ys = point_string.split(',')
+        x = float(xs)
+        y = float(ys)
+        points.append((x, y))
+
+    startx, starty = points[0]
+    pieces = ['M{x},{y}'.format(x=startx, y=starty)]
+    for x, y in points[1:]:
+        pieces.append('L{x},{y}'.format(x=x, y=y))
+
+    if closed:
+        pieces.append('L{x},{y}'.format(x=startx, y=starty))
+
+    return ' '.join(pieces)
+
+
 def convert_to_path(node, matrix):
     if node.tag == svgns('rect'):
         # transform a rect element into a path
@@ -117,9 +136,9 @@ def convert_to_path(node, matrix):
         return 'M{x1},{y1} L{x2},{y2}'.format(x1=x1, y1=y1, x2=x2, y2=y2)
 
     elif node.tag == svgns('polyline'):
-        raise NotImplementedError("doesn't support polyline yet")
+        return points_to_path_string(node.get('points'), closed=False)
     elif node.tag == svgns('polygon'):
-        raise NotImplementedError("doesn't support polygon yet")
+        return points_to_path_string(node.get('points'), closed=True)
     elif node.tag == svgns('ellipse') or node.tag == svgns('circle'):
         # Convert circles and ellipses to a path with two 180 degree arcs.
         # In general (an ellipse), we convert
