@@ -4,6 +4,7 @@ from __future__ import (absolute_import, division, print_function,
 import logging
 
 import math
+import re
 
 from xml.etree import ElementTree
 from svg.path import parse_path, Path, Line
@@ -93,6 +94,9 @@ def get_document_dimensions(tree, max_area=(11, 8.5)):
 
 def svgns(tag):
     return '{http://www.w3.org/2000/svg}' + tag
+
+def xlinkns(tag):
+    return '{http://www.w3.org/1999/xlink}' + tag
 
 
 def convert_to_path(node, matrix):
@@ -242,7 +246,8 @@ def transform_path(s, transform_matrix):
     return p
 
 
-def recurse_tree(paths, tree, transform_matrix, parent_visibility='visible'):
+def recurse_tree(
+    paths, tree_root, tree, transform_matrix, parent_visibility='visible'):
     """
     Append path tuples to the ``paths`` variable in place, while recursively
     parsing ``tree``.
@@ -262,9 +267,32 @@ def recurse_tree(paths, tree, transform_matrix, parent_visibility='visible'):
                                        transform.parse(node.get('transform')))
 
         if node.tag == svgns('g'):
-            recurse_tree(paths, node, matrix_new, parent_visibility=v)
+            recurse_tree(paths, tree_root, node, matrix_new, parent_visibility=v)
         elif node.tag == svgns('use'):
-            raise NotImplementedError("we don't support the svg 'use' tag yet")
+            referenced_name = node.attrib[xlinkns("href")]
+            m = re.search(r"#(\S+)", referenced_name)
+            if m:
+                el_id = m.groups()[0]
+                xpath = ".//*[@id='%s']" % (el_id)
+                node_to_copy = tree_root.find(xpath)
+                # Modify the matrix
+                if not "transform" in node.attrib:
+                    x_diff = float(node.attrib["x"])
+                    y_diff = float(node.attrib["y"])
+                    shift_matrix = [[1.0, 0.0, x_diff],
+                                    [0.0, 1.0, y_diff]]
+                    matrix_new = transform.compose(matrix_new, shift_matrix)
+                # Need to put node_to_copy in a list here so  that there is
+                # something to iterate over in the call to recurse_tree
+                recurse_tree(
+                    paths,
+                    tree_root,
+                    [node_to_copy],
+                    matrix_new,
+                    parent_visibility=v)
+            else:
+                raise RuntimeError(
+                    "unrecognized specifier for href: " + referenced_name)
         elif node.tag == svgns('path'):
             paths.append(transform_path(node.get('d'), matrix_new))
         elif node.tag in (svgns('rect'), svgns('line'), svgns('polyline'),
@@ -305,7 +333,7 @@ def extract_paths(s):
         (sx, sy, tx, ty))
 
     paths = []
-    recurse_tree(paths, root, matrix)
+    recurse_tree(paths, root, root, matrix)
     return paths
 
 
