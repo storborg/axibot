@@ -104,9 +104,11 @@ def xlinkns(tag):
 
 
 def points_to_path_string(points_string, closed):
+    points_string = points_string.replace(","," ")
     points = []
-    for point_string in points_string.split():
-        xs, ys = point_string.split(',')
+    split_points = points_string.split()
+    for point_pair in zip(split_points[::2], split_points[1::2]):
+        xs, ys = point_pair
         x = float(xs)
         y = float(ys)
         points.append((x, y))
