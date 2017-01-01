@@ -89,9 +89,9 @@ def get_document_dimensions(tree, max_area=(11.0, 8.5)):
             scale = max_height / height
         svg_width = scale * width
         svg_height = scale * height
-    assert svg_width <= max_width, \
+    assert svg_width <= max_width or math.isclose(svg_width, max_width), \
         "SVG width of %s must be <= %s" % (svg_width, max_width)
-    assert svg_height <= max_height, \
+    assert svg_height <= max_height or math.isclose(svg_height, max_height), \
         "SVG height of %s must be <= %s" % (svg_height, max_height)
     return svg_width, svg_height
 
