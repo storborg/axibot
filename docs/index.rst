@@ -7,7 +7,7 @@ Labs.
 
 The design goals are:
 
-* Maintainble, hackable, codebase with light dependencies and the ability to
+* Maintainable, hackable, codebase with light dependencies and the ability to
   run on a wide variety of embedded platforms.
 * Excellent motion control, tuned to eliminate undesirable plotting artifacts.
 * Easy command-line and programmatic use.
