@@ -26,8 +26,6 @@
 3.
 4.
 
-<!-- If you experienced an error while plotting an svg file, please provide the file if possible -->
-
 ## Context
 
 <!--- How has this issue affected you? What are you trying to accomplish? -->
