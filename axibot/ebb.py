@@ -40,7 +40,7 @@ class EiBotBoard(EiBotBase):
         for port in ports:
             if port[1].startswith('EiBotBoard'):
                 yield port[0]
-            elif port[2].startswith('USB VID:PID=04D8:FD92'):
+            elif port[2].upper().startswith('USB VID:PID=04D8:FD92'):
                 yield port[0]
 
     @classmethod
