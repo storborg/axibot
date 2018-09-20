@@ -30,7 +30,7 @@ setup(name='axibot',
       install_requires=[
           'six',
           'pyserial',
-          'svg.path',
+          'svg.path<3.0',
           'colormath',
       ],
       setup_requires=['pytest-runner'],
